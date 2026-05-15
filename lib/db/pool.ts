@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, type QueryResultRow } from "pg";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -20,7 +20,7 @@ export function getPool(): Pool {
   return global.__wcnOpsPool;
 }
 
-export async function query<T = unknown>(
+export async function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
   params: ReadonlyArray<unknown> = [],
 ): Promise<T[]> {
