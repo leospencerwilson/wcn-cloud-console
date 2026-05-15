@@ -19,12 +19,13 @@ export interface Customer {
   activated_at: string | null;
   deleted_at: string | null;
   notes: string | null;
+  last_job_id: string | null;
 }
 
 export async function listCustomers(): Promise<Customer[]> {
   return query<Customer>(
     `select slug, name, tier, contact_email, brand_primary, brand_secondary,
-            status, created_at, activated_at, deleted_at, notes
+            status, created_at, activated_at, deleted_at, notes, last_job_id
        from customers
       where deleted_at is null
       order by created_at desc`,
@@ -34,7 +35,7 @@ export async function listCustomers(): Promise<Customer[]> {
 export async function getCustomer(slug: string): Promise<Customer | null> {
   const rows = await query<Customer>(
     `select slug, name, tier, contact_email, brand_primary, brand_secondary,
-            status, created_at, activated_at, deleted_at, notes
+            status, created_at, activated_at, deleted_at, notes, last_job_id
        from customers
       where slug = $1`,
     [slug],
@@ -54,11 +55,15 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
     `insert into customers (slug, name, tier, contact_email, status, created_at)
      values ($1, $2, $3, $4, 'provisioning', now())
      returning slug, name, tier, contact_email, brand_primary, brand_secondary,
-               status, created_at, activated_at, deleted_at, notes`,
+               status, created_at, activated_at, deleted_at, notes, last_job_id`,
     [input.slug, input.name, input.tier, input.contactEmail],
   );
   if (!rows[0]) throw new Error("Insert failed");
   return rows[0];
+}
+
+export async function setLastJobId(slug: string, jobId: string): Promise<void> {
+  await query(`update customers set last_job_id = $1 where slug = $2`, [jobId, slug]);
 }
 
 export async function writeAudit(

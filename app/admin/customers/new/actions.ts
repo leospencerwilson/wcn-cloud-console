@@ -3,7 +3,8 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireWcnAdmin } from "@/lib/auth/session";
-import { createCustomer, writeAudit } from "@/lib/db/customers";
+import { createCustomer, setLastJobId, writeAudit } from "@/lib/db/customers";
+import { startProvision } from "@/lib/provisioner/client";
 
 const slugRegex = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 
@@ -35,5 +36,27 @@ export async function createCustomerAction(formData: FormData): Promise<void> {
     customer.slug,
     { tier: customer.tier, name: customer.name },
   );
-  redirect("/admin/customers");
+
+  // Kick off provisioning. If the trigger fails, the customer row stays in
+  // 'provisioning' so an operator can retry from the customer page.
+  let jobId: string | null = null;
+  try {
+    const job = await startProvision(customer.slug);
+    jobId = job.jobId;
+    await setLastJobId(customer.slug, job.jobId);
+    await writeAudit(session.appUser.email, "provision.started", customer.slug, { jobId: job.jobId });
+  } catch (err) {
+    await writeAudit(
+      session.appUser.email,
+      "provision.trigger_failed",
+      customer.slug,
+      { error: err instanceof Error ? err.message : String(err) },
+    );
+  }
+
+  if (jobId) {
+    redirect(`/admin/customers/${customer.slug}/jobs/${jobId}`);
+  } else {
+    redirect(`/admin/customers?error=provisioner_unreachable&slug=${customer.slug}`);
+  }
 }
