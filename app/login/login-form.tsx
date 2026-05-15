@@ -25,13 +25,12 @@ export default function LoginForm() {
         password,
       });
       if (signInError) {
-        setError(signInError.message);
+        setError("That didn't work — check the email and password and try again.");
         return;
       }
-      // Tell the server to issue the forward-auth cookie.
       const res = await fetch("/api/auth/login", { method: "POST" });
       if (!res.ok) {
-        setError("Login succeeded but session setup failed.");
+        setError("Signed in, but session setup failed. Try again.");
         return;
       }
       const data = (await res.json()) as { role: "wcn_admin" | "customer_admin" };
@@ -45,7 +44,7 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-6">
       <div>
         <Label htmlFor="email">Email</Label>
         <Input
@@ -69,13 +68,19 @@ export default function LoginForm() {
         />
       </div>
       {error && (
-        <p className="text-sm text-red-600" role="alert">
+        <p
+          className="text-[13px] font-medium"
+          role="alert"
+          style={{ color: "#B91C1C" }}
+        >
           {error}
         </p>
       )}
-      <Button type="submit" disabled={loading} className="w-full">
-        {loading ? "Signing in…" : "Sign in"}
-      </Button>
+      <div className="pt-2">
+        <Button type="submit" disabled={loading} className="w-full">
+          {loading ? "Signing in…" : "Sign in"}
+        </Button>
+      </div>
     </form>
   );
 }

@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireWcnAdmin } from "@/lib/auth/session";
 import { createInvite } from "@/lib/db/invites";
-import { writeAudit } from "@/lib/db/customers";
+import { getCustomer, writeAudit } from "@/lib/db/customers";
+import { sendInviteEmail } from "@/lib/email/send-invite";
 import { randomToken } from "@/lib/utils";
 
 const schema = z
@@ -53,6 +54,33 @@ export async function createInviteAction(formData: FormData): Promise<void> {
 
   const base = process.env.INVITE_BASE_URL ?? "https://console.western-communication.com";
   const url = `${base}/invite/${token}`;
-  const params = new URLSearchParams({ url, email: invite.email });
+
+  const customerName = invite.customer_slug
+    ? (await getCustomer(invite.customer_slug))?.name ?? null
+    : null;
+
+  let emailStatus: "sent" | "skipped" | "failed" = "skipped";
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await sendInviteEmail({
+        to: invite.email,
+        inviteUrl: url,
+        role: invite.role,
+        customerName,
+        expiresAt: new Date(invite.expires_at),
+      });
+      emailStatus = "sent";
+    } catch (err) {
+      emailStatus = "failed";
+      await writeAudit(
+        session.appUser.email,
+        "invite.email_failed",
+        invite.customer_slug,
+        { inviteId: invite.id, error: err instanceof Error ? err.message : String(err) },
+      );
+    }
+  }
+
+  const params = new URLSearchParams({ url, email: invite.email, email_status: emailStatus });
   redirect(`/admin/invites/new?${params.toString()}`);
 }

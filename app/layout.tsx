@@ -1,22 +1,23 @@
 import type { Metadata } from "next";
-import { Archivo, Raleway, Space_Grotesk } from "next/font/google";
+import { Fraunces, Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const archivo = Archivo({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-archivo",
+  variable: "--font-fraunces",
+  display: "swap",
+  axes: ["opsz", "SOFT"],
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
   display: "swap",
 });
 
-const raleway = Raleway({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-raleway",
-  display: "swap",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
+  variable: "--font-jetbrains-mono",
   display: "swap",
 });
 
@@ -35,12 +36,10 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="en"
-      className={`${archivo.variable} ${raleway.variable} ${spaceGrotesk.variable}`}
+      lang="en-GB"
+      className={`${fraunces.variable} ${manrope.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="min-h-screen bg-neutral-50 text-brand-charcoal font-raleway antialiased">
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

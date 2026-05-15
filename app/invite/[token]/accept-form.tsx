@@ -28,15 +28,13 @@ export default function AcceptForm({ token, email }: Props) {
         setError(result.error);
         return;
       }
-      // After server creates the user, the client must sign in to establish the
-      // cookie session.
       router.push(`/login?next=/dashboard`);
       router.refresh();
     });
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-6">
       <div>
         <Label>Email</Label>
         <Input value={email} disabled readOnly />
@@ -60,16 +58,27 @@ export default function AcceptForm({ token, email }: Props) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <p className="text-xs text-neutral-500 mt-1">Minimum 12 characters.</p>
+        <p
+          className="text-[12px] mt-3"
+          style={{ color: "var(--color-muted)" }}
+        >
+          Minimum twelve characters.
+        </p>
       </div>
       {error && (
-        <p className="text-sm text-red-600" role="alert">
+        <p
+          className="text-[13px] font-medium"
+          role="alert"
+          style={{ color: "#B91C1C" }}
+        >
           {error}
         </p>
       )}
-      <Button type="submit" disabled={pending} className="w-full">
-        {pending ? "Creating account…" : "Create account"}
-      </Button>
+      <div className="pt-2">
+        <Button type="submit" disabled={pending} className="w-full">
+          {pending ? "Setting up…" : "Set password"}
+        </Button>
+      </div>
     </form>
   );
 }

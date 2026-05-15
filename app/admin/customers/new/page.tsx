@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -6,21 +6,22 @@ import { createCustomerAction } from "./actions";
 
 export default function NewCustomerPage() {
   return (
-    <div className="max-w-xl space-y-6">
-      <h1 className="font-archivo text-3xl font-semibold text-brand-navy">
-        Create customer
-      </h1>
+    <div className="max-w-2xl space-y-12">
+      <header>
+        <p className="type-eyebrow mb-5">§ NEW</p>
+        <h1 className="type-h1 mb-3">Provision a customer.</h1>
+        <p
+          className="text-[15px] leading-[1.55] max-w-xl"
+          style={{ color: "var(--color-muted)" }}
+        >
+          Records a customer in the ops database — actual VM provisioning is
+          handled by the orchestrator script.
+        </p>
+      </header>
+
       <Card>
-        <CardHeader>
-          <CardTitle>New customer</CardTitle>
-          <CardDescription>
-            Creates the customer record in <code>wcn_cloud_ops</code> with
-            status <strong>provisioning</strong>. VM provisioning is a separate
-            script run after this.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form action={createCustomerAction} className="space-y-4">
+        <div className="px-8 py-8">
+          <form action={createCustomerAction} className="space-y-7">
             <div>
               <Label htmlFor="slug">Slug</Label>
               <Input
@@ -30,9 +31,12 @@ export default function NewCustomerPage() {
                 pattern="^[a-z0-9-]{2,40}$"
                 placeholder="acme"
               />
-              <p className="text-xs text-neutral-500 mt-1">
-                Lowercase letters, digits, and hyphens. Forms the subdomain:
-                <code className="ml-1">slug.western-communication.com</code>.
+              <p
+                className="text-[12px] mt-3 leading-[1.5]"
+                style={{ color: "var(--color-muted)" }}
+              >
+                Lowercase letters, digits and hyphens. Forms the subdomain{" "}
+                <code className="type-mono">slug.western-communication.com</code>.
               </p>
             </div>
             <div>
@@ -45,7 +49,7 @@ export default function NewCustomerPage() {
                 id="tier"
                 name="tier"
                 required
-                className="flex h-10 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm"
+                className="field-select"
                 defaultValue="site"
               >
                 <option value="site">site</option>
@@ -62,9 +66,11 @@ export default function NewCustomerPage() {
                 required
               />
             </div>
-            <Button type="submit">Create customer</Button>
+            <div className="pt-4">
+              <Button type="submit">Create customer</Button>
+            </div>
           </form>
-        </CardContent>
+        </div>
       </Card>
     </div>
   );

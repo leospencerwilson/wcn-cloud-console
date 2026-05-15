@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { requireWcnAdmin } from "@/lib/auth/session";
+import AdminSubnav from "@/components/admin-subnav";
 
 export default async function AdminLayout({
   children,
@@ -10,37 +10,46 @@ export default async function AdminLayout({
   const session = await requireWcnAdmin();
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b border-neutral-200 bg-brand-navy text-white">
-        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-          <Link href="/admin" className="flex items-center gap-3">
-            <Image
-              src="/brand/logo.svg"
-              alt="WCN Cloud"
-              width={32}
-              height={32}
+      <header
+        className="border-b-hairline border-b"
+        style={{
+          height: 56,
+          background: "var(--color-ivory)",
+          borderColor: "var(--color-hairline)",
+        }}
+      >
+        <div className="mx-auto max-w-6xl px-6 h-full flex items-center justify-between">
+          <Link href="/admin" className="flex items-center gap-4">
+            <span
+              className="font-display italic font-semibold text-[20px] tracking-[-0.02em]"
+              style={{ color: "var(--color-navy)" }}
+            >
+              WCN
+            </span>
+            <span
+              className="h-5 w-px"
+              style={{ background: "var(--color-hairline)" }}
+              aria-hidden
             />
-            <span className="font-archivo text-lg">Console · Admin</span>
+            <span className="type-eyebrow">§ WCN CLOUD</span>
           </Link>
-          <nav className="flex items-center gap-6 text-sm">
-            <Link href="/admin" className="hover:text-brand-mint">
-              Overview
-            </Link>
-            <Link href="/admin/customers" className="hover:text-brand-mint">
-              Customers
-            </Link>
-            <Link href="/admin/invites" className="hover:text-brand-mint">
-              Invites
-            </Link>
-            <span className="text-white/70">{session.appUser.email}</span>
+          <div className="flex items-center gap-5">
+            <span className="font-mono text-[12px]" style={{ color: "var(--color-muted)" }}>
+              {session.appUser.email}
+            </span>
             <form action="/api/auth/logout" method="post">
-              <button type="submit" className="hover:text-brand-mint">
-                Log out
+              <button
+                type="submit"
+                className="btn btn-ghost btn-sm"
+              >
+                Sign out
               </button>
             </form>
-          </nav>
+          </div>
         </div>
       </header>
-      <main className="flex-1 mx-auto w-full max-w-6xl px-6 py-8">
+      <AdminSubnav />
+      <main className="flex-1 mx-auto w-full max-w-6xl px-6 py-12">
         {children}
       </main>
     </div>

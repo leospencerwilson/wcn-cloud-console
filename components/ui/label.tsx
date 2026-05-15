@@ -6,14 +6,7 @@ export type LabelProps = React.LabelHTMLAttributes<HTMLLabelElement>;
 const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
   ({ className, ...props }, ref) => {
     return (
-      <label
-        ref={ref}
-        className={cn(
-          "text-sm font-medium text-brand-charcoal block mb-1.5",
-          className,
-        )}
-        {...props}
-      />
+      <label ref={ref} className={cn("field-label", className)} {...props} />
     );
   },
 );

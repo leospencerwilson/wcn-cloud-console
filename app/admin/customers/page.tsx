@@ -1,60 +1,75 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { listCustomers } from "@/lib/db/customers";
+
+function statusPill(status: string) {
+  const key = status.toLowerCase();
+  if (key === "active") return "pill pill-active";
+  if (key === "provisioning") return "pill pill-provisioning";
+  if (key === "deleted") return "pill pill-deleted";
+  if (key === "pending") return "pill pill-pending";
+  return "pill pill-used";
+}
 
 export default async function CustomersPage() {
   const customers = await listCustomers();
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-archivo text-3xl font-semibold text-brand-navy">
-          Customers
-        </h1>
+    <div className="space-y-14">
+      <header className="flex items-end justify-between gap-6">
+        <div>
+          <p className="type-eyebrow mb-5">§ FLEET</p>
+          <h1 className="type-h1 mb-3">Active deployments.</h1>
+          <p
+            className="text-[15px] leading-[1.55] max-w-xl"
+            style={{ color: "var(--color-muted)" }}
+          >
+            Every customer currently on WCN Cloud.
+          </p>
+        </div>
         <Link href="/admin/customers/new">
           <Button>Create customer</Button>
         </Link>
-      </div>
+      </header>
+
       <Card>
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead className="text-left text-neutral-500 bg-neutral-50">
-              <tr>
-                <th className="py-3 px-4">Slug</th>
-                <th className="py-3 px-4">Name</th>
-                <th className="py-3 px-4">Tier</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Contact</th>
-                <th className="py-3 px-4">Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.length === 0 ? (
+        <div className="px-8 py-6">
+          {customers.length === 0 ? (
+            <p className="type-meta py-8">
+              No customers yet. The orchestrator will populate this list once a
+              deployment completes.
+            </p>
+          ) : (
+            <table className="data-table">
+              <thead>
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="py-8 text-center text-neutral-500"
-                  >
-                    No customers yet. Click "Create customer" to add one.
-                  </td>
+                  <th>Slug</th>
+                  <th>Name</th>
+                  <th>Tier</th>
+                  <th>Status</th>
+                  <th>Contact</th>
+                  <th>Created</th>
                 </tr>
-              ) : (
-                customers.map((c) => (
-                  <tr key={c.slug} className="border-t border-neutral-100">
-                    <td className="py-3 px-4 font-space-grotesk">{c.slug}</td>
-                    <td className="py-3 px-4">{c.name}</td>
-                    <td className="py-3 px-4">{c.tier}</td>
-                    <td className="py-3 px-4">{c.status}</td>
-                    <td className="py-3 px-4">{c.contact_email}</td>
-                    <td className="py-3 px-4 font-space-grotesk text-xs text-neutral-600">
+              </thead>
+              <tbody>
+                {customers.map((c) => (
+                  <tr key={c.slug}>
+                    <td className="type-mono">{c.slug}</td>
+                    <td>{c.name}</td>
+                    <td className="type-mono">{c.tier}</td>
+                    <td>
+                      <span className={statusPill(c.status)}>{c.status}</span>
+                    </td>
+                    <td>{c.contact_email}</td>
+                    <td className="type-mono" style={{ color: "var(--color-muted)" }}>
                       {new Date(c.created_at).toISOString().slice(0, 10)}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </CardContent>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </Card>
     </div>
   );

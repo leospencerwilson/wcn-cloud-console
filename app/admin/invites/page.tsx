@@ -1,43 +1,51 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { listInvites } from "@/lib/db/invites";
+
+function pillFor(status: string) {
+  if (status === "pending") return "pill pill-pending";
+  if (status === "expired") return "pill pill-expired";
+  if (status === "used") return "pill pill-used";
+  return "pill";
+}
 
 export default async function InvitesPage() {
   const invites = await listInvites();
   const now = new Date();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-archivo text-3xl font-semibold text-brand-navy">
-          Invites
-        </h1>
+    <div className="space-y-14">
+      <header className="flex items-end justify-between gap-6">
+        <div>
+          <p className="type-eyebrow mb-5">§ ACCESS</p>
+          <h1 className="type-h1">Pending invites.</h1>
+        </div>
         <Link href="/admin/invites/new">
-          <Button>New invite</Button>
+          <Button>Send invite</Button>
         </Link>
-      </div>
+      </header>
+
       <Card>
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead className="text-left text-neutral-500 bg-neutral-50">
-              <tr>
-                <th className="py-3 px-4">Email</th>
-                <th className="py-3 px-4">Role</th>
-                <th className="py-3 px-4">Customer</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Expires</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invites.length === 0 ? (
+        <div className="px-8 py-6">
+          {invites.length === 0 ? (
+            <p className="type-meta py-8">
+              No pending invites. All sent tokens have either been accepted or
+              expired.
+            </p>
+          ) : (
+            <table className="data-table">
+              <thead>
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-neutral-500">
-                    No invites yet.
-                  </td>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Customer</th>
+                  <th>Status</th>
+                  <th>Expires</th>
                 </tr>
-              ) : (
-                invites.map((inv) => {
+              </thead>
+              <tbody>
+                {invites.map((inv) => {
                   const expired = new Date(inv.expires_at) < now;
                   const status = inv.used_at
                     ? "used"
@@ -45,25 +53,23 @@ export default async function InvitesPage() {
                       ? "expired"
                       : "pending";
                   return (
-                    <tr key={inv.id} className="border-t border-neutral-100">
-                      <td className="py-3 px-4">{inv.email}</td>
-                      <td className="py-3 px-4 font-space-grotesk text-xs">
-                        {inv.role}
+                    <tr key={inv.id}>
+                      <td>{inv.email}</td>
+                      <td className="type-mono">{inv.role}</td>
+                      <td className="type-mono">{inv.customer_slug ?? "—"}</td>
+                      <td>
+                        <span className={pillFor(status)}>{status}</span>
                       </td>
-                      <td className="py-3 px-4 font-space-grotesk text-xs">
-                        {inv.customer_slug ?? "—"}
-                      </td>
-                      <td className="py-3 px-4">{status}</td>
-                      <td className="py-3 px-4 font-space-grotesk text-xs text-neutral-600">
+                      <td className="type-mono" style={{ color: "var(--color-muted)" }}>
                         {new Date(inv.expires_at).toISOString().slice(0, 16)}
                       </td>
                     </tr>
                   );
-                })
-              )}
-            </tbody>
-          </table>
-        </CardContent>
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
       </Card>
     </div>
   );
