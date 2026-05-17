@@ -32,11 +32,21 @@ export interface JobStatus {
   finishedAt: string | null;
 }
 
-export async function startProvision(slug: string): Promise<JobRef> {
+export interface ProvisionInput {
+  slug: string;
+  tier?: string;
+  name?: string;
+  email?: string;
+  domain?: string;
+  brandColour?: string;
+  resume?: boolean;
+}
+
+export async function startProvision(input: ProvisionInput): Promise<JobRef> {
   const res = await fetch(`${baseUrl()}/provision`, {
     method: "POST",
     headers: { ...authHeaders(), "content-type": "application/json" },
-    body: JSON.stringify({ slug }),
+    body: JSON.stringify(input),
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`provisioner ${res.status}: ${await res.text()}`);

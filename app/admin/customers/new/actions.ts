@@ -41,7 +41,13 @@ export async function createCustomerAction(formData: FormData): Promise<void> {
   // 'provisioning' so an operator can retry from the customer page.
   let jobId: string | null = null;
   try {
-    const job = await startProvision(customer.slug);
+    const job = await startProvision({
+      slug: customer.slug,
+      tier: customer.tier,
+      name: customer.name,
+      email: customer.contact_email,
+      resume: true, // the row already exists from createCustomer()
+    });
     jobId = job.jobId;
     await setLastJobId(customer.slug, job.jobId);
     await writeAudit(session.appUser.email, "provision.started", customer.slug, { jobId: job.jobId });
