@@ -1,6 +1,8 @@
 import Link from "next/link";
+import TabStrip from "@/components/tab-strip";
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import { getCustomer } from "@/lib/db/customers";
+import { statusPill } from "@/lib/utils";
 
 export default async function DashboardLayout({
   children,
@@ -63,7 +65,42 @@ export default async function DashboardLayout({
         </div>
       </header>
       <main className="flex-1 mx-auto w-full max-w-6xl px-6 py-12">
-        {children}
+        {customer ? (
+          <div className="space-y-10">
+            <div>
+              <p className="type-eyebrow mb-5">§ YOUR ENVIRONMENT</p>
+              <h1 className="type-h1 mb-3">{customer.name}</h1>
+              <p
+                className="text-[15px] leading-[1.55] flex flex-wrap items-center gap-x-3 gap-y-1"
+                style={{ color: "var(--color-muted)" }}
+              >
+                <span className="type-mono">{customer.slug}</span>
+                <span aria-hidden>·</span>
+                <span>
+                  Tier{" "}
+                  <strong style={{ color: "var(--color-charcoal)" }}>
+                    {customer.tier}
+                  </strong>
+                </span>
+                <span aria-hidden>·</span>
+                <span className={statusPill(customer.status)}>
+                  {customer.status}
+                </span>
+              </p>
+            </div>
+            <TabStrip
+              tabs={[
+                { label: "Overview", href: "/dashboard", exact: true },
+                { label: "Coolify", href: "/dashboard/coolify" },
+                { label: "Supabase", href: "/dashboard/supabase" },
+                { label: "Health", href: "/dashboard/health" },
+              ]}
+            />
+            <div>{children}</div>
+          </div>
+        ) : (
+          children
+        )}
       </main>
     </div>
   );
