@@ -72,13 +72,25 @@ export async function createInviteAction(formData: FormData): Promise<void> {
       emailStatus = "sent";
     } catch (err) {
       emailStatus = "failed";
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[invite] Resend send failed for ${invite.email}: ${msg}`);
       await writeAudit(
         session.appUser.email,
         "invite.email_failed",
         invite.customer_slug,
-        { inviteId: invite.id, error: err instanceof Error ? err.message : String(err) },
+        { inviteId: invite.id, error: msg },
       );
     }
+  } else {
+    console.warn(
+      `[invite] RESEND_API_KEY not set — invite for ${invite.email} created but not emailed`,
+    );
+    await writeAudit(
+      session.appUser.email,
+      "invite.email_skipped",
+      invite.customer_slug,
+      { inviteId: invite.id, reason: "RESEND_API_KEY not set" },
+    );
   }
 
   const params = new URLSearchParams({ url, email: invite.email, email_status: emailStatus });

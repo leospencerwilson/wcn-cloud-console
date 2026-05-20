@@ -10,7 +10,8 @@ import {
   markInviteUsed,
 } from "@/lib/db/invites";
 import { createAppUser, getAppUserByEmail } from "@/lib/db/users";
-import { writeAudit } from "@/lib/db/customers";
+import { getCustomer, writeAudit } from "@/lib/db/customers";
+import { sendAccountCreatedEmail } from "@/lib/email/send-account-created";
 
 const inputSchema = z.object({
   token: z.string().min(8),
@@ -72,6 +73,26 @@ export async function acceptInvite(raw: unknown): Promise<Result> {
       ok: false,
       error: err instanceof Error ? err.message : "Failed to finalise account",
     };
+  }
+
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const customerName = invite.customer_slug
+        ? (await getCustomer(invite.customer_slug))?.name ?? null
+        : null;
+      await sendAccountCreatedEmail({
+        to: invite.email,
+        name,
+        role: invite.role,
+        customerName,
+      });
+    } catch (err) {
+      // Non-fatal: account is created, user is about to be signed in;
+      // we just couldn't send the welcome email.
+      console.error(
+        `[account-created] email failed for ${invite.email}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 
   // Sign the new user in server-side so the response sets the session cookies.

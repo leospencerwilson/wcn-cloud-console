@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireWcnAdmin } from "@/lib/auth/session";
 import { createCustomer, setLastJobId, writeAudit } from "@/lib/db/customers";
+import { sendCustomerCreatedEmail } from "@/lib/email/send-customer-created";
 import { startProvision } from "@/lib/provisioner/client";
 
 const slugRegex = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
@@ -36,6 +37,26 @@ export async function createCustomerAction(formData: FormData): Promise<void> {
     customer.slug,
     { tier: customer.tier, name: customer.name },
   );
+
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await sendCustomerCreatedEmail({
+        to: customer.contact_email,
+        customerName: customer.name,
+        slug: customer.slug,
+        tier: customer.tier,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[customer-created] email failed for ${customer.contact_email}: ${msg}`);
+      await writeAudit(
+        session.appUser.email,
+        "customer.email_failed",
+        customer.slug,
+        { error: msg },
+      );
+    }
+  }
 
   // Kick off provisioning. If the trigger fails, the customer row stays in
   // 'provisioning' so an operator can retry from the customer page.

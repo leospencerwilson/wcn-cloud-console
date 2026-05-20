@@ -6,11 +6,15 @@ import { listCustomers } from "@/lib/db/customers";
 import { createInviteAction } from "./actions";
 
 interface PageProps {
-  searchParams: Promise<{ url?: string; email?: string }>;
+  searchParams: Promise<{
+    url?: string;
+    email?: string;
+    email_status?: "sent" | "skipped" | "failed";
+  }>;
 }
 
 export default async function NewInvitePage({ searchParams }: PageProps) {
-  const { url, email } = await searchParams;
+  const { url, email, email_status } = await searchParams;
   const customers = await listCustomers();
 
   return (
@@ -31,17 +35,55 @@ export default async function NewInvitePage({ searchParams }: PageProps) {
         <Card>
           <div
             className="px-8 py-7"
-            style={{ background: "rgba(161, 224, 172, 0.12)" }}
+            style={{
+              background:
+                email_status === "failed"
+                  ? "rgba(185, 28, 28, 0.06)"
+                  : email_status === "skipped"
+                    ? "rgba(217, 119, 6, 0.08)"
+                    : "rgba(161, 224, 172, 0.12)",
+            }}
           >
-            <p className="type-h2 mb-3" style={{ color: "#2F7A3C" }}>
-              — INVITE CREATED
+            <p
+              className="type-h2 mb-3"
+              style={{
+                color:
+                  email_status === "failed"
+                    ? "#B91C1C"
+                    : email_status === "skipped"
+                      ? "#B45309"
+                      : "#2F7A3C",
+              }}
+            >
+              {email_status === "failed"
+                ? "— INVITE CREATED, EMAIL FAILED"
+                : email_status === "skipped"
+                  ? "— INVITE CREATED, EMAIL NOT SENT"
+                  : "— INVITE CREATED & EMAILED"}
             </p>
             <p
               className="text-[14px] leading-[1.55] mb-5"
               style={{ color: "var(--color-charcoal)" }}
             >
-              Copy this URL and send it to <strong>{email}</strong>. Valid for
-              seven days.
+              {email_status === "failed" ? (
+                <>
+                  We couldn't send the invite to <strong>{email}</strong>.
+                  Copy the URL below and send it manually. Check
+                  /admin (audit trail) for the error.
+                </>
+              ) : email_status === "skipped" ? (
+                <>
+                  <code className="type-mono">RESEND_API_KEY</code> is not
+                  configured, so we didn't try to email{" "}
+                  <strong>{email}</strong>. Copy the URL below and send it
+                  manually.
+                </>
+              ) : (
+                <>
+                  Invite emailed to <strong>{email}</strong>. The URL below is
+                  shown for your reference. Valid for seven days.
+                </>
+              )}
             </p>
             <code
               className="block break-all type-mono px-4 py-3 border-hairline border bg-white"

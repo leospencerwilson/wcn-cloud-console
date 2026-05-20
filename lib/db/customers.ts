@@ -32,6 +32,35 @@ export async function listCustomers(): Promise<Customer[]> {
   );
 }
 
+export interface CustomerListRow extends Customer {
+  vmid: number | null;
+  ip: string | null;
+  proxmox_node: string | null;
+  vm_status: string | null;
+}
+
+// Joined view used by /admin/customers — includes the latest non-destroyed VM
+// so we can render Host/IP/VM-status in one query rather than N+1.
+export async function listCustomersWithVm(): Promise<CustomerListRow[]> {
+  return query<CustomerListRow>(
+    `select c.slug, c.name, c.tier, c.contact_email, c.brand_primary,
+            c.brand_secondary, c.status, c.created_at, c.activated_at,
+            c.deleted_at, c.notes, c.last_job_id,
+            v.vmid, host(v.ip) as ip, v.proxmox_node,
+            v.status::text as vm_status
+       from customers c
+       left join lateral (
+         select vmid, ip, proxmox_node, status
+           from vms
+          where customer_slug = c.slug and status <> 'destroyed'
+          order by created_at desc
+          limit 1
+       ) v on true
+      where c.deleted_at is null
+      order by c.created_at desc`,
+  );
+}
+
 export async function getCustomer(slug: string): Promise<Customer | null> {
   const rows = await query<Customer>(
     `select slug, name, tier, contact_email, brand_primary, brand_secondary,
