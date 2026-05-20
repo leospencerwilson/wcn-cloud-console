@@ -11,7 +11,7 @@ export default async function CustomerCoolifyPage({ params }: PageProps) {
   const customer = await getCustomer(slug);
   if (!customer) notFound();
 
-  const url = `https://coolify.${customer.slug}.western-communication.com`;
+  const url = `https://admin-${customer.slug}.western-communication.com`;
 
   return (
     <div className="space-y-8">

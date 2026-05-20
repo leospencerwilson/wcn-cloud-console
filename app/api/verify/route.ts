@@ -3,10 +3,14 @@ import { FORWARD_AUTH_COOKIE, verifyForwardJWT } from "@/lib/auth/forward";
 
 export const dynamic = "force-dynamic";
 
-// Service-prefix labels that customer-VM Caddy uses for per-service subdomains
-// (wcn-cloud-iaas commit 03dc5ae). Strip these when falling back to
-// X-Forwarded-Host parsing so we always end up with the customer slug.
-const SERVICE_PREFIXES = new Set(["coolify", "studio", "api"]);
+// Dash-suffix layout (current): first label is `admin-SLUG` / `db-SLUG` /
+// `api-SLUG` / `SLUG`. Strip the role prefix to recover the slug.
+const DASH_PREFIX_RE = /^(admin|db|api)-/;
+
+// Legacy dot-prefix layout: first label was `coolify` / `studio` / `api` and
+// the slug sat in the second label. Pre-pivot customer VMs may still send
+// these — keep until none remain (rebake/destroy to drop the branch).
+const LEGACY_DOT_PREFIXES = new Set(["coolify", "studio", "api"]);
 
 function resolveSlug(req: NextRequest): string | null {
   // Preferred: X-Wcn-Slug — set explicitly by the customer VM's (wcn_auth)
@@ -15,14 +19,16 @@ function resolveSlug(req: NextRequest): string | null {
   const explicit = req.headers.get("x-wcn-slug")?.trim().toLowerCase();
   if (explicit) return explicit;
 
-  // Fallback: X-Forwarded-Host. Pre-pivot Caddyfiles set the host to
-  // `SLUG.western-communication.com`; post-pivot ones send the per-service
-  // subdomains (`coolify.SLUG.…` etc.) for the auth-gated upstreams.
+  // Fallback: X-Forwarded-Host.
   const fwdHost =
     req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
   const labels = fwdHost.toLowerCase().split(".");
   if (labels.length < 2) return null;
-  return SERVICE_PREFIXES.has(labels[0]) ? labels[1] : labels[0];
+
+  const stripped = labels[0].replace(DASH_PREFIX_RE, "");
+  if (stripped !== labels[0]) return stripped;
+  if (LEGACY_DOT_PREFIXES.has(labels[0])) return labels[1];
+  return labels[0];
 }
 
 export async function GET(req: NextRequest) {

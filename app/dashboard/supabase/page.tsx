@@ -10,8 +10,8 @@ export default async function DashboardSupabasePage() {
   if (!customer) notFound();
 
   const rootDomain = process.env.ROOT_DOMAIN ?? "western-communication.com";
-  const studio = `https://studio.${slug}.${rootDomain}`;
-  const api = `https://api.${slug}.${rootDomain}`;
+  const studio = `https://db-${slug}.${rootDomain}`;
+  const api = `https://api-${slug}.${rootDomain}`;
   const tierHasSupabase = customer.tier !== "site";
 
   return (

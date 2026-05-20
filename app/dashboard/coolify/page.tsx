@@ -5,7 +5,7 @@ export default async function DashboardCoolifyPage() {
   const session = await requireCustomerAdmin();
   const slug = session.appUser.customer_slug!;
   const rootDomain = process.env.ROOT_DOMAIN ?? "western-communication.com";
-  const url = `https://coolify.${slug}.${rootDomain}`;
+  const url = `https://admin-${slug}.${rootDomain}`;
 
   return (
     <div className="space-y-8">

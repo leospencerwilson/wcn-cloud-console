@@ -11,8 +11,8 @@ export default async function CustomerSupabasePage({ params }: PageProps) {
   const customer = await getCustomer(slug);
   if (!customer) notFound();
 
-  const studio = `https://studio.${customer.slug}.western-communication.com`;
-  const api = `https://api.${customer.slug}.western-communication.com`;
+  const studio = `https://db-${customer.slug}.western-communication.com`;
+  const api = `https://api-${customer.slug}.western-communication.com`;
 
   const tierHasSupabase = customer.tier !== "site";
 
