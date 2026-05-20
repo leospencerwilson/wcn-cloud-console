@@ -69,13 +69,13 @@ export default async function NewInvitePage({ searchParams }: PageProps) {
                 defaultValue="customer_admin"
                 className="field-select"
               >
-                <option value="customer_admin">customer_admin</option>
-                <option value="wcn_admin">wcn_admin</option>
+                <option value="customer_admin">Customer Admin</option>
+                <option value="wcn_admin">WCN Admin</option>
               </select>
             </div>
             <div>
               <Label htmlFor="customerSlug">
-                Customer (required for customer_admin)
+                Customer (required for Customer Admin)
               </Label>
               <select
                 id="customerSlug"
@@ -83,7 +83,7 @@ export default async function NewInvitePage({ searchParams }: PageProps) {
                 defaultValue=""
                 className="field-select"
               >
-                <option value="">— none (wcn_admin only) —</option>
+                <option value="">— none (WCN Admin only) —</option>
                 {customers.map((c) => (
                   <option key={c.slug} value={c.slug}>
                     {c.slug} — {c.name}

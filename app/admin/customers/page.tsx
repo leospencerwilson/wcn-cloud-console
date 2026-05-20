@@ -2,15 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { listCustomers } from "@/lib/db/customers";
-
-function statusPill(status: string) {
-  const key = status.toLowerCase();
-  if (key === "active") return "pill pill-active";
-  if (key === "provisioning") return "pill pill-provisioning";
-  if (key === "deleted") return "pill pill-deleted";
-  if (key === "pending") return "pill pill-pending";
-  return "pill pill-used";
-}
+import { statusPill } from "@/lib/utils";
 
 export default async function CustomersPage() {
   const customers = await listCustomers();

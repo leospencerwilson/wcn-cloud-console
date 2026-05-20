@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { listInvites } from "@/lib/db/invites";
+import { roleLabel } from "@/lib/utils";
 
 function pillFor(status: string) {
   if (status === "pending") return "pill pill-pending";
@@ -55,7 +56,7 @@ export default async function InvitesPage() {
                   return (
                     <tr key={inv.id}>
                       <td>{inv.email}</td>
-                      <td className="type-mono">{inv.role}</td>
+                      <td>{roleLabel(inv.role)}</td>
                       <td className="type-mono">{inv.customer_slug ?? "—"}</td>
                       <td>
                         <span className={pillFor(status)}>{status}</span>

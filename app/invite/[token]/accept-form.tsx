@@ -28,7 +28,7 @@ export default function AcceptForm({ token, email }: Props) {
         setError(result.error);
         return;
       }
-      router.push(`/login?next=/dashboard`);
+      router.push(result.redirectTo);
       router.refresh();
     });
   }

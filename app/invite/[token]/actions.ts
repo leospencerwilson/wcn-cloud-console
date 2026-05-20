@@ -1,7 +1,10 @@
 "use server";
 
 import { z } from "zod";
-import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import {
+  createSupabaseServerClient,
+  createSupabaseServiceClient,
+} from "@/lib/supabase/server";
 import {
   getInviteByToken,
   markInviteUsed,
@@ -16,7 +19,7 @@ const inputSchema = z.object({
 });
 
 type Result =
-  | { ok: true }
+  | { ok: true; redirectTo: string }
   | { ok: false; error: string };
 
 export async function acceptInvite(raw: unknown): Promise<Result> {
@@ -71,5 +74,20 @@ export async function acceptInvite(raw: unknown): Promise<Result> {
     };
   }
 
-  return { ok: true };
+  // Sign the new user in server-side so the response sets the session cookies.
+  // Without this the client has to bounce through /login with the same
+  // credentials they just typed — bad UX and the "no autoredirect" complaint.
+  const sessionClient = await createSupabaseServerClient();
+  const { error: signInError } = await sessionClient.auth.signInWithPassword({
+    email: invite.email,
+    password,
+  });
+  if (signInError) {
+    // Account was created successfully; just couldn't auto-sign-in.
+    // Fall back to login screen rather than blocking the user.
+    return { ok: true, redirectTo: "/login" };
+  }
+
+  const redirectTo = invite.role === "wcn_admin" ? "/admin" : "/dashboard";
+  return { ok: true, redirectTo };
 }

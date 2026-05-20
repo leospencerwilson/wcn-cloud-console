@@ -3,15 +3,7 @@ import { Card } from "@/components/ui/card";
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import { getCustomer } from "@/lib/db/customers";
 import { getVmByCustomerSlug } from "@/lib/db/vms";
-
-function statusPill(status: string) {
-  const key = status.toLowerCase();
-  if (key === "active" || key === "running") return "pill pill-active";
-  if (key === "provisioning") return "pill pill-provisioning";
-  if (key === "deleted") return "pill pill-deleted";
-  if (key === "pending") return "pill pill-pending";
-  return "pill pill-used";
-}
+import { statusPill } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const session = await requireCustomerAdmin();
@@ -96,12 +88,12 @@ export default async function DashboardPage() {
               <QuickLink
                 title="Coolify"
                 description="Apps and deployments"
-                href={`https://${baseHost}/coolify`}
+                href={`https://coolify.${baseHost}`}
               />
               <QuickLink
                 title="Supabase Studio"
                 description="Database, auth, storage"
-                href={`https://${baseHost}/supabase`}
+                href={`https://studio.${baseHost}`}
               />
               <QuickLink
                 title="Health check"

@@ -276,9 +276,24 @@ code, pre, kbd, samp {
   .pill-active { border-color: var(--color-mint); color: #2F7A3C; }
   .pill-provisioning { border-color: #D97706; color: #B45309; }
   .pill-pending { border-color: var(--color-navy); color: var(--color-navy); }
+  .pill-failed { border-color: #B91C1C; color: #B91C1C; background: #FEF2F2; }
   .pill-deleted { border-color: #A3A3A3; color: #525252; }
   .pill-expired { border-color: #A3A3A3; color: #525252; }
   .pill-used { border-color: var(--color-hairline); color: var(--color-muted); }
+
+  /* Status dot: solid colour swatch, for compact online/offline/rebooting hints */
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: currentColor;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+  .dot-online { color: #2F7A3C; }
+  .dot-offline { color: #B91C1C; }
+  .dot-rebooting { color: #D97706; }
 
   /* ─────────── Tables ─────────── */
 

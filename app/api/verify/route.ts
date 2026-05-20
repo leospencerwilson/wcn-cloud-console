@@ -3,6 +3,28 @@ import { FORWARD_AUTH_COOKIE, verifyForwardJWT } from "@/lib/auth/forward";
 
 export const dynamic = "force-dynamic";
 
+// Service-prefix labels that customer-VM Caddy uses for per-service subdomains
+// (wcn-cloud-iaas commit 03dc5ae). Strip these when falling back to
+// X-Forwarded-Host parsing so we always end up with the customer slug.
+const SERVICE_PREFIXES = new Set(["coolify", "studio", "api"]);
+
+function resolveSlug(req: NextRequest): string | null {
+  // Preferred: X-Wcn-Slug — set explicitly by the customer VM's (wcn_auth)
+  // Caddyfile snippet so this endpoint doesn't have to parse it back out
+  // of the host.
+  const explicit = req.headers.get("x-wcn-slug")?.trim().toLowerCase();
+  if (explicit) return explicit;
+
+  // Fallback: X-Forwarded-Host. Pre-pivot Caddyfiles set the host to
+  // `SLUG.western-communication.com`; post-pivot ones send the per-service
+  // subdomains (`coolify.SLUG.…` etc.) for the auth-gated upstreams.
+  const fwdHost =
+    req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
+  const labels = fwdHost.toLowerCase().split(".");
+  if (labels.length < 2) return null;
+  return SERVICE_PREFIXES.has(labels[0]) ? labels[1] : labels[0];
+}
+
 export async function GET(req: NextRequest) {
   const token = req.cookies.get(FORWARD_AUTH_COOKIE)?.value;
   if (!token) return new NextResponse(null, { status: 401 });
@@ -14,9 +36,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse(null, { status: 401 });
   }
 
-  const forwardedHost =
-    req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
-  const slug = forwardedHost.split(".")[0]?.toLowerCase() ?? "";
+  const slug = resolveSlug(req);
   if (!slug) return new NextResponse(null, { status: 401 });
 
   const allowed =

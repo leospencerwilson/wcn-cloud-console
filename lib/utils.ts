@@ -19,3 +19,38 @@ export function cn(...inputs: ClassValue[]): string {
 export function randomToken(byteLen = 32): string {
   return randomBytes(byteLen).toString("base64url");
 }
+
+// Maps any status (customer, VM, deployment) to a pill class.
+// Green = healthy, amber = transient, red = needs attention, grey = inert.
+export function statusPill(status: string | null | undefined): string {
+  const key = (status ?? "").toLowerCase();
+  if (key === "active" || key === "running" || key === "online") {
+    return "pill pill-active";
+  }
+  if (
+    key === "provisioning" ||
+    key === "rebooting" ||
+    key === "pending" ||
+    key === "starting"
+  ) {
+    return "pill pill-provisioning";
+  }
+  if (key === "failed" || key === "error" || key === "offline") {
+    return "pill pill-failed";
+  }
+  if (key === "deleted" || key === "destroyed" || key === "expired") {
+    return "pill pill-deleted";
+  }
+  return "pill pill-used";
+}
+
+export function roleLabel(role: string | null | undefined): string {
+  switch (role) {
+    case "wcn_admin":
+      return "WCN Admin";
+    case "customer_admin":
+      return "Customer Admin";
+    default:
+      return role ?? "";
+  }
+}
