@@ -91,6 +91,7 @@ export default async function DashboardLayout({
             <TabStrip
               tabs={[
                 { label: "Overview", href: "/dashboard", exact: true },
+                { label: "Apps", href: "/dashboard/apps" },
                 { label: "Coolify", href: "/dashboard/coolify" },
                 { label: "Supabase", href: "/dashboard/supabase" },
                 { label: "Health", href: "/dashboard/health" },

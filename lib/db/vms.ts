@@ -9,7 +9,7 @@ export interface Vm {
   tunnel_id: string | null;
   coolify_access_app_id: string | null;
   supabase_access_app_id: string | null;
-  coolify_signing_token: string | null;
+  coolify_api_token: string | null;
   status: VmStatus;
   proxmox_node: string | null;
   created_at: string;
@@ -21,7 +21,7 @@ export interface Vm {
 export async function getVmByCustomerSlug(slug: string): Promise<Vm | null> {
   const rows = await query<Vm>(
     `select vmid, customer_slug, ip, tunnel_id, coolify_access_app_id,
-            supabase_access_app_id, coolify_signing_token, status, proxmox_node,
+            supabase_access_app_id, coolify_api_token, status, proxmox_node,
             created_at, activated_at, last_updated_at, destroyed_at
        from vms
       where customer_slug = $1 and status <> 'destroyed'
@@ -35,7 +35,7 @@ export async function getVmByCustomerSlug(slug: string): Promise<Vm | null> {
 export async function listVmsByCustomer(slug: string): Promise<Vm[]> {
   return query<Vm>(
     `select vmid, customer_slug, ip, tunnel_id, coolify_access_app_id,
-            supabase_access_app_id, coolify_signing_token, status, proxmox_node,
+            supabase_access_app_id, coolify_api_token, status, proxmox_node,
             created_at, activated_at, last_updated_at, destroyed_at
        from vms
       where customer_slug = $1
