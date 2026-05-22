@@ -6,6 +6,7 @@ import { getVmByCustomerSlug } from "@/lib/db/vms";
 import { statusPill } from "@/lib/utils";
 import VmOperations from "./vm-operations";
 import CustomerAlertsCallout from "@/components/customer-alerts-callout";
+import ImpersonateButton from "./impersonate-button";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -24,7 +25,10 @@ export default async function CustomerOverviewPage({ params }: PageProps) {
       <section>
         <div className="flex items-baseline justify-between mb-5">
           <h2 className="type-h2">— VM</h2>
-          <span className="type-meta">Proxmox + cloudflared tunnel</span>
+          <div className="flex items-center gap-4">
+            <ImpersonateButton slug={customer.slug} customerName={customer.name} />
+            <span className="type-meta">Proxmox + cloudflared tunnel</span>
+          </div>
         </div>
         <Card>
           <div className="px-8 py-8">

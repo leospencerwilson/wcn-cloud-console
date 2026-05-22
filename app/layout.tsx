@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import ImpersonateBannerServer from "@/components/impersonate-banner-server";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -39,7 +40,10 @@ export default function RootLayout({
       lang="en-GB"
       className={`${fraunces.variable} ${manrope.variable} ${jetbrainsMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <ImpersonateBannerServer />
+        {children}
+      </body>
     </html>
   );
 }

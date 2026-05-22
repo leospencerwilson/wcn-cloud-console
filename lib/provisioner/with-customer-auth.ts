@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { ProvisionerHttpError } from "./apps-client";
 
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
 // Authorization model: a wcn_admin can act on any slug; a customer_admin
 // can only act on their own slug (appUser.customer_slug). Unauthenticated
 // → 401; authenticated-but-wrong-slug → 403.
@@ -36,10 +38,22 @@ export function withCustomerAuth<P extends { slug: string }>(
 
     const { appUser } = session;
     const allowed =
-      appUser.role === "wcn_admin" || appUser.customer_slug === slug;
+      appUser.role === "wcn_admin" ||
+      appUser.customer_slug === slug ||
+      (session.impersonating?.customer_slug === slug);
     if (!allowed) {
       return NextResponse.json(
         { error: "Forbidden", code: "no_membership" },
+        { status: 403 },
+      );
+    }
+
+    if (session.impersonating && !SAFE_METHODS.has(req.method)) {
+      return NextResponse.json(
+        {
+          error: "Mutations are disabled while impersonating.",
+          code: "impersonate_read_only",
+        },
         { status: 403 },
       );
     }
