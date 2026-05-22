@@ -153,6 +153,36 @@ export type PublicIncident = {
   summary: string;
 };
 
+export type AlertSeverity = "critical" | "warning" | "info";
+
+export type AlertRuleState = "inactive" | "pending" | "firing";
+
+export type AlertRule = {
+  name: string;
+  state: AlertRuleState;
+  health: string;
+  severity: AlertSeverity;
+  duration_s: number;
+  query: string;
+  summary: string;
+  firing_count: number;
+};
+
+export type AlertFiringStatus = "firing" | "resolved";
+
+export type AlertFiring = {
+  id: number;
+  fingerprint: string;
+  alertname: string;
+  severity: AlertSeverity;
+  slug: string | null;
+  summary: string;
+  status: AlertFiringStatus;
+  started_at: string;
+  resolved_at: string | null;
+  received_at: string;
+};
+
 export type PublicStatus = {
   customer: { name: string; slug: string };
   overall: PublicOverallStatus;

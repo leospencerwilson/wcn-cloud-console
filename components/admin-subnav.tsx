@@ -15,6 +15,11 @@ const ITEMS: { label: string; href: string; match: (p: string) => boolean }[] = 
     href: "/admin/invites",
     match: (p) => p.startsWith("/admin/invites"),
   },
+  {
+    label: "Alerts",
+    href: "/admin/alerts",
+    match: (p) => p.startsWith("/admin/alerts"),
+  },
 ];
 
 export default function AdminSubnav() {

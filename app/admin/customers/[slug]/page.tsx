@@ -5,6 +5,7 @@ import { getCustomer } from "@/lib/db/customers";
 import { getVmByCustomerSlug } from "@/lib/db/vms";
 import { statusPill } from "@/lib/utils";
 import VmOperations from "./vm-operations";
+import CustomerAlertsCallout from "@/components/customer-alerts-callout";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -59,6 +60,8 @@ export default async function CustomerOverviewPage({ params }: PageProps) {
 
       {vm && <VmOperations slug={customer.slug} />}
 
+      {vm && <CustomerAlertsCallout slug={customer.slug} />}
+
       {vm && (
         <section>
           <div className="flex items-baseline justify-between mb-5">
@@ -73,6 +76,7 @@ export default async function CustomerOverviewPage({ params }: PageProps) {
                   { href: `/admin/customers/${customer.slug}/operations`, label: "VM resize", meta: "Cores, memory, disk" },
                   { href: `/admin/customers/${customer.slug}/snapshots`, label: "Snapshots", meta: "Take · revert · delete" },
                   { href: `/admin/customers/${customer.slug}/backups`, label: "Backups", meta: "Nightly + on-demand" },
+                  { href: `/admin/customers/${customer.slug}/alerts`, label: "Alerts", meta: "Active + recent firings" },
                   { href: `/admin/customers/${customer.slug}/audit`, label: "Audit log", meta: "Every privileged action" },
                 ].map((row) => (
                   <li
