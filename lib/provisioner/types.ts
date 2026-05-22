@@ -135,3 +135,33 @@ export type AppMetricsResponse = MetricsResponse & {
   app_id: string;
   container: string | null;
 };
+
+export type PublicServiceStatus =
+  | "operational"
+  | "degraded"
+  | "stopped"
+  | "down"
+  | "unknown";
+
+export type PublicOverallStatus = "operational" | "degraded" | "down";
+
+export type PublicIncident = {
+  id: string;
+  started_at: string;
+  resolved_at: string | null;
+  severity: "minor" | "major" | "critical";
+  summary: string;
+};
+
+export type PublicStatus = {
+  customer: { name: string; slug: string };
+  overall: PublicOverallStatus;
+  services: { name: string; status: PublicServiceStatus }[];
+  uptime: {
+    h24: number | null;
+    d30: number | null;
+    d90: number | null;
+  };
+  incidents: PublicIncident[];
+  checked_at: string;
+};
