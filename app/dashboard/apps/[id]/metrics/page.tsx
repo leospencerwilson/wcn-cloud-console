@@ -1,28 +1,37 @@
 import { requireCustomerAdmin } from "@/lib/auth/session";
-import HealthPanel from "@/app/admin/customers/[slug]/health/health-panel";
+import MetricsDashboard from "@/components/metrics-dashboard";
 import MetricsSparklines from "@/components/metrics-sparklines";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardHealthPage() {
+export default async function DashboardAppMetricsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const session = await requireCustomerAdmin();
   const slug = session.appUser.customer_slug!;
-  const rootDomain = process.env.ROOT_DOMAIN ?? "western-communication.com";
-  const apex = `${slug}.${rootDomain}`;
+  const { id } = await params;
+  const endpoint = `/api/customers/${slug}/apps/${id}/metrics`;
   return (
     <div className="space-y-12">
-      <HealthPanel apex={apex} />
       <section>
         <MetricsSparklines
-          endpoint={`/api/customers/${slug}/vm/metrics`}
-          detailsHref="/dashboard/health/metrics"
+          endpoint={endpoint}
           cards={[
             { key: "cpu" },
             { key: "ram" },
-            { key: "disk" },
             { key: "net_in", label: "Network in" },
             { key: "net_out", label: "Network out" },
           ]}
+        />
+      </section>
+      <section className="space-y-4">
+        <span className="type-eyebrow">§ HISTORICAL</span>
+        <MetricsDashboard
+          endpoint={endpoint}
+          allSeries={["cpu", "ram", "net"]}
+          defaultSeries={["cpu", "ram", "net"]}
         />
       </section>
     </div>

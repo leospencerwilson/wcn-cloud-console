@@ -69,6 +69,7 @@ export default async function CustomerOverviewPage({ params }: PageProps) {
             <div className="px-8 py-2">
               <ul>
                 {[
+                  { href: `/admin/customers/${customer.slug}/metrics`, label: "Metrics", meta: "CPU · RAM · disk · network" },
                   { href: `/admin/customers/${customer.slug}/operations`, label: "VM resize", meta: "Cores, memory, disk" },
                   { href: `/admin/customers/${customer.slug}/snapshots`, label: "Snapshots", meta: "Take · revert · delete" },
                   { href: `/admin/customers/${customer.slug}/backups`, label: "Backups", meta: "Nightly + on-demand" },

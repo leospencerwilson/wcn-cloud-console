@@ -119,3 +119,19 @@ export type ProvisionerError = {
   error: string;
   code: string;
 };
+
+export type MetricsWindow = "1h" | "24h" | "7d" | "30d";
+
+export type MetricPoint = { ts: number; value: number };
+
+export type MetricsResponse = {
+  slug: string;
+  window: MetricsWindow;
+  step: string;
+  series: Record<string, MetricPoint[]>;
+};
+
+export type AppMetricsResponse = MetricsResponse & {
+  app_id: string;
+  container: string | null;
+};

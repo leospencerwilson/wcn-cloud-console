@@ -3,6 +3,7 @@
 // PROVISIONER_URL the apps-client uses — that's flagged for cleanup).
 
 import { ProvisionerHttpError } from "./apps-client";
+import type { MetricsResponse, MetricsWindow } from "./types";
 
 export type VmPowerState = "running" | "stopped" | "paused";
 
@@ -132,6 +133,10 @@ export const provisionerVms = {
     trigger: (slug: string, actor: string) =>
       call<VmBackupTrigger>(`/vms/${slug}/backups`, { method: "POST", actor }),
   },
+  metrics: (slug: string, window: MetricsWindow, series: string) =>
+    call<MetricsResponse>(
+      `/vms/${slug}/metrics?window=${window}&series=${encodeURIComponent(series)}`,
+    ),
   snapshots: {
     list: (slug: string) => call<VmSnapshot[]>(`/vms/${slug}/snapshots`),
     create: (slug: string, input: VmSnapshotInput, actor: string) =>

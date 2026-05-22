@@ -10,6 +10,8 @@ import type {
   CronTaskInput,
   DeployStatus,
   EnvVar,
+  AppMetricsResponse,
+  MetricsWindow,
   ProvisionerError,
   RedirectRule,
   RedirectRuleInput,
@@ -103,6 +105,10 @@ export const provisionerApps = {
       p<DeployStatus[]>(`/apps/${id}/deployments`),
     logs: (id: string, tail = 200) =>
       p<{ lines: string[] }>(`/apps/${id}/logs?tail=${tail}`),
+    metrics: (id: string, window: MetricsWindow, series: string) =>
+      p<AppMetricsResponse>(
+        `/apps/${id}/metrics?window=${window}&series=${encodeURIComponent(series)}`,
+      ),
   },
   env: {
     get: (appId: string) => p<EnvVar[]>(`/apps/${appId}/env`),
