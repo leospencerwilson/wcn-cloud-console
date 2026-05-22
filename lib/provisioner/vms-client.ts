@@ -44,6 +44,31 @@ export type VmBackupTrigger = {
   status: string;
 };
 
+export type BackupFrequency = "hourly" | "daily" | "weekly" | "disabled";
+
+export type BackupPolicy = {
+  customer_slug: string;
+  frequency: BackupFrequency;
+  retention_days: number;
+  time_utc: string;
+  enabled: boolean;
+  last_run_at: string | null;
+};
+
+export type BackupPolicyInput = Partial<{
+  frequency: BackupFrequency;
+  retention_days: number;
+  time_utc: string;
+  enabled: boolean;
+}>;
+
+export type VmRestoreResult = {
+  job_uuid: string;
+  status: string;
+  backup_id: number;
+  ts: string;
+};
+
 export type VmResizeInput = {
   cores?: number;
   memory_mb?: number;
@@ -86,6 +111,30 @@ function token(): string {
   const t = process.env.PROVISIONER_TOKEN;
   if (!t) throw new Error("PROVISIONER_TOKEN is not set");
   return t;
+}
+
+export async function streamBackupDownload(
+  slug: string,
+  backupId: number,
+  passphrase: string,
+  actor: string,
+  signal?: AbortSignal,
+): Promise<Response> {
+  const res = await fetch(
+    `${baseUrl()}/vms/${slug}/backups/${backupId}/download`,
+    {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token()}`,
+        "content-type": "application/json",
+        "x-wcn-actor": actor,
+      },
+      body: JSON.stringify({ passphrase }),
+      cache: "no-store",
+      signal,
+    },
+  );
+  return res;
 }
 
 type CallOpts = {
@@ -132,6 +181,20 @@ export const provisionerVms = {
     list: (slug: string) => call<VmBackup[]>(`/vms/${slug}/backups`),
     trigger: (slug: string, actor: string) =>
       call<VmBackupTrigger>(`/vms/${slug}/backups`, { method: "POST", actor }),
+    restore: (slug: string, backupId: number, actor: string) =>
+      call<VmRestoreResult>(
+        `/vms/${slug}/backups/${backupId}/restore`,
+        { method: "POST", actor },
+      ),
+  },
+  backupPolicy: {
+    get: (slug: string) => call<BackupPolicy>(`/vms/${slug}/backup-policy`),
+    put: (slug: string, input: BackupPolicyInput, actor: string) =>
+      call<BackupPolicy>(`/vms/${slug}/backup-policy`, {
+        method: "PUT",
+        body: input,
+        actor,
+      }),
   },
   metrics: (slug: string, window: MetricsWindow, series: string) =>
     call<MetricsResponse>(

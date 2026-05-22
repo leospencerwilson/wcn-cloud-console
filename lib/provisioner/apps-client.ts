@@ -11,6 +11,8 @@ import type {
   DeployStatus,
   EnvVar,
   AppMetricsResponse,
+  DomainCertInput,
+  DomainCertMetadata,
   MetricsWindow,
   ProvisionerError,
   RedirectRule,
@@ -137,6 +139,27 @@ export const provisionerApps = {
     remove: (appId: string, hostname: string, actor?: string) =>
       p<{ ok: true }>(
         `/apps/${appId}/domains/${encodeURIComponent(hostname)}`,
+        { method: "DELETE", actor },
+      ),
+  },
+  certs: {
+    get: (appId: string, hostname: string) =>
+      p<DomainCertMetadata>(
+        `/apps/${appId}/domains/${encodeURIComponent(hostname)}/cert`,
+      ),
+    upload: (
+      appId: string,
+      hostname: string,
+      input: DomainCertInput,
+      actor?: string,
+    ) =>
+      p<DomainCertMetadata>(
+        `/apps/${appId}/domains/${encodeURIComponent(hostname)}/cert`,
+        { method: "POST", body: input, actor },
+      ),
+    remove: (appId: string, hostname: string, actor?: string) =>
+      p<{ ok: true }>(
+        `/apps/${appId}/domains/${encodeURIComponent(hostname)}/cert`,
         { method: "DELETE", actor },
       ),
   },

@@ -153,6 +153,23 @@ export type PublicIncident = {
   summary: string;
 };
 
+export type DomainCertMetadata = {
+  hostname: string;
+  uploaded: boolean;
+  not_before?: string;
+  not_after?: string;
+  fingerprint_sha256?: string;
+  has_chain?: boolean;
+  uploaded_at?: string;
+  subject?: string;
+};
+
+export type DomainCertInput = {
+  cert_pem: string;
+  key_pem: string;
+  chain_pem?: string;
+};
+
 export type AlertSeverity = "critical" | "warning" | "info";
 
 export type AlertRuleState = "inactive" | "pending" | "firing";

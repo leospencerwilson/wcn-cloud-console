@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireWcnAdmin } from "@/lib/auth/session";
 import { getCustomer } from "@/lib/db/customers";
 import BackupsTable from "@/components/backups-table";
+import BackupPolicyForm from "@/components/backup-policy-form";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,8 @@ export default async function AdminCustomerBackupsPage({
       <div>
         <h2 className="type-h2">{customer.name} · backups</h2>
       </div>
-      <BackupsTable slug={slug} />
+      <BackupPolicyForm slug={slug} />
+      <BackupsTable slug={slug} canDownload canRestore />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import BackupsTable from "@/components/backups-table";
+import BackupPolicyForm from "@/components/backup-policy-form";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,8 @@ export default async function DashboardBackupsPage() {
           Nightly snapshots of your VM, plus on-demand triggers. Objects are stored in B2.
         </p>
       </div>
-      <BackupsTable slug={slug} />
+      <BackupPolicyForm slug={slug} />
+      <BackupsTable slug={slug} canDownload />
     </div>
   );
 }
