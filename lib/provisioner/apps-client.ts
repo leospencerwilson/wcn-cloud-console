@@ -11,6 +11,10 @@ import type {
   DeployStatus,
   EnvVar,
   ProvisionerError,
+  RedirectRule,
+  RedirectRuleInput,
+  Secret,
+  SecretInput,
 } from "./types";
 
 function baseUrl(): string {
@@ -35,10 +39,10 @@ export class ProvisionerHttpError extends Error {
   }
 }
 
-type FetchOpts = { slug?: string; method?: string; body?: unknown };
+type FetchOpts = { slug?: string; method?: string; body?: unknown; actor?: string };
 
 async function p<T>(path: string, opts: FetchOpts = {}): Promise<T> {
-  const { slug, method = "GET", body } = opts;
+  const { slug, method = "GET", body, actor } = opts;
   const url = new URL(`${baseUrl()}${path}`);
   if (slug && !url.searchParams.has("slug")) url.searchParams.set("slug", slug);
 
@@ -47,6 +51,7 @@ async function p<T>(path: string, opts: FetchOpts = {}): Promise<T> {
     headers: {
       authorization: `Bearer ${token()}`,
       ...(slug ? { "x-wcn-customer-slug": slug } : {}),
+      ...(actor ? { "x-wcn-actor": actor } : {}),
       ...(body ? { "content-type": "application/json" } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
@@ -113,19 +118,54 @@ export const provisionerApps = {
   },
   domains: {
     list: (appId: string) => p<AppDomain[]>(`/apps/${appId}/domains`),
-    add: (appId: string, hostname: string) =>
+    add: (appId: string, hostname: string, actor?: string) =>
       p<AppDomain>(`/apps/${appId}/domains`, {
         method: "POST",
         body: { hostname },
+        actor,
       }),
     status: (appId: string, hostname: string) =>
       p<AppDomain>(
-        `/apps/${appId}/domains/${encodeURIComponent(hostname)}`,
+        `/apps/${appId}/domains/${encodeURIComponent(hostname)}/status`,
       ),
-    remove: (appId: string, hostname: string) =>
+    remove: (appId: string, hostname: string, actor?: string) =>
       p<{ ok: true }>(
         `/apps/${appId}/domains/${encodeURIComponent(hostname)}`,
-        { method: "DELETE" },
+        { method: "DELETE", actor },
       ),
+  },
+  redirects: {
+    list: (appId: string) => p<RedirectRule[]>(`/apps/${appId}/redirects`),
+    create: (appId: string, input: RedirectRuleInput, actor?: string) =>
+      p<RedirectRule>(`/apps/${appId}/redirects`, {
+        method: "POST",
+        body: input,
+        actor,
+      }),
+    remove: (appId: string, id: number, actor?: string) =>
+      p<{ ok: true }>(`/apps/${appId}/redirects/${id}`, {
+        method: "DELETE",
+        actor,
+      }),
+  },
+  secrets: {
+    list: (appId: string) => p<Secret[]>(`/apps/${appId}/secrets`),
+    put: (appId: string, secrets: SecretInput[], actor?: string) =>
+      p<Secret[]>(`/apps/${appId}/secrets`, {
+        method: "PUT",
+        body: secrets,
+        actor,
+      }),
+    reveal: (appId: string, key: string, actor?: string) =>
+      p<{ key: string; value: string }>(`/apps/${appId}/secrets/reveal`, {
+        method: "POST",
+        body: { key },
+        actor,
+      }),
+    remove: (appId: string, key: string, actor?: string) =>
+      p<{ ok: true }>(`/apps/${appId}/secrets/${encodeURIComponent(key)}`, {
+        method: "DELETE",
+        actor,
+      }),
   },
 };

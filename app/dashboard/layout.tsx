@@ -95,6 +95,7 @@ export default async function DashboardLayout({
                 { label: "Coolify", href: "/dashboard/coolify" },
                 { label: "Supabase", href: "/dashboard/supabase" },
                 { label: "Health", href: "/dashboard/health" },
+                { label: "Audit", href: "/dashboard/audit" },
               ]}
             />
             <div>{children}</div>

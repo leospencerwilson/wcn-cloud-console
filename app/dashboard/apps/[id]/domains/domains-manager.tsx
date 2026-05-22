@@ -9,8 +9,48 @@ import type { AppDomain } from "@/lib/provisioner/types";
 const HOSTNAME_RE =
   /^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/;
 
-function isPending(d: AppDomain): boolean {
-  return d.status === "pending" || d.ssl_status === "pending_validation";
+function isTerminal(d: AppDomain): boolean {
+  return d.status === "active" || d.status === "failed" || d.status === "deleted";
+}
+
+function CopyableCname({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // ignore
+    }
+  }
+  return (
+    <div
+      className="flex items-center gap-2 px-3 py-2"
+      style={{
+        background: "var(--color-charcoal, #1a1a1a)",
+        color: "var(--color-ivory, #f4f1ea)",
+        borderRadius: 2,
+      }}
+    >
+      <code className="type-mono text-[12px] flex-1" style={{ wordBreak: "break-all" }}>
+        {value}
+      </code>
+      <button
+        type="button"
+        onClick={copy}
+        className="type-mono text-[11px] px-2 py-1"
+        style={{
+          background: "transparent",
+          color: "var(--color-ivory, #f4f1ea)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: 2,
+        }}
+      >
+        {copied ? "copied" : "copy"}
+      </button>
+    </div>
+  );
 }
 
 export default function DomainsManager({
@@ -50,9 +90,7 @@ export default function DomainsManager({
         );
         if (res.ok) {
           const fresh = (await res.json()) as AppDomain;
-          setDomains((ds) =>
-            ds.map((d) => (d.hostname === host ? fresh : d)),
-          );
+          setDomains((ds) => ds.map((d) => (d.hostname === host ? fresh : d)));
         }
       } catch {
         // swallow
@@ -61,9 +99,8 @@ export default function DomainsManager({
     [slug, appId],
   );
 
-  // Poll any pending domains every 8s until they settle.
   useEffect(() => {
-    const pending = domains.filter(isPending);
+    const pending = domains.filter((d) => !isTerminal(d));
     if (pending.length === 0) {
       if (pollRef.current) {
         clearInterval(pollRef.current);
@@ -74,7 +111,7 @@ export default function DomainsManager({
     if (pollRef.current) return;
     pollRef.current = setInterval(() => {
       pending.forEach((d) => refreshOne(d.hostname));
-    }, 8000);
+    }, 30000);
     return () => {
       if (pollRef.current) {
         clearInterval(pollRef.current);
@@ -103,10 +140,12 @@ export default function DomainsManager({
           error?: string;
           code?: string;
         };
-        if (data.code === "not_implemented") {
-          setError(
-            "Custom domain add isn't wired up on the provisioner yet (PR 3). The list view still works.",
-          );
+        if (data.code === "invalid_hostname") {
+          setError("That hostname isn't valid.");
+        } else if (data.code === "reserved_hostname") {
+          setError("That hostname is reserved by WCN.");
+        } else if (data.code === "hostname_taken") {
+          setError("That hostname is already in use.");
         } else {
           setError(data.error || `Failed to add (${res.status})`);
         }
@@ -123,6 +162,7 @@ export default function DomainsManager({
   }
 
   async function onRemove(host: string) {
+    if (!confirm(`Remove ${host}? This deletes the Cloudflare hostname and tunnel ingress.`)) return;
     setError(null);
     try {
       const res = await fetch(
@@ -130,15 +170,8 @@ export default function DomainsManager({
         { method: "DELETE" },
       );
       if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as {
-          error?: string;
-          code?: string;
-        };
-        if (data.code === "not_implemented") {
-          setError("Custom domain delete isn't wired up on the provisioner yet (PR 3).");
-        } else {
-          setError(data.error || `Failed to remove (${res.status})`);
-        }
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(data.error || `Failed to remove (${res.status})`);
         return;
       }
       setDomains((ds) => ds.filter((d) => d.hostname !== host));
@@ -152,19 +185,12 @@ export default function DomainsManager({
       <div className="flex items-baseline justify-between">
         <div>
           <h3 className="type-eyebrow">§ CUSTOM DOMAINS</h3>
-          <p
-            className="mt-2 text-[13px]"
-            style={{ color: "var(--color-muted)" }}
-          >
+          <p className="mt-2 text-[13px]" style={{ color: "var(--color-muted)" }}>
             Point a CNAME at the provided target. SSL is issued via Cloudflare
             once propagation completes.
           </p>
         </div>
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          onClick={refreshAll}
-        >
+        <button type="button" className="btn btn-ghost btn-sm" onClick={refreshAll}>
           Refresh
         </button>
       </div>
@@ -213,69 +239,86 @@ export default function DomainsManager({
         </p>
       )}
 
-      <Card>
-        <div className="px-2 py-2">
-          {domains.length === 0 ? (
-            <p
-              className="px-6 py-6 type-mono text-[12px]"
-              style={{ color: "var(--color-muted)" }}
-            >
-              No custom domains yet.
-            </p>
-          ) : (
-            <table className="w-full text-[13px]">
-              <thead>
-                <tr style={{ color: "var(--color-muted)" }}>
-                  <th className="text-left px-6 py-3 type-eyebrow">Hostname</th>
-                  <th className="text-left px-6 py-3 type-eyebrow">Status</th>
-                  <th className="text-left px-6 py-3 type-eyebrow">SSL</th>
-                  <th className="text-left px-6 py-3 type-eyebrow">CNAME target</th>
-                  <th className="px-6 py-3"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {domains.map((d) => (
-                  <tr
-                    key={d.hostname}
-                    className="border-t"
-                    style={{ borderColor: "var(--color-hairline)" }}
-                  >
-                    <td className="px-6 py-4 type-mono text-[12px]">{d.hostname}</td>
-                    <td className="px-6 py-4">
-                      <span className={statusPill(d.status)}>{d.status}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={statusPill(
-                          d.ssl_status === "active" ? "active" : "pending",
-                        )}
-                      >
-                        {d.ssl_status}
-                      </span>
-                    </td>
-                    <td
-                      className="px-6 py-4 type-mono text-[12px]"
-                      style={{ color: "var(--color-muted)" }}
+      {domains.length === 0 ? (
+        <Card>
+          <p
+            className="px-6 py-6 type-mono text-[12px]"
+            style={{ color: "var(--color-muted)" }}
+          >
+            No custom domains yet.
+          </p>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {domains.map((d) => (
+            <Card key={d.hostname}>
+              <div className="px-6 py-4 space-y-3">
+                <div className="flex items-baseline justify-between gap-4 flex-wrap">
+                  <div className="flex items-baseline gap-3 flex-wrap">
+                    <span className="type-mono text-[14px]">{d.hostname}</span>
+                    <span className={statusPill(d.status)}>{d.status}</span>
+                    <span
+                      className={statusPill(d.ssl_status === "active" ? "active" : "pending")}
                     >
-                      {d.cname_target}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => onRemove(d.hostname)}
-                        style={{ color: "var(--color-danger, #b03020)" }}
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                      ssl: {d.ssl_status}
+                    </span>
+                    {d.activated_at && (
+                      <span className="type-mono text-[11px]" style={{ color: "var(--color-muted)" }}>
+                        active since {new Date(d.activated_at).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => onRemove(d.hostname)}
+                    style={{ color: "var(--color-danger, #b03020)" }}
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                {d.status !== "active" && (
+                  <div className="space-y-2">
+                    <p className="type-mono text-[11px]" style={{ color: "var(--color-muted)" }}>
+                      {d.instructions ||
+                        `Add a CNAME record: ${d.hostname} → ${d.cname_target}`}
+                    </p>
+                    <CopyableCname value={d.cname_target} />
+                  </div>
+                )}
+
+                {d.verification_errors && d.verification_errors.length > 0 && (
+                  <div
+                    className="px-3 py-2 type-mono text-[11px]"
+                    style={{
+                      background: "rgba(176,48,32,0.08)",
+                      color: "var(--color-danger, #b03020)",
+                      borderRadius: 2,
+                    }}
+                  >
+                    <div className="type-eyebrow text-[10px]">verification errors</div>
+                    <ul className="mt-1 space-y-0.5">
+                      {d.verification_errors.map((m, i) => (
+                        <li key={i}>· {m}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {(d.cf_status || d.cf_ssl_status) && (
+                  <div
+                    className="type-mono text-[11px]"
+                    style={{ color: "var(--color-muted)" }}
+                  >
+                    cf: {d.cf_status ?? "—"} · ssl: {d.cf_ssl_status ?? "—"}
+                  </div>
+                )}
+              </div>
+            </Card>
+          ))}
         </div>
-      </Card>
+      )}
     </div>
   );
 }

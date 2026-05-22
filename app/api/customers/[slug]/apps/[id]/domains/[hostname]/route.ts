@@ -13,8 +13,8 @@ export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
   return NextResponse.json(domain);
 });
 
-export const DELETE = withCustomerAuth<Params>(async (_req, { params }) => {
+export const DELETE = withCustomerAuth<Params>(async (_req, { params, userEmail }) => {
   const hostname = decodeURIComponent(params.hostname);
-  await provisionerApps.domains.remove(params.id, hostname);
+  await provisionerApps.domains.remove(params.id, hostname, userEmail);
   return NextResponse.json({ ok: true });
 });

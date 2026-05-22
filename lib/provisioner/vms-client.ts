@@ -43,6 +43,38 @@ export type VmBackupTrigger = {
   status: string;
 };
 
+export type VmResizeInput = {
+  cores?: number;
+  memory_mb?: number;
+  disk_gb?: number;
+};
+
+export type VmResizeResult = {
+  cores: number;
+  memory_mb: number;
+  disk_gb: number;
+  needs_restart: boolean;
+};
+
+export type VmSnapshot = {
+  name: string;
+  description: string | null;
+  parent: string | null;
+  snaptime: number;
+  vmstate: boolean;
+};
+
+export type VmSnapshotInput = {
+  name: string;
+  label?: string;
+};
+
+export type VmSnapshotResult = {
+  upid: string;
+  vmid: number;
+  name: string;
+};
+
 function baseUrl(): string {
   const url = process.env.PROVISIONER_BASE_URL;
   if (!url) throw new Error("PROVISIONER_BASE_URL is not set");
@@ -89,9 +121,34 @@ export const provisionerVms = {
   power: (slug: string) => call<VmPower>(`/vms/${slug}/power`),
   action: (slug: string, action: VmAction, actor: string) =>
     call<VmActionResult>(`/vms/${slug}/${action}`, { method: "POST", actor }),
+  resize: (slug: string, input: VmResizeInput, actor: string) =>
+    call<VmResizeResult>(`/vms/${slug}/resize`, {
+      method: "POST",
+      body: input,
+      actor,
+    }),
   backups: {
     list: (slug: string) => call<VmBackup[]>(`/vms/${slug}/backups`),
     trigger: (slug: string, actor: string) =>
       call<VmBackupTrigger>(`/vms/${slug}/backups`, { method: "POST", actor }),
+  },
+  snapshots: {
+    list: (slug: string) => call<VmSnapshot[]>(`/vms/${slug}/snapshots`),
+    create: (slug: string, input: VmSnapshotInput, actor: string) =>
+      call<VmSnapshotResult>(`/vms/${slug}/snapshots`, {
+        method: "POST",
+        body: input,
+        actor,
+      }),
+    revert: (slug: string, name: string, actor: string) =>
+      call<VmSnapshotResult>(`/vms/${slug}/snapshots/${name}/revert`, {
+        method: "POST",
+        actor,
+      }),
+    remove: (slug: string, name: string, actor: string) =>
+      call<VmSnapshotResult>(`/vms/${slug}/snapshots/${name}`, {
+        method: "DELETE",
+        actor,
+      }),
   },
 };

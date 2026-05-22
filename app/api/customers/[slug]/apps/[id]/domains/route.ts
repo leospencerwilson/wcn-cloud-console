@@ -12,7 +12,7 @@ export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
   return NextResponse.json(domains);
 });
 
-export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params }) => {
+export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail }) => {
   const { hostname } = (await req.json()) as { hostname: string };
   if (!hostname || typeof hostname !== "string") {
     return NextResponse.json(
@@ -20,6 +20,6 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params }
       { status: 400 },
     );
   }
-  const domain = await provisionerApps.domains.add(params.id, hostname);
-  return NextResponse.json(domain, { status: 201 });
+  const domain = await provisionerApps.domains.add(params.id, hostname, userEmail);
+  return NextResponse.json(domain, { status: 202 });
 });

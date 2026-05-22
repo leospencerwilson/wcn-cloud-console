@@ -41,11 +41,52 @@ export type EnvVar = {
 
 export type AppDomain = {
   hostname: string;
-  status: "pending" | "active" | "deleted";
+  status: "pending" | "active" | "failed" | "deleted";
   cf_custom_hostname_id: string;
+  cf_status?: string;
+  cf_ssl_status?: string;
   ssl_status: "pending_validation" | "active" | "failed";
   cname_target: string;
+  instructions?: string;
+  verification_errors?: string[];
   activated_at: string | null;
+};
+
+export type RedirectRule = {
+  id: number;
+  from_host: string;
+  from_path: string;
+  to_url: string;
+  status_code: 301 | 302;
+  enabled: boolean;
+  created_at: string;
+};
+
+export type RedirectRuleInput = {
+  from_host: string;
+  from_path?: string;
+  to_url: string;
+  status_code?: 301 | 302;
+};
+
+export type Secret = {
+  key: string;
+  created_at: string;
+  last_rotated_at: string | null;
+};
+
+export type SecretInput = {
+  key: string;
+  value: string;
+};
+
+export type AuditEvent = {
+  id: number;
+  ts: string;
+  actor: string;
+  action: string;
+  slug: string;
+  details: Record<string, unknown> | null;
 };
 
 export type DeployStatus = {
