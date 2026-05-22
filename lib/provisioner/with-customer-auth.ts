@@ -10,6 +10,7 @@ export interface CustomerAuthCtx<P> {
   params: P;
   slug: string;
   userId: string;
+  userEmail: string;
   role: "wcn_admin" | "customer_admin";
 }
 
@@ -48,6 +49,7 @@ export function withCustomerAuth<P extends { slug: string }>(
         params: resolved,
         slug,
         userId: appUser.id,
+        userEmail: appUser.email,
         role: appUser.role,
       });
     } catch (err) {

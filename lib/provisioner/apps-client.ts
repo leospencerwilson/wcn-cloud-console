@@ -6,6 +6,8 @@ import type {
   App,
   AppCreateInput,
   AppDomain,
+  CronTask,
+  CronTaskInput,
   DeployStatus,
   EnvVar,
   ProvisionerError,
@@ -75,6 +77,23 @@ export const provisionerApps = {
         method: "POST",
         body: { force },
       }),
+    restart: (id: string) =>
+      p<{ ok: true; action: "restart"; status: string }>(`/apps/${id}/restart`, {
+        method: "POST",
+      }),
+    stop: (id: string) =>
+      p<{ ok: true; action: "stop"; status: string }>(`/apps/${id}/stop`, {
+        method: "POST",
+      }),
+    start: (id: string) =>
+      p<{ ok: true; action: "start"; status: string }>(`/apps/${id}/start`, {
+        method: "POST",
+      }),
+    rollback: (id: string, deployment_uuid: string) =>
+      p<DeployStatus>(`/apps/${id}/rollback`, {
+        method: "POST",
+        body: { deployment_uuid },
+      }),
     deployments: (id: string) =>
       p<DeployStatus[]>(`/apps/${id}/deployments`),
     logs: (id: string, tail = 200) =>
@@ -84,6 +103,13 @@ export const provisionerApps = {
     get: (appId: string) => p<EnvVar[]>(`/apps/${appId}/env`),
     put: (appId: string, env: EnvVar[]) =>
       p<EnvVar[]>(`/apps/${appId}/env`, { method: "PUT", body: env }),
+  },
+  cron: {
+    list: (appId: string) => p<CronTask[]>(`/apps/${appId}/cron`),
+    create: (appId: string, input: CronTaskInput) =>
+      p<CronTask>(`/apps/${appId}/cron`, { method: "POST", body: input }),
+    remove: (appId: string, taskUuid: string) =>
+      p<{ ok: true }>(`/apps/${appId}/cron/${taskUuid}`, { method: "DELETE" }),
   },
   domains: {
     list: (appId: string) => p<AppDomain[]>(`/apps/${appId}/domains`),

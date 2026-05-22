@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { statusPill } from "@/lib/utils";
@@ -10,10 +11,14 @@ type Tab = "logs" | "deployments";
 
 const TERMINAL = new Set(["success", "failed", "cancelled"]);
 
+type LifecycleAction = "restart" | "stop" | "start";
+
 export default function AppOverview({ slug, app }: { slug: string; app: App }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("logs");
   const [deploying, setDeploying] = useState(false);
+  const [lifecycleBusy, setLifecycleBusy] = useState<LifecycleAction | null>(null);
+  const [rollingBack, setRollingBack] = useState<string | null>(null);
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -97,6 +102,50 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
     }
   }
 
+  async function onLifecycle(action: LifecycleAction) {
+    setLifecycleBusy(action);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/customers/${slug}/apps/${app.id}/lifecycle/${action}`,
+        { method: "POST" },
+      );
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(data.error || `${action} failed (${res.status})`);
+      } else {
+        router.refresh();
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Network error");
+    } finally {
+      setLifecycleBusy(null);
+    }
+  }
+
+  async function onRollback(deployment_uuid: string) {
+    setRollingBack(deployment_uuid);
+    setError(null);
+    try {
+      const res = await fetch(`/api/customers/${slug}/apps/${app.id}/rollback`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ deployment_uuid }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(data.error || `Rollback failed (${res.status})`);
+      } else {
+        router.refresh();
+        fetchDeployments();
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Network error");
+    } finally {
+      setRollingBack(null);
+    }
+  }
+
   async function onDelete() {
     setError(null);
     try {
@@ -134,6 +183,35 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
           title="Rebuild without cache"
         >
           Force rebuild
+        </button>
+        <span
+          className="h-5 w-px"
+          style={{ background: "var(--color-hairline)" }}
+          aria-hidden
+        />
+        <button
+          type="button"
+          className="btn btn-ghost"
+          disabled={lifecycleBusy !== null || app.status !== "running"}
+          onClick={() => onLifecycle("restart")}
+        >
+          {lifecycleBusy === "restart" ? "Restarting…" : "Restart"}
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          disabled={lifecycleBusy !== null || app.status === "stopped"}
+          onClick={() => onLifecycle("stop")}
+        >
+          {lifecycleBusy === "stop" ? "Stopping…" : "Stop"}
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          disabled={lifecycleBusy !== null || app.status === "running"}
+          onClick={() => onLifecycle("start")}
+        >
+          {lifecycleBusy === "start" ? "Starting…" : "Start"}
         </button>
         <div className="flex-1" />
         {!deleteConfirming ? (
@@ -244,6 +322,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
                       <th className="text-left px-6 py-2 type-eyebrow">Status</th>
                       <th className="text-left px-6 py-2 type-eyebrow">Started</th>
                       <th className="text-left px-6 py-2 type-eyebrow">Finished</th>
+                      <th className="px-6 py-2"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -254,7 +333,12 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
                         style={{ borderColor: "var(--color-hairline)" }}
                       >
                         <td className="px-6 py-3 type-mono text-[12px]">
-                          {d.deployment_uuid.slice(0, 8)}…
+                          <Link
+                            href={`/dashboard/apps/${app.id}/deployments/${d.deployment_uuid}`}
+                            style={{ color: "var(--color-navy)" }}
+                          >
+                            {d.deployment_uuid.slice(0, 8)}…
+                          </Link>
                         </td>
                         <td className="px-6 py-3">
                           <span
@@ -276,6 +360,19 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
                           style={{ color: "var(--color-muted)" }}
                         >
                           {d.finished_at ? new Date(d.finished_at).toLocaleString() : "—"}
+                        </td>
+                        <td className="px-6 py-3 text-right">
+                          {d.status === "success" && (
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-sm"
+                              disabled={rollingBack !== null || app.status === "building"}
+                              onClick={() => onRollback(d.deployment_uuid)}
+                              title="Redeploy this build"
+                            >
+                              {rollingBack === d.deployment_uuid ? "Rolling back…" : "Rollback"}
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}

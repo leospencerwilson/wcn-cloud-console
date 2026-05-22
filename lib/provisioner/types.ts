@@ -56,6 +56,24 @@ export type DeployStatus = {
   log_tail?: string;
 };
 
+export type CronTask = {
+  task_uuid: string;
+  name: string;
+  command: string;
+  frequency: string;
+  container: string | null;
+  enabled: boolean;
+  last_run_at: string | null;
+  last_run_status: "success" | "failed" | null;
+};
+
+export type CronTaskInput = {
+  name: string;
+  command: string;
+  frequency: string;
+  container?: string;
+};
+
 export type ProvisionerError = {
   error: string;
   code: string;

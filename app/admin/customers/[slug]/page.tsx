@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { getCustomer } from "@/lib/db/customers";
 import { getVmByCustomerSlug } from "@/lib/db/vms";
 import { statusPill } from "@/lib/utils";
+import VmOperations from "./vm-operations";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -55,6 +56,8 @@ export default async function CustomerOverviewPage({ params }: PageProps) {
           </div>
         </Card>
       </section>
+
+      {vm && <VmOperations slug={customer.slug} />}
 
       <section>
         <div className="flex items-baseline justify-between mb-5">
