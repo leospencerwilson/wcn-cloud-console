@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Card } from "@/components/ui/card";
-import FullChart from "@/components/full-chart";
+import LiveMetricsRow from "@/components/charts/live-metrics-row";
 import type { MetricPoint, MetricsWindow } from "@/lib/provisioner/types";
 import { seriesColor, seriesLabel } from "@/lib/metrics";
 
@@ -55,10 +54,11 @@ export default function MetricsDashboard({
     fetchData();
   }, [fetchData]);
 
-  const renderable = useMemo(() => {
-    if (!data) return [];
-    const keys = Object.keys(data.series).filter((k) => enabled.has(k) || enabled.has(stripDirection(k)));
-    return keys;
+  const hasAny = useMemo(() => {
+    if (!data) return false;
+    return Object.keys(data.series).some(
+      (k) => enabled.has(k) || enabled.has(stripDirection(k)),
+    );
   }, [data, enabled]);
 
   function toggle(key: string) {
@@ -133,42 +133,19 @@ export default function MetricsDashboard({
         </p>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {renderable.length === 0 && !loading && !error && (
-          <Card>
-            <p
-              className="px-8 py-10 type-mono text-[12px]"
-              style={{ color: "var(--color-muted)" }}
-            >
-              {data ? "No series enabled." : "No data yet."}
-            </p>
-          </Card>
-        )}
-        {data &&
-          renderable.map((key) => (
-            <Card key={key}>
-              <div
-                className="px-6 py-3 border-b flex items-baseline justify-between"
-                style={{ borderColor: "var(--color-hairline)" }}
-              >
-                <span className="type-eyebrow">§ {seriesLabel(key).toUpperCase()}</span>
-                <span
-                  className="type-mono text-[11px]"
-                  style={{ color: "var(--color-muted)" }}
-                >
-                  step {data.step} · {data.series[key]?.length ?? 0} pts
-                </span>
-              </div>
-              <div className="px-4 py-4">
-                <FullChart
-                  seriesKey={key}
-                  points={data.series[key] ?? []}
-                  window={window}
-                />
-              </div>
-            </Card>
-          ))}
-      </div>
+      {data && hasAny ? (
+        <LiveMetricsRow series={data.series} enabled={enabled} />
+      ) : (
+        !loading &&
+        !error && (
+          <div
+            className="surface-card type-mono text-[12px]"
+            style={{ padding: "24px 22px", color: "var(--text-3)" }}
+          >
+            {data ? "No series enabled." : "No data yet."}
+          </div>
+        )
+      )}
     </div>
   );
 }

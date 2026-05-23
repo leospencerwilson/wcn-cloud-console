@@ -91,13 +91,8 @@ export default function HealthPanel({
       >
         <span
           aria-hidden
-          style={{
-            width: 10,
-            height: 10,
-            borderRadius: 999,
-            background: t.color,
-            boxShadow: `0 0 0 4px color-mix(in oklch, ${t.color} 18%, transparent)`,
-          }}
+          className={`heartbeat-dot${probe.state === "online" ? "" : " is-static"}`}
+          style={{ ["--hb" as string]: t.color }}
         />
         <div
           style={{
