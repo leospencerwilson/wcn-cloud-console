@@ -290,18 +290,49 @@ export default function CapacityView({
         >
           <span className="type-eyebrow">§ CLUSTER AGGREGATE</span>
         </div>
-        <div className="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-2 type-mono text-[12px]">
-            <div className="flex items-center gap-3">
-              <span style={{ color: "var(--color-muted)" }}>Total running</span>
-              <span>{report.aggregate.total_running}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span style={{ color: "var(--color-muted)" }}>Total stopped</span>
-              <span>{report.aggregate.total_stopped}</span>
-            </div>
-          </div>
+        <div
+          className="px-6 py-5 grid gap-6"
+          style={{
+            gridTemplateColumns:
+              "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr)",
+          }}
+        >
           <div>
+            <span className="type-eyebrow text-[10px]">Totals</span>
+            <table className="mt-2 w-full text-[12px]">
+              <tbody>
+                <tr>
+                  <td
+                    className="py-1 type-mono"
+                    style={{ color: "var(--color-muted)" }}
+                  >
+                    Running
+                  </td>
+                  <td className="py-1 type-mono text-right">
+                    {report.aggregate.total_running}
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    className="py-1 type-mono"
+                    style={{ color: "var(--color-muted)" }}
+                  >
+                    Stopped
+                  </td>
+                  <td className="py-1 type-mono text-right">
+                    {report.aggregate.total_stopped}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div
+            style={{
+              borderLeft: "1px solid var(--line)",
+              paddingLeft: 24,
+            }}
+          >
             <span className="type-eyebrow text-[10px]">Cluster headroom</span>
             <table className="mt-2 w-full text-[12px]">
               <tbody>
@@ -309,36 +340,66 @@ export default function CapacityView({
                   <tr key={t}>
                     <td
                       className="py-1 type-mono"
-                      style={{ width: 80, color: "var(--color-muted)" }}
+                      style={{ color: "var(--color-muted)" }}
                     >
                       {tierLabel(t)}
                     </td>
-                    <td className="py-1 type-mono">{total[t]}</td>
+                    <td className="py-1 type-mono text-right">{total[t]}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-        {report.customer_counts.length > 0 && (
+
           <div
-            className="px-6 py-4 border-t"
-            style={{ borderColor: "var(--color-hairline)" }}
+            style={{
+              borderLeft: "1px solid var(--line)",
+              paddingLeft: 24,
+            }}
           >
             <span className="type-eyebrow text-[10px]">Current customers</span>
-            <div className="mt-2 flex items-center gap-4 flex-wrap type-mono text-[12px]">
-              {report.customer_counts.map((c) => {
-                const shape = report.tier_shapes[c.tier];
-                return (
-                  <span key={c.tier} style={{ color: "var(--color-muted)" }}>
-                    {tierLabel(c.tier)}: <span style={{ color: "inherit" }}>{c.count}</span>
-                    {shape && ` (${shape.cores}c/${shape.memory_mb}MB/${shape.disk_gb}GB)`}
-                  </span>
-                );
-              })}
-            </div>
+            {report.customer_counts.length === 0 ? (
+              <p
+                className="mt-2 type-mono text-[12px]"
+                style={{ color: "var(--color-muted)" }}
+              >
+                No customers yet.
+              </p>
+            ) : (
+              <table className="mt-2 w-full text-[12px]">
+                <tbody>
+                  {report.customer_counts.map((c) => {
+                    const shape = report.tier_shapes[c.tier];
+                    return (
+                      <tr key={c.tier}>
+                        <td
+                          className="py-1 type-mono"
+                          style={{ color: "var(--color-muted)" }}
+                        >
+                          {tierLabel(c.tier)}
+                        </td>
+                        <td className="py-1 type-mono text-right">{c.count}</td>
+                        <td
+                          className="py-1 type-mono"
+                          style={{
+                            color: "var(--text-4)",
+                            textAlign: "right",
+                            paddingLeft: 12,
+                            fontSize: 11,
+                          }}
+                        >
+                          {shape
+                            ? `${shape.cores}c · ${shape.memory_mb}MB · ${shape.disk_gb}GB`
+                            : ""}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
-        )}
+        </div>
       </Card>
     </div>
   );
