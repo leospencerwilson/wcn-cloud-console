@@ -11,6 +11,7 @@ export default async function AdminLayout({
   const session = await requireWcnAdmin();
   return (
     <AppShell
+      variant="admin"
       sidebar={
         <Sidebar
           variant="admin"

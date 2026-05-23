@@ -194,6 +194,28 @@ export default function Sidebar({
         </div>
       </div>
 
+      <button
+        type="button"
+        onClick={() => window.dispatchEvent(new Event("wcn:open-palette"))}
+        className="flex items-center gap-2"
+        style={{
+          margin: "0 12px 4px",
+          padding: "7px 10px",
+          border: "1px solid var(--line)",
+          borderRadius: "var(--r-2)",
+          color: "var(--text-3)",
+          fontSize: 12,
+          background: "transparent",
+          cursor: "pointer",
+        }}
+      >
+        <span aria-hidden>⌕</span>
+        <span>Jump to…</span>
+        <span className="kbd" style={{ marginLeft: "auto" }}>
+          ⌘K
+        </span>
+      </button>
+
       <div className="overflow-y-auto" style={{ flex: 1, minHeight: 0 }}>
         {sections.map((section, si) => (
           <div key={si} style={{ marginTop: si === 0 ? 6 : 18, padding: "0 12px" }}>

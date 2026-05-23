@@ -16,6 +16,7 @@ export default async function DashboardLayout({
 
   return (
     <AppShell
+      variant="customer"
       sidebar={
         <Sidebar
           variant="customer"

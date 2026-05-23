@@ -1,10 +1,14 @@
 import type { ReactNode } from "react";
+import CommandPalette from "./command-palette";
+import TerminalDrawer from "./terminal-drawer";
 
 export default function AppShell({
+  variant,
   sidebar,
   topbar,
   children,
 }: {
+  variant: "admin" | "customer";
   sidebar: ReactNode;
   topbar?: ReactNode;
   children: ReactNode;
@@ -47,6 +51,8 @@ export default function AppShell({
           </div>
         </div>
       </main>
+      <CommandPalette variant={variant} />
+      <TerminalDrawer />
     </div>
   );
 }
