@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { statusPill } from "@/lib/utils";
+import { domainPill } from "@/lib/domain-status";
 import type { AppDomain } from "@/lib/provisioner/types";
 
 const HOSTNAME_RE =
@@ -256,12 +256,14 @@ export default function DomainsManager({
                 <div className="flex items-baseline justify-between gap-4 flex-wrap">
                   <div className="flex items-baseline gap-3 flex-wrap">
                     <span className="type-mono text-[14px]">{d.hostname}</span>
-                    <span className={statusPill(d.status)}>{d.status}</span>
-                    <span
-                      className={statusPill(d.ssl_status === "active" ? "active" : "pending")}
-                    >
-                      ssl: {d.ssl_status}
-                    </span>
+                    {(() => {
+                      const p = domainPill(d);
+                      return (
+                        <span className={p.className} title={p.hint}>
+                          {p.label}
+                        </span>
+                      );
+                    })()}
                     {d.activated_at && (
                       <span className="type-mono text-[11px]" style={{ color: "var(--color-muted)" }}>
                         active since {new Date(d.activated_at).toLocaleString()}

@@ -448,6 +448,65 @@ export type AppWebhookLookup = {
   branch: string;
 };
 
+export type SupabaseConnection = {
+  studio_url: string;
+  rest_url: string;
+  realtime_url: string;
+  storage_url: string;
+  auth_url: string;
+  connection_strings: {
+    direct_external: string;
+    pooler_session: string;
+    pooler_transaction: string;
+    direct_internal: string;
+  };
+  password_known: boolean;
+  note: string | null;
+};
+
+export type CoolifyWebhookOverview = {
+  app_id: string;
+  app_name: string;
+  app_status: string;
+  webhook:
+    | { configured: false }
+    | {
+        configured: true;
+        webhook_id: string;
+        webhook_url: string;
+        branch: string;
+        enabled: boolean;
+        last_delivery_at: string | null;
+      };
+};
+
+export type CoolifyEnvVar = {
+  key: string;
+  is_build_time: boolean;
+  is_preview: boolean;
+};
+
+export type CoolifyEnvOverview = {
+  app_id: string;
+  app_name: string;
+  env_vars: CoolifyEnvVar[];
+};
+
+export type CoolifyCronTask = {
+  uuid: string;
+  name: string;
+  command: string;
+  frequency: string;
+  container: string | null;
+};
+
+export type CoolifyCronOverview = {
+  app_id: string;
+  app_name: string;
+  tasks: CoolifyCronTask[];
+  error: string | null;
+};
+
 export type PublicStatus = {
   customer: { name: string; slug: string };
   overall: PublicOverallStatus;

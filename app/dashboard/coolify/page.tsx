@@ -1,38 +1,54 @@
-import { Card } from "@/components/ui/card";
+import { notFound } from "next/navigation";
 import { requireCustomerAdmin } from "@/lib/auth/session";
+import { getCustomer } from "@/lib/db/customers";
+import ServerCard from "./server-card";
+import WebhookOverview from "./webhook-overview";
+import EnvOverview from "./env-overview";
+import CronOverview from "./cron-overview";
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardCoolifyPage() {
   const session = await requireCustomerAdmin();
   const slug = session.appUser.customer_slug!;
+  const customer = await getCustomer(slug);
+  if (!customer) notFound();
+
   const rootDomain = process.env.ROOT_DOMAIN ?? "western-communication.com";
-  const url = `https://admin-${slug}.${rootDomain}`;
+  const upstream = `https://admin-${slug}.${rootDomain}`;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-baseline justify-between">
-        <h2 className="type-h2">— COOLIFY</h2>
-        <span className="type-meta">Apps and deployments dashboard</span>
-      </div>
-      <Card>
-        <div className="px-8 py-8 space-y-5">
+    <div className="space-y-6">
+      <div className="flex items-baseline justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="type-h2">Coolify</h2>
           <p
-            className="text-[15px] leading-[1.55]"
-            style={{ color: "var(--color-muted)" }}
+            className="mt-2 text-[13px]"
+            style={{ color: "var(--text-3)" }}
           >
-            A native Coolify experience inside this console is on its way. For
-            now, open the upstream dashboard.
+            Server health, push-to-deploy webhooks, environment, and scheduled
+            tasks across every app in this environment.
           </p>
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="type-mono text-[13px]"
-            style={{ color: "var(--color-navy)" }}
-          >
-            {url.replace(/^https?:\/\//, "")} ↗
-          </a>
         </div>
-      </Card>
+        <a
+          href={upstream}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-ghost type-mono"
+          style={{
+            padding: "6px 12px",
+            fontSize: 12,
+            textDecoration: "none",
+          }}
+        >
+          Open Coolify ↗
+        </a>
+      </div>
+
+      <ServerCard slug={slug} />
+      <WebhookOverview slug={slug} />
+      <EnvOverview slug={slug} />
+      <CronOverview slug={slug} />
     </div>
   );
 }
