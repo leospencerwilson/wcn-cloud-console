@@ -653,19 +653,25 @@ samp {
   .latency-bars {
     display: inline-flex;
     align-items: flex-end;
-    gap: 3px;
-    height: 28px;
+    gap: 4px;
+    height: 64px;
     padding: 2px 0;
   }
   .latency-bar {
     display: inline-block;
-    width: 5px;
-    min-height: 2px;
-    border-radius: 2px;
-    background: var(--bar-color, var(--ok));
+    width: 6px;
+    min-height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(
+      to top,
+      color-mix(in oklch, var(--bar-color, var(--ok)) 55%, transparent),
+      var(--bar-color, var(--ok))
+    );
     transform-origin: bottom;
-    animation: latency-bar-grow 360ms cubic-bezier(.2,.7,.2,1) both;
-    box-shadow: 0 0 6px color-mix(in oklch, var(--bar-color, var(--ok)) 45%, transparent);
+    animation: latency-bar-grow 420ms cubic-bezier(.2,.7,.2,1) both;
+    box-shadow:
+      0 0 10px color-mix(in oklch, var(--bar-color, var(--ok)) 55%, transparent),
+      0 0 2px color-mix(in oklch, var(--bar-color, var(--ok)) 80%, transparent);
   }
   .latency-bar--ok   { --bar-color: var(--ok); }
   .latency-bar--warn { --bar-color: var(--warn); }
