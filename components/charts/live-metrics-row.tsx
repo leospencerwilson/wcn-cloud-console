@@ -72,14 +72,12 @@ function PanelShell({
   sub,
   color,
   children,
-  sweepColor,
 }: {
   label: string;
   value: string;
   sub?: string;
   color: string;
   children: React.ReactNode;
-  sweepColor?: string;
 }) {
   return (
     <section
@@ -94,11 +92,6 @@ function PanelShell({
         overflow: "hidden",
       }}
     >
-      <div
-        className="chart-sweep"
-        style={{ ["--sweep" as string]: sweepColor ?? color }}
-        aria-hidden
-      />
       <div
         className="flex items-baseline justify-between gap-2"
         style={{ position: "relative", zIndex: 1 }}
@@ -227,7 +220,7 @@ function CpuArea({ points }: { points: MetricPoint[] }) {
           strokeWidth="1"
         />
         {geo && (
-          <>
+          <g className="chart-breathe">
             <path d={geo.area} fill={`url(#cpu-fill-${id})`} />
             <path
               d={geo.path}
@@ -257,7 +250,7 @@ function CpuArea({ points }: { points: MetricPoint[] }) {
               fill={color}
               className="chart-tip-core"
             />
-          </>
+          </g>
         )}
       </svg>
     </PanelShell>
@@ -325,7 +318,7 @@ function RamBand({ points }: { points: MetricPoint[] }) {
           </linearGradient>
         </defs>
         {geo && (
-          <>
+          <g className="chart-breathe">
             <path d={geo.area} fill={`url(#ram-fill-${id})`} />
             <line
               x1="0"
@@ -364,7 +357,7 @@ function RamBand({ points }: { points: MetricPoint[] }) {
               fill={color}
               className="chart-tip-core"
             />
-          </>
+          </g>
         )}
       </svg>
     </PanelShell>
@@ -416,7 +409,6 @@ function DiskLiquid({ points }: { points: MetricPoint[] }) {
       value={formatPercent(pct)}
       sub="utilised"
       color={tone}
-      sweepColor={tone}
     >
       <svg
         viewBox={`0 0 ${W} ${H}`}
@@ -577,7 +569,6 @@ function NetMirror({
       value={formatRate(lastIn)}
       sub={`↓ in · ↑ ${formatRate(lastOut)}`}
       color={colorIn}
-      sweepColor={colorIn}
     >
       <svg
         viewBox={`0 0 ${W} ${H}`}
@@ -602,6 +593,7 @@ function NetMirror({
           stroke="var(--line)"
           strokeWidth="1"
         />
+        <g className="chart-breathe-mirror">
         {upGeo && (
           <>
             <path d={upGeo.area} fill={`url(#netin-${id})`} />
@@ -650,6 +642,7 @@ function NetMirror({
             />
           </>
         )}
+        </g>
       </svg>
     </PanelShell>
   );

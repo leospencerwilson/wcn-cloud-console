@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   BackupFrequency,
   BackupPolicy,
@@ -13,8 +12,22 @@ const FREQUENCIES: { value: BackupFrequency; label: string }[] = [
   { value: "weekly", label: "Weekly" },
 ];
 
+const RETENTION_TICKS = [1, 7, 30, 90, 365];
+
 function hhmm(time: string): string {
   return time.slice(0, 5);
+}
+
+function timeToSlot(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return Math.max(0, Math.min(287, h * 12 + Math.floor(m / 5)));
+}
+
+function slotToTime(slot: number): string {
+  const v = Math.max(0, Math.min(287, slot));
+  const h = Math.floor(v / 12);
+  const m = (v % 12) * 5;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 function relativePast(iso: string | null): string {
@@ -126,139 +139,228 @@ export default function BackupPolicyForm({ slug }: { slug: string }) {
     }
   }
 
+  const timeSlot = useMemo(() => timeToSlot(timeUtc), [timeUtc]);
+  const timeSlotPct = (timeSlot / 287) * 100;
+  const retentionPct = ((retention - 1) / 364) * 100;
+  const timeFieldDisabled = !enabled || frequency === "hourly";
+
   return (
-    <Card>
+    <section
+      className="surface-card"
+      style={{ padding: 0, overflow: "hidden" }}
+    >
       <div
-        className="px-6 py-3 border-b"
-        style={{ borderColor: "var(--color-hairline)" }}
+        className="flex items-center justify-between gap-3"
+        style={{
+          padding: "14px 22px",
+          borderBottom: "1px solid var(--line)",
+        }}
       >
-        <span className="type-eyebrow">§ AUTOMATED BACKUPS</span>
+        <span
+          className="type-mono"
+          style={{
+            fontSize: 10,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--text-4)",
+          }}
+        >
+          § Automated backups
+        </span>
+        {policy && (
+          <span
+            className="type-mono"
+            style={{ fontSize: 11, color: "var(--text-3)" }}
+          >
+            last run · {relativePast(policy.last_run_at)}
+          </span>
+        )}
       </div>
-      <form onSubmit={onSave} className="px-6 py-5 space-y-6">
+
+      <form onSubmit={onSave} style={{ padding: "22px 22px 20px" }}>
         {loading && (
-          <p className="type-mono text-[12px]" style={{ color: "var(--color-muted)" }}>
+          <p
+            className="type-mono"
+            style={{ fontSize: 12, color: "var(--text-3)" }}
+          >
             Loading…
           </p>
         )}
 
-        <fieldset className="flex items-center gap-6">
-          <legend className="type-eyebrow text-[10px] mb-2">Schedule</legend>
-          <label className="flex items-center gap-2 type-mono text-[13px]">
+        {/* Schedule toggle row */}
+        <div className="ios-row">
+          <div>
+            <div className="ios-row-title">Automatic backups</div>
+            <div className="ios-row-sub">
+              Run snapshots on a schedule and ship them to B2.
+            </div>
+          </div>
+          <label className="ios-toggle" aria-label="Enable automatic backups">
             <input
-              type="radio"
+              type="checkbox"
               checked={enabled}
-              onChange={() => setEnabled(true)}
+              onChange={(e) => setEnabled(e.target.checked)}
             />
-            Enabled
-          </label>
-          <label className="flex items-center gap-2 type-mono text-[13px]">
-            <input
-              type="radio"
-              checked={!enabled}
-              onChange={() => setEnabled(false)}
-            />
-            Disabled
-          </label>
-        </fieldset>
-
-        <fieldset
-          className={`flex items-center gap-6 ${!enabled ? "opacity-60" : ""}`}
-        >
-          <legend className="type-eyebrow text-[10px] mb-2">Frequency</legend>
-          {FREQUENCIES.map((f) => (
-            <label
-              key={f.value}
-              className="flex items-center gap-2 type-mono text-[13px]"
-            >
-              <input
-                type="radio"
-                name="frequency"
-                checked={frequency === f.value}
-                onChange={() => setFrequency(f.value)}
-                disabled={!enabled}
-              />
-              {f.label}
-            </label>
-          ))}
-        </fieldset>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <label className="space-y-1">
-            <span className="type-eyebrow text-[10px]">
-              Run at (UTC) {frequency === "weekly" ? "· Sundays" : ""}
+            <span className="ios-toggle-track">
+              <span className="ios-toggle-thumb" />
             </span>
-            <input
-              type="time"
-              value={timeUtc}
-              onChange={(e) => setTimeUtc(e.target.value)}
-              disabled={!enabled || frequency === "hourly"}
-              className="w-full type-mono text-[13px] px-3 py-2"
-              style={{
-                background: "transparent",
-                border: "1px solid var(--color-hairline)",
-                borderRadius: 2,
-              }}
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="type-eyebrow text-[10px]">Keep for (days)</span>
-            <input
-              type="number"
-              min={1}
-              max={365}
-              value={retention}
-              onChange={(e) => setRetention(Math.max(1, Math.min(365, Number(e.target.value) || 1)))}
-              disabled={!enabled}
-              className="w-full type-mono text-[13px] px-3 py-2"
-              style={{
-                background: "transparent",
-                border: "1px solid var(--color-hairline)",
-                borderRadius: 2,
-              }}
-            />
           </label>
         </div>
 
+        <div className="ios-divider" />
+
+        {/* Frequency segmented control */}
+        <div className={`ios-field ${!enabled ? "is-disabled" : ""}`}>
+          <div className="ios-field-label-row">
+            <span className="ios-field-label">Frequency</span>
+            <span className="ios-field-value">
+              {FREQUENCIES.find((f) => f.value === frequency)?.label}
+            </span>
+          </div>
+          <div className="ios-segment" role="tablist" aria-label="Frequency">
+            {FREQUENCIES.map((f) => (
+              <button
+                type="button"
+                key={f.value}
+                role="tab"
+                aria-selected={frequency === f.value}
+                className={`ios-segment-item${
+                  frequency === f.value ? " is-active" : ""
+                }`}
+                disabled={!enabled}
+                onClick={() => setFrequency(f.value)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="ios-divider" />
+
+        {/* Run at slider */}
+        <div className={`ios-field ${timeFieldDisabled ? "is-disabled" : ""}`}>
+          <div className="ios-field-label-row">
+            <span className="ios-field-label">
+              Run at (UTC)
+              {frequency === "weekly" ? " · Sundays" : ""}
+            </span>
+            <span className="ios-field-value ios-field-value--strong">
+              {timeUtc}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={287}
+            step={1}
+            value={timeSlot}
+            onChange={(e) => setTimeUtc(slotToTime(Number(e.target.value)))}
+            className="ios-slider"
+            style={{ ["--pct" as string]: `${timeSlotPct}%` }}
+            disabled={timeFieldDisabled}
+            aria-label="Run at"
+          />
+          <div className="ios-slider-ticks">
+            <span>00:00</span>
+            <span>06:00</span>
+            <span>12:00</span>
+            <span>18:00</span>
+            <span>23:55</span>
+          </div>
+        </div>
+
+        <div className="ios-divider" />
+
+        {/* Keep for slider */}
+        <div className={`ios-field ${!enabled ? "is-disabled" : ""}`}>
+          <div className="ios-field-label-row">
+            <span className="ios-field-label">Keep for</span>
+            <span className="ios-field-value ios-field-value--strong">
+              {retention} {retention === 1 ? "day" : "days"}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={365}
+            value={retention}
+            onChange={(e) => setRetention(Number(e.target.value))}
+            className="ios-slider"
+            style={{ ["--pct" as string]: `${retentionPct}%` }}
+            disabled={!enabled}
+            aria-label="Retention in days"
+          />
+          <div className="ios-slider-ticks">
+            {RETENTION_TICKS.map((d) => (
+              <span key={d}>{d}</span>
+            ))}
+          </div>
+        </div>
+
         {policy && (
-          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 type-mono text-[12px]">
-            <div className="flex items-center gap-3">
-              <dt className="type-eyebrow">— LAST RUN</dt>
-              <dd style={{ color: "var(--color-muted)" }}>
-                {relativePast(policy.last_run_at)}
-              </dd>
-            </div>
-            <div className="flex items-center gap-3">
-              <dt className="type-eyebrow">— NEXT SCHEDULED</dt>
-              <dd style={{ color: "var(--color-muted)" }}>
-                {nextRunLabel({
-                  ...policy,
-                  enabled,
-                  frequency: enabled ? frequency : "disabled",
-                  time_utc: `${timeUtc}:00`,
-                  retention_days: retention,
-                })}
-              </dd>
-            </div>
-          </dl>
+          <div
+            className="type-mono"
+            style={{
+              marginTop: 20,
+              padding: "10px 14px",
+              borderRadius: 10,
+              background: "color-mix(in oklch, var(--surface) 92%, transparent)",
+              border: "1px solid var(--line)",
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: 11.5,
+              color: "var(--text-3)",
+            }}
+          >
+            <span>next scheduled</span>
+            <span style={{ color: "var(--text)" }}>
+              {nextRunLabel({
+                ...policy,
+                enabled,
+                frequency: enabled ? frequency : "disabled",
+                time_utc: `${timeUtc}:00`,
+                retention_days: retention,
+              })}
+            </span>
+          </div>
         )}
 
         {error && (
-          <p className="type-mono text-[12px]" style={{ color: "var(--color-danger, #b03020)" }}>
+          <p
+            className="type-mono"
+            style={{
+              fontSize: 12,
+              color: "var(--crit)",
+              marginTop: 14,
+            }}
+          >
             {error}
           </p>
         )}
         {okMsg && (
-          <p className="type-mono text-[12px]" style={{ color: "var(--color-success, #2f6b3a)" }}>
+          <p
+            className="type-mono"
+            style={{
+              fontSize: 12,
+              color: "var(--ok)",
+              marginTop: 14,
+            }}
+          >
             {okMsg}
           </p>
         )}
 
-        <div className="flex justify-end">
-          <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+        <div className="flex justify-end" style={{ marginTop: 20 }}>
+          <button
+            type="submit"
+            className="btn btn-primary btn-sm"
+            disabled={saving}
+          >
             {saving ? "Saving…" : "Save changes"}
           </button>
         </div>
       </form>
-    </Card>
+    </section>
   );
 }

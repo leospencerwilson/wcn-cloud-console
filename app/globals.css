@@ -627,26 +627,275 @@ samp {
   .chart-tip-core { animation: chart-tip-pulse 1.6s ease-in-out infinite; }
   .chart-tip-halo { animation: chart-tip-ring 1.6s ease-out infinite; }
 
-  @keyframes chart-sweep {
-    0% { transform: translateX(-30%); opacity: 0; }
-    20% { opacity: 0.85; }
-    80% { opacity: 0.6; }
-    100% { transform: translateX(130%); opacity: 0; }
+  @keyframes chart-breathe {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.035); }
   }
-  .chart-sweep {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 22%;
+  .chart-breathe {
+    transform-box: fill-box;
+    transform-origin: center bottom;
+    animation: chart-breathe 3.8s ease-in-out infinite;
+    will-change: transform;
+  }
+  .chart-breathe-mirror {
+    transform-box: fill-box;
+    transform-origin: center center;
+    animation: chart-breathe 3.8s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  /* ─────────── Latency bars ─────────── */
+
+  @keyframes latency-bar-grow {
+    from { transform: scaleY(0); opacity: 0; }
+    to   { transform: scaleY(1); opacity: 1; }
+  }
+  .latency-bars {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 28px;
+    padding: 2px 0;
+  }
+  .latency-bar {
+    display: inline-block;
+    width: 5px;
+    min-height: 2px;
+    border-radius: 2px;
+    background: var(--bar-color, var(--ok));
+    transform-origin: bottom;
+    animation: latency-bar-grow 360ms cubic-bezier(.2,.7,.2,1) both;
+    box-shadow: 0 0 6px color-mix(in oklch, var(--bar-color, var(--ok)) 45%, transparent);
+  }
+  .latency-bar--ok   { --bar-color: var(--ok); }
+  .latency-bar--warn { --bar-color: var(--warn); }
+  .latency-bar--crit { --bar-color: var(--crit); }
+  .latency-bar.is-idle {
+    height: 3px !important;
+    background: var(--line);
+    box-shadow: none;
+    animation: none;
+    opacity: 0.6;
+  }
+
+  /* ─────────── iOS-style form controls ─────────── */
+
+  .ios-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 4px 0 18px;
+  }
+  .ios-row-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .ios-row-sub {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-3);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .ios-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 0 -22px 22px;
+  }
+
+  .ios-field {
+    transition: opacity 200ms ease;
+    padding-bottom: 22px;
+  }
+  .ios-field.is-disabled {
+    opacity: 0.45;
     pointer-events: none;
+  }
+  .ios-field-label-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .ios-field-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-4);
+  }
+  .ios-field-value {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-3);
+  }
+  .ios-field-value--strong {
+    font-family: var(--font-display, var(--font-sans));
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* iOS toggle switch */
+  .ios-toggle {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 32px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .ios-toggle input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
+  }
+  .ios-toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: color-mix(in oklch, var(--text-4) 30%, transparent);
+    transition: background 220ms ease;
+  }
+  .ios-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.35),
+      0 3px 8px rgba(0, 0, 0, 0.25);
+    transition: transform 260ms cubic-bezier(.2,.7,.2,1);
+  }
+  .ios-toggle input:checked ~ .ios-toggle-track {
+    background: var(--ok);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--ok) 60%, transparent);
+  }
+  .ios-toggle input:checked ~ .ios-toggle-track .ios-toggle-thumb {
+    transform: translateX(20px);
+  }
+  .ios-toggle input:focus-visible ~ .ios-toggle-track {
+    outline: 2px solid color-mix(in oklch, var(--brand) 60%, transparent);
+    outline-offset: 2px;
+  }
+
+  /* iOS segmented control */
+  .ios-segment {
+    display: flex;
+    background: color-mix(in oklch, var(--text-4) 16%, transparent);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+    width: 100%;
+  }
+  .ios-segment-item {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition:
+      color 180ms ease,
+      background 220ms cubic-bezier(.2,.7,.2,1),
+      box-shadow 220ms ease,
+      transform 120ms ease;
+  }
+  .ios-segment-item:hover:not(.is-active):not(:disabled) {
+    color: var(--text);
+  }
+  .ios-segment-item:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+  .ios-segment-item.is-active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.35),
+      0 0 0 0.5px color-mix(in oklch, #ffffff 14%, transparent);
+  }
+  .ios-segment-item:disabled {
+    cursor: not-allowed;
+  }
+
+  /* iOS slider */
+  .ios-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
     background: linear-gradient(
-      90deg,
-      transparent 0%,
-      color-mix(in oklch, var(--sweep, var(--brand)) 16%, transparent) 50%,
-      transparent 100%
+      to right,
+      var(--ok) 0%,
+      var(--ok) var(--pct, 50%),
+      color-mix(in oklch, var(--text-4) 22%, transparent) var(--pct, 50%),
+      color-mix(in oklch, var(--text-4) 22%, transparent) 100%
     );
-    animation: chart-sweep 5.5s linear infinite;
-    mix-blend-mode: screen;
+    outline: none;
+    cursor: pointer;
+    margin: 4px 0 10px;
+  }
+  .ios-slider:disabled { cursor: not-allowed; }
+  .ios-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.4),
+      0 4px 10px rgba(0, 0, 0, 0.25);
+    transition: transform 140ms ease;
+    border: 0;
+  }
+  .ios-slider:active::-webkit-slider-thumb {
+    transform: scale(1.08);
+  }
+  .ios-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.4),
+      0 4px 10px rgba(0, 0, 0, 0.25);
+  }
+  .ios-slider:focus-visible::-webkit-slider-thumb {
+    box-shadow:
+      0 0 0 4px color-mix(in oklch, var(--brand) 30%, transparent),
+      0 1px 2px rgba(0, 0, 0, 0.4),
+      0 4px 10px rgba(0, 0, 0, 0.25);
+  }
+  .ios-slider-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-4);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
   }
 
   @keyframes liquid-wave {

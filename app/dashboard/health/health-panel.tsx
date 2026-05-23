@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Probe = {
   state: "online" | "offline" | "rebooting" | "checking";
@@ -16,6 +16,9 @@ const INITIAL: Probe = {
   checked_at: null,
 };
 
+const BAR_SLOTS = 14;
+const LATENCY_MAX_MS = 400;
+
 function tone(state: Probe["state"]) {
   if (state === "online")
     return { color: "var(--ok)", label: "Online", pill: "pill-ok" };
@@ -26,14 +29,11 @@ function tone(state: Probe["state"]) {
   return { color: "var(--text-3)", label: "Checking…", pill: "pill-muted" };
 }
 
-function relTime(iso: string | null): string {
-  if (!iso) return "—";
-  const t = new Date(iso).getTime();
-  const s = Math.max(0, Math.round((Date.now() - t) / 1000));
-  if (s < 5) return "just now";
-  if (s < 60) return `${s}s ago`;
-  const m = Math.floor(s / 60);
-  return `${m}m ago`;
+function latencyTone(ms: number | null): "ok" | "warn" | "crit" {
+  if (ms == null) return "crit";
+  if (ms < 100) return "ok";
+  if (ms < 300) return "warn";
+  return "crit";
 }
 
 export default function HealthPanel({
@@ -45,6 +45,10 @@ export default function HealthPanel({
 }) {
   const healthz = `https://${apex}/healthz`;
   const [probe, setProbe] = useState<Probe>(INITIAL);
+  const [samples, setSamples] = useState<
+    { id: number; ms: number | null }[]
+  >([]);
+  const lastChecked = useRef<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -74,6 +78,15 @@ export default function HealthPanel({
       clearInterval(id);
     };
   }, [slug]);
+
+  useEffect(() => {
+    if (!probe.checked_at || probe.checked_at === lastChecked.current) return;
+    lastChecked.current = probe.checked_at;
+    setSamples((prev) => {
+      const next = [...prev, { id: Date.now(), ms: probe.latency_ms }];
+      return next.length > BAR_SLOTS ? next.slice(-BAR_SLOTS) : next;
+    });
+  }, [probe.checked_at, probe.latency_ms]);
 
   const t = tone(probe.state);
 
@@ -106,16 +119,6 @@ export default function HealthPanel({
         <span className={t.pill} style={{ marginLeft: 4 }}>
           {probe.status != null ? `HTTP ${probe.status}` : "—"}
         </span>
-        <span
-          className="type-mono"
-          style={{
-            marginLeft: "auto",
-            fontSize: 11,
-            color: "var(--text-3)",
-          }}
-        >
-          polled every 5s · {relTime(probe.checked_at)}
-        </span>
       </div>
       <dl
         className="grid"
@@ -142,12 +145,22 @@ export default function HealthPanel({
           </a>
         </Field>
         <Field label="Latency">
-          <span
-            className="type-mono"
-            style={{ fontSize: 13, color: "var(--text)" }}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 6,
+              alignItems: "flex-start",
+            }}
           >
-            {probe.latency_ms != null ? `${probe.latency_ms} ms` : "—"}
-          </span>
+            <LatencyBars samples={samples} />
+            <span
+              className="type-mono"
+              style={{ fontSize: 12, color: "var(--text-3)" }}
+            >
+              {probe.latency_ms != null ? `${probe.latency_ms} ms` : "—"}
+            </span>
+          </div>
         </Field>
         <Field label="Last check">
           <span
@@ -161,6 +174,40 @@ export default function HealthPanel({
         </Field>
       </dl>
     </section>
+  );
+}
+
+function LatencyBars({
+  samples,
+}: {
+  samples: { id: number; ms: number | null }[];
+}) {
+  const offset = BAR_SLOTS - samples.length;
+  return (
+    <div
+      className="latency-bars"
+      role="img"
+      aria-label={`Recent latency, last ${samples.length} probes`}
+    >
+      {Array.from({ length: BAR_SLOTS }, (_, i) => {
+        const sample = samples[i - offset];
+        if (!sample) {
+          return <span key={`idle-${i}`} className="latency-bar is-idle" />;
+        }
+        const t = latencyTone(sample.ms);
+        const ratio =
+          sample.ms == null
+            ? 0.55
+            : Math.min(1, Math.max(0.05, sample.ms / LATENCY_MAX_MS));
+        return (
+          <span
+            key={sample.id}
+            className={`latency-bar latency-bar--${t}`}
+            style={{ height: `${(ratio * 100).toFixed(0)}%` }}
+          />
+        );
+      })}
+    </div>
   );
 }
 
