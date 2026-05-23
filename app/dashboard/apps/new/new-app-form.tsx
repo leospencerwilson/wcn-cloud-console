@@ -13,6 +13,15 @@ type BuildPack = NonNullable<AppCreateInput["build_pack"]>;
 
 const NAME_RE = /^[a-z0-9][a-z0-9-]{0,62}$/;
 
+function sanitizeName(raw: string): string {
+  return raw
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/^-+/, "")
+    .slice(0, 63);
+}
+
 export default function NewAppForm({ slug }: { slug: string }) {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -69,8 +78,12 @@ export default function NewAppForm({ slug }: { slug: string }) {
         setSubmitting(false);
         return;
       }
-      const created = (await res.json()) as App;
-      router.push(`/dashboard/apps/${created.id}`);
+      const created = (await res.json().catch(() => null)) as App | null;
+      if (!created || !created.id) {
+        router.push(`/dashboard/apps`);
+      } else {
+        router.push(`/dashboard/apps/${created.id}`);
+      }
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
@@ -98,7 +111,7 @@ export default function NewAppForm({ slug }: { slug: string }) {
             <Input
               id="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(sanitizeName(e.target.value))}
               placeholder="my-app"
               autoComplete="off"
               required

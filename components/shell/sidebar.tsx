@@ -43,6 +43,7 @@ const CUSTOMER_SECTIONS: NavSection[] = [
         match: (p) => p === "/dashboard",
       },
       { label: "Apps", href: "/dashboard/apps" },
+      { label: "Environment", href: "/dashboard/environment" },
       { label: "Domains", href: "/dashboard/domains" },
       { label: "Coolify", href: "/dashboard/coolify" },
       { label: "Supabase", href: "/dashboard/supabase" },
