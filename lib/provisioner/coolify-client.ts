@@ -35,7 +35,17 @@ async function call<T>(path: string): Promise<T> {
       err.error || res.statusText,
     );
   }
-  return (await res.json()) as T;
+  const text = await res.text();
+  if (!text) return undefined as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new ProvisionerHttpError(
+      res.status,
+      "bad_upstream_body",
+      `Upstream returned non-JSON body (${res.status})`,
+    );
+  }
 }
 
 export const provisionerCoolify = {
