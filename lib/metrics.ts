@@ -31,18 +31,18 @@ export function seriesLabel(key: string): string {
 export function seriesColor(key: string): string {
   switch (key) {
     case "cpu":
-      return "#1f3a5f";
+      return "oklch(0.74 0.19 240)";
     case "ram":
     case "ram_pct":
-      return "#7a4a2d";
+      return "oklch(0.78 0.17 55)";
     case "disk":
-      return "#3a5a3a";
+      return "oklch(0.78 0.20 150)";
     case "net_in":
-      return "#5a3a78";
+      return "oklch(0.74 0.21 295)";
     case "net_out":
-      return "#a8662d";
+      return "oklch(0.76 0.20 25)";
     default:
-      return "#444";
+      return "oklch(0.78 0.12 260)";
   }
 }
 
