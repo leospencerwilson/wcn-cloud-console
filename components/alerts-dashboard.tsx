@@ -123,9 +123,10 @@ export default function AlertsDashboard({
       <div
         className="flex items-center justify-between flex-wrap gap-4 px-6 py-4"
         style={{
-          background: "var(--color-ivory)",
-          border: "1px solid var(--color-hairline)",
-          borderRadius: 2,
+          background: "var(--surface)",
+          border: "1px solid var(--line)",
+          borderRadius: "var(--r-2)",
+          color: "var(--text-2)",
         }}
       >
         <div className="flex items-center gap-6 flex-wrap">
