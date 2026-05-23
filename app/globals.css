@@ -909,6 +909,20 @@ samp {
     100% { background-position: -200% 0; }
   }
 
+  .backup-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px 28px;
+    transition: opacity 200ms ease;
+  }
+  .backup-field.is-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  @media (max-width: 640px) {
+    .backup-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+
   /* ─────────── Sticky dirty-state banner ─────────── */
 
   .dirty-banner {

@@ -150,34 +150,53 @@ export default function BackupPolicyForm({ slug }: { slug: string }) {
       style={{ padding: 0, overflow: "hidden" }}
     >
       <div
-        className="flex items-center justify-between gap-3"
+        className="flex items-center justify-between gap-4 flex-wrap"
         style={{
-          padding: "14px 22px",
+          padding: "12px 22px",
           borderBottom: "1px solid var(--line)",
         }}
       >
-        <span
-          className="type-mono"
-          style={{
-            fontSize: 10,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "var(--text-4)",
-          }}
-        >
-          § Automated backups
-        </span>
-        {policy && (
+        <div className="flex items-center gap-3 flex-wrap">
           <span
             className="type-mono"
-            style={{ fontSize: 11, color: "var(--text-3)" }}
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--text-4)",
+            }}
           >
-            last run · {relativePast(policy.last_run_at)}
+            § Automated backups
           </span>
-        )}
+          {policy && (
+            <span
+              className="type-mono"
+              style={{ fontSize: 11, color: "var(--text-3)" }}
+            >
+              last run · {relativePast(policy.last_run_at)}
+            </span>
+          )}
+        </div>
+        <label className="ios-toggle" aria-label="Enable automatic backups">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
+          />
+          <span className="ios-toggle-track">
+            <span className="ios-toggle-thumb" />
+          </span>
+        </label>
       </div>
 
-      <form onSubmit={onSave} style={{ padding: "22px 22px 20px" }}>
+      <form
+        onSubmit={onSave}
+        style={{
+          padding: "16px 22px",
+          display: "grid",
+          gap: 16,
+        }}
+      >
         {loading && (
           <p
             className="type-mono"
@@ -187,178 +206,154 @@ export default function BackupPolicyForm({ slug }: { slug: string }) {
           </p>
         )}
 
-        {/* Schedule toggle row */}
-        <div className="ios-row">
-          <div>
-            <div className="ios-row-title">Automatic backups</div>
-            <div className="ios-row-sub">
-              Run snapshots on a schedule and ship them to B2.
+        {/* Frequency + Run at side by side; Keep for spans both columns below */}
+        <div
+          className="backup-grid"
+          style={{ opacity: enabled ? 1 : 0.45, pointerEvents: enabled ? "auto" : "none" }}
+        >
+          <div className="backup-field">
+            <div className="ios-field-label-row" style={{ marginBottom: 8 }}>
+              <span className="ios-field-label">Frequency</span>
+              <span className="ios-field-value">
+                {FREQUENCIES.find((f) => f.value === frequency)?.label}
+              </span>
+            </div>
+            <div className="ios-segment" role="tablist" aria-label="Frequency">
+              {FREQUENCIES.map((f) => (
+                <button
+                  type="button"
+                  key={f.value}
+                  role="tab"
+                  aria-selected={frequency === f.value}
+                  className={`ios-segment-item${
+                    frequency === f.value ? " is-active" : ""
+                  }`}
+                  disabled={!enabled}
+                  onClick={() => setFrequency(f.value)}
+                >
+                  {f.label}
+                </button>
+              ))}
             </div>
           </div>
-          <label className="ios-toggle" aria-label="Enable automatic backups">
+
+          <div
+            className={`backup-field${frequency === "hourly" ? " is-disabled" : ""}`}
+          >
+            <div className="ios-field-label-row" style={{ marginBottom: 8 }}>
+              <span className="ios-field-label">
+                Run at (UTC)
+                {frequency === "weekly" ? " · Sundays" : ""}
+              </span>
+              <span className="ios-field-value ios-field-value--strong">
+                {timeUtc}
+              </span>
+            </div>
             <input
-              type="checkbox"
-              checked={enabled}
-              onChange={(e) => setEnabled(e.target.checked)}
+              type="range"
+              min={0}
+              max={287}
+              step={1}
+              value={timeSlot}
+              onChange={(e) => setTimeUtc(slotToTime(Number(e.target.value)))}
+              className="ios-slider"
+              style={{ ["--pct" as string]: `${timeSlotPct}%`, margin: "2px 0 4px" }}
+              disabled={timeFieldDisabled}
+              aria-label="Run at"
             />
-            <span className="ios-toggle-track">
-              <span className="ios-toggle-thumb" />
-            </span>
-          </label>
-        </div>
-
-        <div className="ios-divider" />
-
-        {/* Frequency segmented control */}
-        <div className={`ios-field ${!enabled ? "is-disabled" : ""}`}>
-          <div className="ios-field-label-row">
-            <span className="ios-field-label">Frequency</span>
-            <span className="ios-field-value">
-              {FREQUENCIES.find((f) => f.value === frequency)?.label}
-            </span>
+            <div className="ios-slider-ticks">
+              <span>00</span>
+              <span>06</span>
+              <span>12</span>
+              <span>18</span>
+              <span>24</span>
+            </div>
           </div>
-          <div className="ios-segment" role="tablist" aria-label="Frequency">
-            {FREQUENCIES.map((f) => (
-              <button
-                type="button"
-                key={f.value}
-                role="tab"
-                aria-selected={frequency === f.value}
-                className={`ios-segment-item${
-                  frequency === f.value ? " is-active" : ""
-                }`}
-                disabled={!enabled}
-                onClick={() => setFrequency(f.value)}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
 
-        <div className="ios-divider" />
-
-        {/* Run at slider */}
-        <div className={`ios-field ${timeFieldDisabled ? "is-disabled" : ""}`}>
-          <div className="ios-field-label-row">
-            <span className="ios-field-label">
-              Run at (UTC)
-              {frequency === "weekly" ? " · Sundays" : ""}
-            </span>
-            <span className="ios-field-value ios-field-value--strong">
-              {timeUtc}
-            </span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={287}
-            step={1}
-            value={timeSlot}
-            onChange={(e) => setTimeUtc(slotToTime(Number(e.target.value)))}
-            className="ios-slider"
-            style={{ ["--pct" as string]: `${timeSlotPct}%` }}
-            disabled={timeFieldDisabled}
-            aria-label="Run at"
-          />
-          <div className="ios-slider-ticks">
-            <span>00:00</span>
-            <span>06:00</span>
-            <span>12:00</span>
-            <span>18:00</span>
-            <span>23:55</span>
+          <div
+            className="backup-field"
+            style={{ gridColumn: "1 / -1" }}
+          >
+            <div className="ios-field-label-row" style={{ marginBottom: 8 }}>
+              <span className="ios-field-label">Keep for</span>
+              <span className="ios-field-value ios-field-value--strong">
+                {retention} {retention === 1 ? "day" : "days"}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={365}
+              value={retention}
+              onChange={(e) => setRetention(Number(e.target.value))}
+              className="ios-slider"
+              style={{ ["--pct" as string]: `${retentionPct}%`, margin: "2px 0 4px" }}
+              disabled={!enabled}
+              aria-label="Retention in days"
+            />
+            <div className="ios-slider-ticks">
+              {RETENTION_TICKS.map((d) => (
+                <span key={d}>{d}</span>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="ios-divider" />
-
-        {/* Keep for slider */}
-        <div className={`ios-field ${!enabled ? "is-disabled" : ""}`}>
-          <div className="ios-field-label-row">
-            <span className="ios-field-label">Keep for</span>
-            <span className="ios-field-value ios-field-value--strong">
-              {retention} {retention === 1 ? "day" : "days"}
-            </span>
-          </div>
-          <input
-            type="range"
-            min={1}
-            max={365}
-            value={retention}
-            onChange={(e) => setRetention(Number(e.target.value))}
-            className="ios-slider"
-            style={{ ["--pct" as string]: `${retentionPct}%` }}
-            disabled={!enabled}
-            aria-label="Retention in days"
-          />
-          <div className="ios-slider-ticks">
-            {RETENTION_TICKS.map((d) => (
-              <span key={d}>{d}</span>
-            ))}
-          </div>
-        </div>
-
-        {policy && (
+        <div
+          className="flex items-center justify-between gap-3 flex-wrap"
+          style={{
+            paddingTop: 12,
+            borderTop: "1px solid var(--line)",
+          }}
+        >
           <div
             className="type-mono"
             style={{
-              marginTop: 20,
-              padding: "10px 14px",
-              borderRadius: 10,
-              background: "color-mix(in oklch, var(--surface) 92%, transparent)",
-              border: "1px solid var(--line)",
               display: "flex",
-              justifyContent: "space-between",
+              gap: 8,
               fontSize: 11.5,
               color: "var(--text-3)",
+              alignItems: "baseline",
             }}
           >
             <span>next scheduled</span>
             <span style={{ color: "var(--text)" }}>
-              {nextRunLabel({
-                ...policy,
-                enabled,
-                frequency: enabled ? frequency : "disabled",
-                time_utc: `${timeUtc}:00`,
-                retention_days: retention,
-              })}
+              {policy
+                ? nextRunLabel({
+                    ...policy,
+                    enabled,
+                    frequency: enabled ? frequency : "disabled",
+                    time_utc: `${timeUtc}:00`,
+                    retention_days: retention,
+                  })
+                : "—"}
             </span>
           </div>
-        )}
-
-        {error && (
-          <p
-            className="type-mono"
-            style={{
-              fontSize: 12,
-              color: "var(--crit)",
-              marginTop: 14,
-            }}
-          >
-            {error}
-          </p>
-        )}
-        {okMsg && (
-          <p
-            className="type-mono"
-            style={{
-              fontSize: 12,
-              color: "var(--ok)",
-              marginTop: 14,
-            }}
-          >
-            {okMsg}
-          </p>
-        )}
-
-        <div className="flex justify-end" style={{ marginTop: 20 }}>
-          <button
-            type="submit"
-            className="btn btn-primary btn-sm"
-            disabled={saving}
-          >
-            {saving ? "Saving…" : "Save changes"}
-          </button>
+          <div className="flex items-center gap-3 flex-wrap">
+            {error && (
+              <span
+                className="type-mono"
+                style={{ fontSize: 11.5, color: "var(--crit)" }}
+              >
+                {error}
+              </span>
+            )}
+            {okMsg && (
+              <span
+                className="type-mono"
+                style={{ fontSize: 11.5, color: "var(--ok)" }}
+              >
+                {okMsg}
+              </span>
+            )}
+            <button
+              type="submit"
+              className="btn btn-primary btn-sm"
+              disabled={saving}
+            >
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+          </div>
         </div>
       </form>
     </section>
