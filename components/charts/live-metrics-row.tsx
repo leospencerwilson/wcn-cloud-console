@@ -31,7 +31,7 @@ export default function LiveMetricsRow({
   const panels = [
     showCpu && <CpuArea key={`cpu-${tick}`} points={series.cpu ?? []} />,
     showRam && <RamBand key={`ram-${tick}`} points={series.ram ?? []} />,
-    showDisk && <DiskLiquid key={`disk-${tick}`} points={series.disk ?? []} />,
+    showDisk && <DiskBar key={`disk-${tick}`} points={series.disk ?? []} />,
     showNet && (
       <NetMirror
         key={`net-${tick}`}
@@ -75,7 +75,7 @@ function PanelShell({
 }: {
   label: string;
   value: string;
-  sub?: string;
+  sub?: React.ReactNode;
   color: string;
   children: React.ReactNode;
 }) {
@@ -364,44 +364,15 @@ function RamBand({ points }: { points: MetricPoint[] }) {
   );
 }
 
-// ─────────────────────────── DISK: liquid fill cylinder ─────────────────────────── //
+// ─────────────────────────── DISK: utilization bar ─────────────────────────── //
 
-function DiskLiquid({ points }: { points: MetricPoint[] }) {
+function DiskBar({ points }: { points: MetricPoint[] }) {
   const id = useChartId();
   const base = seriesColor("disk");
   const last = lastValue(points) ?? 0;
   const pct = Math.max(0, Math.min(100, last));
   const tone =
     pct >= 90 ? "var(--crit)" : pct >= 75 ? "var(--warn)" : base;
-
-  const W = 240;
-  const H = 84;
-  const PAD_X = 4;
-  const fillW = ((W - PAD_X * 2) * pct) / 100;
-
-  // Wave path: a sine across 2x the inner width, repeated so it can scroll.
-  const WAVE_W = (W - PAD_X * 2) * 2;
-  const WAVE_H = 4;
-  const wavePath = useMemo(() => {
-    const steps = 40;
-    const stepX = WAVE_W / steps;
-    let d = `M0,${WAVE_H}`;
-    for (let i = 0; i <= steps; i++) {
-      const x = i * stepX;
-      const y = WAVE_H - Math.sin((i / steps) * Math.PI * 4) * WAVE_H;
-      d += ` L${x.toFixed(1)},${y.toFixed(1)}`;
-    }
-    d += ` L${WAVE_W},${WAVE_H + 80} L0,${WAVE_H + 80} Z`;
-    return d;
-  }, []);
-
-  // A few decorative bubbles staggered along the fill.
-  const bubbleCount = pct > 5 ? 4 : 0;
-  const bubbles = Array.from({ length: bubbleCount }, (_, i) => ({
-    cx: PAD_X + (fillW * (i + 0.5)) / bubbleCount,
-    delay: `${(i * 0.6).toFixed(2)}s`,
-    r: 1.6 + (i % 2) * 0.6,
-  }));
 
   return (
     <PanelShell
@@ -410,112 +381,78 @@ function DiskLiquid({ points }: { points: MetricPoint[] }) {
       sub="utilised"
       color={tone}
     >
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        preserveAspectRatio="none"
-        style={{ display: "block", width: "100%", height: H }}
+      <div
+        style={{
+          height: 76,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          gap: 10,
+        }}
       >
-        <defs>
-          <linearGradient id={`disk-fill-${id}`} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor={tone} stopOpacity="0.95" />
-            <stop offset="100%" stopColor={tone} stopOpacity="0.45" />
-          </linearGradient>
-          <clipPath id={`disk-clip-${id}`}>
-            <rect
-              x={PAD_X}
-              y={4}
-              width={W - PAD_X * 2}
-              height={H - 8}
-              rx="10"
-            />
-          </clipPath>
-          {/* Tick marks every 10% */}
-        </defs>
-
-        {/* Vessel border */}
-        <rect
-          x={PAD_X}
-          y={4}
-          width={W - PAD_X * 2}
-          height={H - 8}
-          rx="10"
-          fill="color-mix(in oklch, var(--bg) 70%, transparent)"
-          stroke="var(--line)"
-          strokeWidth="1"
-        />
-
-        {/* Liquid fill clipped to vessel */}
-        <g clipPath={`url(#disk-clip-${id})`}>
-          {/* base water rectangle */}
-          <rect
-            x={PAD_X}
-            y={H - 4 - (H - 8) * (pct / 100)}
-            width={W - PAD_X * 2}
-            height={(H - 8) * (pct / 100) + 4}
-            fill={`url(#disk-fill-${id})`}
-            style={{ animation: "liquid-bob 3.2s ease-in-out infinite" }}
+        <div
+          style={{
+            position: "relative",
+            height: 14,
+            borderRadius: 999,
+            background: "color-mix(in oklch, var(--text-4) 18%, transparent)",
+            border: "1px solid var(--line)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            key={`disk-fill-${id}-${pct.toFixed(1)}`}
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: 0,
+              width: `${pct}%`,
+              borderRadius: 999,
+              background: `linear-gradient(to right, color-mix(in oklch, ${tone} 55%, transparent), ${tone})`,
+              boxShadow: `0 0 12px color-mix(in oklch, ${tone} 55%, transparent)`,
+              transition: "width 600ms cubic-bezier(.2,.7,.2,1)",
+            }}
           />
-          {/* moving wave on top of the water line */}
-          <g
-            transform={`translate(${PAD_X}, ${H - 4 - (H - 8) * (pct / 100) - WAVE_H + 2})`}
-          >
-            <g
+          {[25, 50, 75, 90].map((t) => (
+            <span
+              key={t}
+              aria-hidden
               style={{
-                transformOrigin: "0 0",
-                animation: "liquid-wave 4.5s linear infinite",
-              }}
-            >
-              <path
-                d={wavePath}
-                fill={tone}
-                opacity="0.85"
-              />
-            </g>
-            <g
-              style={{
-                transformOrigin: "0 0",
-                animation: "liquid-wave 6.5s linear infinite reverse",
-              }}
-              transform="translate(0,2)"
-            >
-              <path d={wavePath} fill={tone} opacity="0.5" />
-            </g>
-          </g>
-          {/* bubbles */}
-          {bubbles.map((b, i) => (
-            <circle
-              key={i}
-              cx={b.cx}
-              cy={H - 6}
-              r={b.r}
-              fill="white"
-              opacity="0.8"
-              style={{
-                animation: `liquid-bubble 3.4s ease-in ${b.delay} infinite`,
-                transformBox: "fill-box",
-                transformOrigin: "center",
+                position: "absolute",
+                top: 3,
+                bottom: 3,
+                left: `${t}%`,
+                width: 1,
+                background:
+                  t === 90
+                    ? "color-mix(in oklch, var(--crit) 50%, transparent)"
+                    : t === 75
+                    ? "color-mix(in oklch, var(--warn) 50%, transparent)"
+                    : "color-mix(in oklch, var(--text-4) 50%, transparent)",
+                opacity: 0.8,
               }}
             />
           ))}
-        </g>
-
-        {/* tick marks on the vessel side */}
-        {[25, 50, 75].map((t) => {
-          const y = H - 4 - (H - 8) * (t / 100);
-          return (
-            <line
-              key={t}
-              x1={PAD_X + 1}
-              x2={PAD_X + 6}
-              y1={y}
-              y2={y}
-              stroke="var(--text-4)"
-              strokeWidth="1"
-              opacity="0.6"
-            />
-          );
-        })}
-      </svg>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontFamily: "var(--font-mono)",
+            fontSize: 10,
+            color: "var(--text-4)",
+            letterSpacing: "0.04em",
+          }}
+        >
+          <span>0</span>
+          <span>25</span>
+          <span>50</span>
+          <span style={{ color: "color-mix(in oklch, var(--warn) 80%, var(--text-4))" }}>75</span>
+          <span style={{ color: "color-mix(in oklch, var(--crit) 80%, var(--text-4))" }}>90</span>
+          <span>100</span>
+        </div>
+      </div>
     </PanelShell>
   );
 }
@@ -567,7 +504,13 @@ function NetMirror({
     <PanelShell
       label="NETWORK"
       value={formatRate(lastIn)}
-      sub={`↓ in · ↑ ${formatRate(lastOut)}`}
+      sub={
+        <>
+          <span style={{ color: colorIn }}>↓ in</span>
+          <span style={{ margin: "0 6px", color: "var(--text-4)" }}>·</span>
+          <span style={{ color: colorOut }}>↑ {formatRate(lastOut)}</span>
+        </>
+      }
       color={colorIn}
     >
       <svg
