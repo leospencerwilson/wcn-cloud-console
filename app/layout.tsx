@@ -1,18 +1,11 @@
 import type { Metadata } from "next";
-import { Fraunces, Manrope, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import ImpersonateBannerServer from "@/components/impersonate-banner-server";
 
-const fraunces = Fraunces({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-fraunces",
-  display: "swap",
-  axes: ["opsz", "SOFT"],
-});
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -36,10 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en-GB"
-      className={`${fraunces.variable} ${manrope.variable} ${jetbrainsMono.variable}`}
-    >
+    <html lang="en-GB" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body>
         <ImpersonateBannerServer />
         {children}
