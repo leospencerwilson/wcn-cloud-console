@@ -45,6 +45,7 @@ const CUSTOMER_SECTIONS: NavSection[] = [
       { label: "Apps", href: "/dashboard/apps" },
       { label: "Coolify", href: "/dashboard/coolify" },
       { label: "Supabase", href: "/dashboard/supabase" },
+      { label: "Database", href: "/dashboard/database" },
     ],
   },
   {

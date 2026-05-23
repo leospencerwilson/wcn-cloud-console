@@ -365,6 +365,89 @@ export type BulkJobCreated = {
   targets: string[];
 };
 
+// === DB GUI (#17) ===
+
+export type DbTable = {
+  schema: string;
+  name: string;
+  size_bytes: number;
+  estimated_rows: number;
+};
+
+export type DbColumn = {
+  name: string;
+  data_type: string;
+  is_nullable: "YES" | "NO";
+  column_default: string | null;
+  ordinal_position: number;
+};
+
+export type DbSizes = {
+  db_size_bytes: number;
+  tables: { schema: string; name: string; size_bytes: number }[];
+};
+
+export type DbQueryRow = Record<string, unknown>;
+
+export type DbSelectResult = {
+  statement_type: string;
+  rows: DbQueryRow[];
+  columns: string[];
+  row_count: number;
+  truncated: boolean;
+  duration_ms: number;
+};
+
+export type DbMutationResult = {
+  statement_type: string;
+  affected_rows: number;
+  output: string;
+  duration_ms: number;
+};
+
+export type DbQueryResult = DbSelectResult | DbMutationResult;
+
+export type DbQueryError = {
+  error: string;
+  code: string;
+  duration_ms?: number;
+};
+
+// === Push-to-deploy webhooks (#21) ===
+
+export type AppWebhookCreated = {
+  webhook_id: string;
+  secret: string;
+  branch: string;
+  enabled: boolean;
+  instructions: string;
+  message: string;
+};
+
+export type AppWebhookConfig =
+  | { configured: false }
+  | {
+      configured: true;
+      webhook_id: string;
+      webhook_url: string;
+      branch: string;
+      enabled: boolean;
+      last_delivery_at: string | null;
+    };
+
+export type AppWebhookPatch = {
+  branch?: string;
+  enabled?: boolean;
+};
+
+export type AppWebhookLookup = {
+  app_id: string;
+  customer_slug: string;
+  coolify_app_uuid: string;
+  secret: string;
+  branch: string;
+};
+
 export type PublicStatus = {
   customer: { name: string; slug: string };
   overall: PublicOverallStatus;
