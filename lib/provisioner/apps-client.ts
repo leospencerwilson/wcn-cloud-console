@@ -68,7 +68,17 @@ async function p<T>(path: string, opts: FetchOpts = {}): Promise<T> {
       .catch(() => ({ error: res.statusText, code: "unknown" }));
     throw new ProvisionerHttpError(res.status, err.code, err.error);
   }
-  return (await res.json()) as T;
+  const text = await res.text();
+  if (!text) return undefined as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new ProvisionerHttpError(
+      res.status,
+      "bad_upstream_body",
+      `Upstream returned non-JSON body (${res.status})`,
+    );
+  }
 }
 
 export const provisionerApps = {
