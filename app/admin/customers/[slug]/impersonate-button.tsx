@@ -63,20 +63,40 @@ export default function ImpersonateButton({
                 mutation buttons are disabled. Start and exit are written to
                 the audit log.
               </p>
-              <label className="block space-y-1">
-                <span className="type-eyebrow text-[10px]">Note (optional, audited)</span>
+              <label className="block">
+                <span
+                  className="type-mono"
+                  style={{
+                    display: "block",
+                    fontSize: 11,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
+                    color: "var(--text-3)",
+                    marginBottom: 6,
+                  }}
+                >
+                  Note (optional, audited)
+                </span>
                 <textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value.slice(0, 500))}
                   rows={3}
-                  className="w-full type-mono text-[13px] px-3 py-2"
+                  className="field-input"
                   placeholder="Debugging ticket #1234"
-                  style={{
-                    background: "transparent",
-                    border: "1px solid var(--color-hairline)",
-                    borderRadius: 2,
-                  }}
+                  style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}
                 />
+                <span
+                  className="type-mono"
+                  style={{
+                    display: "block",
+                    marginTop: 4,
+                    fontSize: 10.5,
+                    color: "var(--text-4)",
+                    textAlign: "right",
+                  }}
+                >
+                  {note.length}/500
+                </span>
               </label>
               {error && (
                 <p
