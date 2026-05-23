@@ -200,6 +200,171 @@ export type AlertFiring = {
   received_at: string;
 };
 
+export type CapacityProjectionTier = {
+  fits: number;
+  limited_by: "cpu" | "memory" | "disk" | null;
+};
+
+export type CapacityStorage = {
+  name: string;
+  type: string;
+  used_bytes: number;
+  total_bytes: number;
+  avail_bytes: number;
+};
+
+export type CapacityNode = {
+  node: string;
+  status: "online" | "offline" | "unknown";
+  cpu_used_frac: number;
+  cpu_cores: number;
+  mem_used_bytes: number;
+  mem_total_bytes: number;
+  uptime_seconds: number;
+  storage: CapacityStorage[];
+  running_vms: number;
+  stopped_vms: number;
+  projection: {
+    small: CapacityProjectionTier;
+    medium: CapacityProjectionTier;
+    large: CapacityProjectionTier;
+  };
+  pressure: { memory: number; cpu: number; disk: number };
+};
+
+export type CapacityTierShape = {
+  cores: number;
+  memory_mb: number;
+  disk_gb: number;
+};
+
+export type CapacityCustomerCount = {
+  tier: "small" | "medium" | "large";
+  count: number;
+};
+
+export type CapacityReport = {
+  nodes: CapacityNode[];
+  aggregate: {
+    total_running: number;
+    total_stopped: number;
+    total_capacity_fits: { small: number; medium: number; large: number };
+  };
+  customer_counts: CapacityCustomerCount[];
+  tier_shapes: {
+    small: CapacityTierShape;
+    medium: CapacityTierShape;
+    large: CapacityTierShape;
+  };
+  checked_at: string;
+};
+
+export type TeamRole = "owner" | "admin" | "developer" | "viewer";
+
+export type TeamMember = {
+  id: number;
+  user_email: string;
+  role: TeamRole;
+  invited_by: string | null;
+  invited_at: string;
+  accepted_at: string | null;
+  revoked_at: string | null;
+  pending_invite: boolean;
+};
+
+export type TeamInviteCreated = {
+  id: number;
+  user_email: string;
+  role: TeamRole;
+  invite_token: string;
+  invite_expires_at: string;
+};
+
+export type ApiTokenScope = string;
+
+export type ApiToken = {
+  id: number;
+  user_email: string;
+  name: string;
+  prefix: string;
+  scopes: ApiTokenScope[];
+  created_at: string;
+  last_used_at: string | null;
+  expires_at: string | null;
+  revoked_at: string | null;
+};
+
+export type ApiTokenCreated = ApiToken & {
+  token: string;
+  message: string;
+};
+
+export type ApiTokenValidate = {
+  customer_slug: string;
+  user_email: string;
+  scopes: ApiTokenScope[];
+  token_id: number;
+};
+
+export type BulkOperation = "vm.restart" | "vm.stop" | "vm.start" | "vm.backup";
+
+export type BulkRunStatus =
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "skipped";
+
+export type BulkJobStatus =
+  | "pending"
+  | "running"
+  | "succeeded"
+  | "partial"
+  | "failed"
+  | "aborted";
+
+export type BulkTargetFilter = {
+  slugs?: string[];
+  tiers?: string[];
+  statuses?: string[];
+  exclude_slugs?: string[];
+};
+
+export type BulkRun = {
+  slug: string;
+  status: BulkRunStatus;
+  started_at: string | null;
+  finished_at: string | null;
+  result?: unknown;
+  error?: string | null;
+};
+
+export type BulkJob = {
+  id: number;
+  actor: string;
+  operation: BulkOperation;
+  args: Record<string, unknown>;
+  target_filter: BulkTargetFilter;
+  dry_run: boolean;
+  status: BulkJobStatus;
+  created_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  abort_requested: boolean;
+  target_count?: number;
+  targets?: string[];
+  runs: BulkRun[];
+};
+
+export type BulkJobCreated = {
+  id: number;
+  status: BulkJobStatus;
+  operation: BulkOperation;
+  dry_run: boolean;
+  target_count: number;
+  targets: string[];
+};
+
 export type PublicStatus = {
   customer: { name: string; slug: string };
   overall: PublicOverallStatus;

@@ -95,6 +95,8 @@ export default async function DashboardLayout({
                 { label: "Coolify", href: "/dashboard/coolify" },
                 { label: "Supabase", href: "/dashboard/supabase" },
                 { label: "Health", href: "/dashboard/health" },
+                { label: "Team", href: "/dashboard/team" },
+                { label: "API tokens", href: "/dashboard/api-tokens" },
                 { label: "Audit", href: "/dashboard/audit" },
               ]}
             />

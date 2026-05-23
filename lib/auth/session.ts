@@ -7,6 +7,8 @@ import {
   readImpersonate,
   type ImpersonateClaims,
 } from "./impersonate";
+import { ForbiddenError, loadCustomerRole, roleAtLeast } from "./roles";
+import type { TeamRole } from "@/lib/provisioner/types";
 
 export interface Session {
   authUser: User;
@@ -68,4 +70,29 @@ export function requireMutationAllowed(session: Session): void {
   if (session.impersonating) {
     throw new ImpersonateReadOnlyError();
   }
+}
+
+// Resolve the team role for the active session+customer. Returns null if
+// the user isn't in the team table; callers decide how to treat that.
+// Owner is returned for an impersonating wcn_admin or any wcn_admin caller —
+// the wcn_admin role transcends per-customer RBAC.
+export async function getCustomerRole(
+  session: Session,
+  slug: string,
+): Promise<TeamRole | null> {
+  if (session.impersonating) return "owner";
+  if (session.appUser.role === "wcn_admin") return "owner";
+  return loadCustomerRole(slug, session.appUser.email);
+}
+
+export async function requireRole(
+  slug: string,
+  min: TeamRole,
+): Promise<{ session: Session; role: TeamRole }> {
+  const session = await requireSession();
+  const role = await getCustomerRole(session, slug);
+  if (!roleAtLeast(role, min)) {
+    throw new ForbiddenError(`requires ${min}, have ${role ?? "none"}`);
+  }
+  return { session, role: role as TeamRole };
 }

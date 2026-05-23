@@ -20,6 +20,16 @@ const ITEMS: { label: string; href: string; match: (p: string) => boolean }[] = 
     href: "/admin/alerts",
     match: (p) => p.startsWith("/admin/alerts"),
   },
+  {
+    label: "Capacity",
+    href: "/admin/capacity",
+    match: (p) => p.startsWith("/admin/capacity"),
+  },
+  {
+    label: "Bulk ops",
+    href: "/admin/bulk",
+    match: (p) => p.startsWith("/admin/bulk"),
+  },
 ];
 
 export default function AdminSubnav() {
