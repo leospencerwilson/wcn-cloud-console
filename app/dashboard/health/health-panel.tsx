@@ -72,7 +72,9 @@ export default function HealthPanel({
       }
     };
     tick();
-    const id = setInterval(tick, 5000);
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") tick();
+    }, 1000);
     return () => {
       alive = false;
       clearInterval(id);
