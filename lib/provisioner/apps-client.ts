@@ -116,6 +116,19 @@ export const provisionerApps = {
     get: (appId: string) => p<EnvVar[]>(`/apps/${appId}/env`),
     put: (appId: string, env: EnvVar[]) =>
       p<EnvVar[]>(`/apps/${appId}/env`, { method: "PUT", body: env }),
+    importText: (
+      appId: string,
+      body: {
+        text: string;
+        is_build_time?: boolean;
+        is_preview?: boolean;
+        ignore_errors?: boolean;
+      },
+    ) =>
+      p<{ imported: number; errors: string[] }>(
+        `/apps/${appId}/env/import`,
+        { method: "POST", body },
+      ),
   },
   cron: {
     list: (appId: string) => p<CronTask[]>(`/apps/${appId}/cron`),

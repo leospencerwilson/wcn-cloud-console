@@ -904,6 +904,45 @@ samp {
     margin-top: 2px;
   }
 
+  @keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ─────────── Sticky dirty-state banner ─────────── */
+
+  .dirty-banner {
+    position: sticky;
+    bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    background: color-mix(in oklch, var(--warn) 14%, var(--surface));
+    border: 1px solid color-mix(in oklch, var(--warn) 55%, var(--line));
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, 0.35),
+      0 0 0 0.5px color-mix(in oklch, var(--warn) 35%, transparent);
+    backdrop-filter: blur(8px);
+    z-index: 10;
+  }
+  .dirty-banner-msg {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+  }
+  .dirty-banner-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--warn);
+    box-shadow: 0 0 10px color-mix(in oklch, var(--warn) 60%, transparent);
+    animation: heartbeat-core 1.6s ease-in-out infinite;
+  }
+
   /* ─────────── Shell helpers ─────────── */
 
   .kbd {
