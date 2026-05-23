@@ -53,6 +53,7 @@ const CUSTOMER_SECTIONS: NavSection[] = [
     heading: "Health",
     items: [
       { label: "Health", href: "/dashboard/health" },
+      { label: "Backups", href: "/dashboard/backups" },
       { label: "Audit", href: "/dashboard/audit" },
     ],
   },

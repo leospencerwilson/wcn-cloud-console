@@ -33,7 +33,7 @@ export default async function DashboardHealthPage() {
         >
           <h3 className="type-h3">Resources</h3>
           <Link
-            href="/dashboard/health/backups"
+            href="/dashboard/backups"
             className="type-mono text-[12px]"
             style={{ color: "var(--brand)" }}
           >
