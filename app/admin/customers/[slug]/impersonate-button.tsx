@@ -50,34 +50,15 @@ export default function ImpersonateButton({
         <div
           role="dialog"
           aria-modal="true"
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(20,20,20,0.45)",
-            zIndex: 100,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 16,
-          }}
+          className="modal-backdrop"
+          onClick={() => !starting && setOpen(false)}
         >
-          <div
-            style={{
-              maxWidth: 460,
-              width: "100%",
-              background: "var(--color-ivory)",
-              border: "1px solid var(--color-hairline)",
-              borderRadius: 2,
-            }}
-          >
-            <div
-              className="px-6 py-4 border-b"
-              style={{ borderColor: "var(--color-hairline)" }}
-            >
+          <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
               <span className="type-eyebrow">§ VIEW AS {customerName.toUpperCase()}</span>
             </div>
-            <div className="px-6 py-5 space-y-4">
-              <p className="text-[14px] leading-[1.55]" style={{ color: "var(--color-charcoal)" }}>
+            <div className="modal-body space-y-4">
+              <p className="text-[13.5px] leading-[1.55]" style={{ color: "var(--text-2)" }}>
                 You&apos;ll see the customer dashboard as they see it. All
                 mutation buttons are disabled. Start and exit are written to
                 the audit log.
@@ -106,10 +87,7 @@ export default function ImpersonateButton({
                 </p>
               )}
             </div>
-            <div
-              className="px-6 py-4 border-t flex items-center justify-end gap-3"
-              style={{ borderColor: "var(--color-hairline)" }}
-            >
+            <div className="modal-footer">
               <button
                 type="button"
                 className="btn btn-ghost btn-sm"

@@ -1,7 +1,6 @@
 import { requireWcnAdmin } from "@/lib/auth/session";
 import AppShell from "@/components/shell/app-shell";
 import Sidebar from "@/components/shell/sidebar";
-import SignoutButton from "@/components/shell/signout-button";
 
 export default async function AdminLayout({
   children,
@@ -12,6 +11,7 @@ export default async function AdminLayout({
   return (
     <AppShell
       variant="admin"
+      userEmail={session.appUser.email}
       sidebar={
         <Sidebar
           variant="admin"
@@ -22,7 +22,7 @@ export default async function AdminLayout({
             tone: "brand",
           }}
           user={{ email: session.appUser.email }}
-          footer={<SignoutButton />}
+          showFooter={false}
         />
       }
     >

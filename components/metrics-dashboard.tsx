@@ -72,14 +72,7 @@ export default function MetricsDashboard({
 
   return (
     <div className="space-y-6">
-      <div
-        className="flex items-center justify-between flex-wrap gap-4 px-6 py-4"
-        style={{
-          background: "var(--color-ivory)",
-          border: "1px solid var(--color-hairline)",
-          borderRadius: 2,
-        }}
-      >
+      <div className="toolbar justify-between">
         <div className="flex items-center gap-1" role="tablist">
           {WINDOWS.map((w) => (
             <button
@@ -90,9 +83,9 @@ export default function MetricsDashboard({
               className="type-mono text-[12px] px-3 py-1.5"
               onClick={() => setWindow(w)}
               style={{
-                background: window === w ? "var(--color-navy)" : "transparent",
-                color: window === w ? "var(--color-ivory)" : "var(--color-charcoal)",
-                border: "1px solid var(--color-hairline)",
+                background: window === w ? "var(--brand)" : "transparent",
+                color: window === w ? "var(--brand-ink)" : "var(--text-2)",
+                border: "1px solid var(--line)",
                 borderRadius: 2,
               }}
             >
@@ -140,7 +133,7 @@ export default function MetricsDashboard({
         </p>
       )}
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {renderable.length === 0 && !loading && !error && (
           <Card>
             <p

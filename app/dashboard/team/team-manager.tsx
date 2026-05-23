@@ -286,24 +286,9 @@ function InviteModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.5)" }}
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-lg"
-        style={{
-          background: "var(--color-ivory, #f4f1ea)",
-          border: "1px solid var(--color-hairline)",
-          borderRadius: 2,
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div
-          className="px-6 py-3 border-b flex items-center justify-between"
-          style={{ borderColor: "var(--color-hairline)" }}
-        >
+    <div className="modal-backdrop" role="dialog" aria-modal="true" onClick={onClose}>
+      <div className="modal-panel modal-panel--lg" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header justify-between">
           <span className="type-eyebrow">
             § {issued ? "INVITE CREATED" : "INVITE A TEAM MEMBER"}
           </span>
@@ -321,9 +306,12 @@ function InviteModal({
               <div
                 className="p-3 type-mono text-[11px]"
                 style={{
-                  background: "var(--color-success-bg, #e6f0e8)",
-                  border: "1px solid var(--color-success, #2f6b3a)",
-                  borderRadius: 2,
+                  background:
+                    "color-mix(in oklch, var(--ok) 14%, var(--surface))",
+                  border:
+                    "1px solid color-mix(in oklch, var(--ok) 45%, var(--line))",
+                  borderRadius: "var(--r-2)",
+                  color: "var(--text)",
                   wordBreak: "break-all",
                 }}
               >

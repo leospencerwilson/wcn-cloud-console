@@ -80,11 +80,13 @@ export default function Sidebar({
   switcher,
   user,
   footer,
+  showFooter = true,
 }: {
   variant: "admin" | "customer";
   switcher: SwitcherInfo;
   user: { email: string; name?: string };
   footer?: ReactNode;
+  showFooter?: boolean;
 }) {
   const pathname = usePathname() ?? "";
   const sections = variant === "admin" ? ADMIN_SECTIONS : CUSTOMER_SECTIONS;
@@ -304,48 +306,51 @@ export default function Sidebar({
         ))}
       </div>
 
-      <div
-        className="flex items-center gap-2.5"
-        style={{
-          marginTop: "auto",
-          borderTop: "1px solid var(--line)",
-          padding: "10px 16px",
-        }}
-      >
-        <span
+      {showFooter && (
+        <div
+          className="flex items-center gap-2.5"
           style={{
-            width: 26,
-            height: 26,
-            borderRadius: "50%",
-            background: "linear-gradient(135deg, var(--brand-2), var(--accent))",
-            display: "grid",
-            placeItems: "center",
-            color: "var(--bg)",
-            fontWeight: 700,
-            fontSize: 11,
+            marginTop: "auto",
+            borderTop: "1px solid var(--line)",
+            padding: "10px 16px",
           }}
         >
-          {avatarInitial}
-        </span>
-        <div className="leading-tight min-w-0 flex-1">
-          {user.name && (
-            <div style={{ fontSize: 12, fontWeight: 500 }}>{user.name}</div>
-          )}
-          <div
-            className="type-mono"
+          <span
             style={{
-              fontSize: 10.5,
-              color: "var(--text-3)",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
+              width: 26,
+              height: 26,
+              borderRadius: "50%",
+              background:
+                "linear-gradient(135deg, var(--brand-2), var(--accent))",
+              display: "grid",
+              placeItems: "center",
+              color: "var(--bg)",
+              fontWeight: 700,
+              fontSize: 11,
             }}
           >
-            {user.email}
+            {avatarInitial}
+          </span>
+          <div className="leading-tight min-w-0 flex-1">
+            {user.name && (
+              <div style={{ fontSize: 12, fontWeight: 500 }}>{user.name}</div>
+            )}
+            <div
+              className="type-mono"
+              style={{
+                fontSize: 10.5,
+                color: "var(--text-3)",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {user.email}
+            </div>
           </div>
+          {footer}
         </div>
-        {footer}
-      </div>
+      )}
     </aside>
   );
 }

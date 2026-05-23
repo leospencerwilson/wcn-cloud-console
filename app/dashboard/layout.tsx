@@ -2,7 +2,6 @@ import { requireCustomerAdmin } from "@/lib/auth/session";
 import { getCustomer } from "@/lib/db/customers";
 import AppShell from "@/components/shell/app-shell";
 import Sidebar from "@/components/shell/sidebar";
-import SignoutButton from "@/components/shell/signout-button";
 
 export default async function DashboardLayout({
   children,
@@ -17,6 +16,7 @@ export default async function DashboardLayout({
   return (
     <AppShell
       variant="customer"
+      userEmail={session.appUser.email}
       sidebar={
         <Sidebar
           variant="customer"
@@ -27,7 +27,7 @@ export default async function DashboardLayout({
             tone: "accent",
           }}
           user={{ email: session.appUser.email }}
-          footer={<SignoutButton />}
+          showFooter={false}
         />
       }
     >

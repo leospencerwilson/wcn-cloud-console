@@ -174,6 +174,7 @@ export default function AuditLog({ slug }: { slug: string }) {
             No events for this filter.
           </p>
         ) : (
+          <div style={{ maxHeight: "62vh", overflow: "auto" }}>
           <table className="w-full text-[13px]">
             <thead>
               <tr style={{ color: "var(--color-muted)" }}>
@@ -210,6 +211,7 @@ export default function AuditLog({ slug }: { slug: string }) {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </Card>
     </div>

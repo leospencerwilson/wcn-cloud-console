@@ -1,16 +1,19 @@
 import type { ReactNode } from "react";
 import CommandPalette from "./command-palette";
 import TerminalDrawer from "./terminal-drawer";
+import UserBadge from "./user-badge";
 
 export default function AppShell({
   variant,
   sidebar,
   topbar,
+  userEmail,
   children,
 }: {
   variant: "admin" | "customer";
   sidebar: ReactNode;
   topbar?: ReactNode;
+  userEmail?: string;
   children: ReactNode;
 }) {
   return (
@@ -18,7 +21,8 @@ export default function AppShell({
       style={{
         display: "grid",
         gridTemplateColumns: "var(--sidebar-w) 1fr",
-        height: "100vh",
+        flex: 1,
+        minHeight: 0,
         background:
           "radial-gradient(1200px 600px at 80% -10%, color-mix(in oklch, var(--brand) 8%, transparent), transparent 60%), var(--bg)",
       }}
@@ -53,6 +57,7 @@ export default function AppShell({
       </main>
       <CommandPalette variant={variant} />
       <TerminalDrawer />
+      {userEmail && <UserBadge email={userEmail} />}
     </div>
   );
 }

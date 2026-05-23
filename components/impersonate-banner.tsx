@@ -45,24 +45,24 @@ export default function ImpersonateBanner({
         position: "sticky",
         top: 0,
         zIndex: 50,
-        background: "rgba(200,140,40,0.18)",
-        borderBottom: "1px solid rgba(200,140,40,0.5)",
-        color: "var(--color-charcoal)",
+        background: "color-mix(in oklch, var(--warn) 18%, var(--bg-2))",
+        borderBottom: "1px solid color-mix(in oklch, var(--warn) 45%, var(--line))",
+        color: "var(--text)",
       }}
     >
       <div className="mx-auto max-w-6xl px-6 py-2 flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3 type-mono text-[12px]">
-          <span aria-hidden style={{ color: "var(--color-warning, #b07a1f)" }}>
+          <span aria-hidden style={{ color: "var(--warn)" }}>
             ▲
           </span>
-          <span>
+          <span style={{ color: "var(--text)" }}>
             Viewing as <strong>{customerName}</strong>
-            <span style={{ color: "var(--color-muted)" }}>
+            <span style={{ color: "var(--text-3)" }}>
               {" "}
               · started {ageLabel(startedAt)} · Read-only
             </span>
             {note && (
-              <span style={{ color: "var(--color-muted)" }}> · note: {note}</span>
+              <span style={{ color: "var(--text-3)" }}> · note: {note}</span>
             )}
           </span>
         </div>
