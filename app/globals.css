@@ -579,6 +579,58 @@ samp {
     70% { transform: scale(2.4); opacity: 0; }
     100% { transform: scale(2.4); opacity: 0; }
   }
+  .sb-link:hover {
+    background: color-mix(in oklch, var(--text-4) 8%, transparent) !important;
+    color: var(--text) !important;
+  }
+  .sb-logout:hover {
+    color: var(--text) !important;
+    border-color: color-mix(in oklch, var(--text-4) 35%, transparent) !important;
+    background: color-mix(in oklch, var(--text-4) 10%, transparent) !important;
+  }
+
+  .vm-action-group {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid var(--line);
+    border-radius: var(--r-2);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .vm-action {
+    --tone: var(--text-2);
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--tone);
+    font: inherit;
+    font-size: 12.5px;
+    padding: 7px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    transition: background .12s ease, color .12s ease;
+    position: relative;
+  }
+  .vm-action + .vm-action {
+    border-left: 1px solid var(--line);
+  }
+  .vm-action svg { color: var(--tone); transition: transform .2s ease; }
+  .vm-action:hover:not(:disabled) {
+    background: color-mix(in oklch, var(--tone) 10%, var(--surface));
+    color: var(--tone);
+  }
+  .vm-action:active:not(:disabled) svg { transform: scale(0.92); }
+  .vm-action:disabled {
+    color: var(--text-4);
+    cursor: not-allowed;
+  }
+  .vm-action:disabled svg { color: var(--text-4); }
+  .vm-action--restart { --tone: var(--brand); }
+  .vm-action--stop { --tone: var(--crit); }
+  .vm-action--start { --tone: var(--ok); }
+
   .heartbeat-dot {
     --hb: var(--ok);
     position: relative;

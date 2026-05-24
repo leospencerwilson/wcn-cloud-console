@@ -11,7 +11,6 @@ export default async function AdminLayout({
   return (
     <AppShell
       variant="admin"
-      userEmail={session.appUser.email}
       sidebar={
         <Sidebar
           variant="admin"

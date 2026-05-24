@@ -16,7 +16,6 @@ export default async function DashboardLayout({
   return (
     <AppShell
       variant="customer"
-      userEmail={session.appUser.email}
       sidebar={
         <Sidebar
           variant="customer"

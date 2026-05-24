@@ -86,7 +86,7 @@ export const provisionerApps = {
     list: (slug: string) => p<App[]>("/apps", { slug }),
     create: (slug: string, input: AppCreateInput) =>
       p<App>("/apps", { slug, method: "POST", body: input }),
-    get: (id: string) => p<App>(`/apps/${id}`),
+    get: (id: string, slug?: string) => p<App>(`/apps/${id}`, { slug }),
     patch: (id: string, input: Partial<AppCreateInput>) =>
       p<App>(`/apps/${id}`, { method: "PATCH", body: input }),
     delete: (id: string) =>

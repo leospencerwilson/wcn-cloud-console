@@ -8,8 +8,8 @@ export const runtime = "nodejs";
 
 type Params = { slug: string; id: string };
 
-export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
-  const app = await provisionerApps.apps.get(params.id);
+export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
+  const app = await provisionerApps.apps.get(params.id, slug);
   return NextResponse.json(app);
 });
 

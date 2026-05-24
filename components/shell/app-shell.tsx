@@ -1,19 +1,16 @@
 import type { ReactNode } from "react";
 import CommandPalette from "./command-palette";
 import TerminalDrawer from "./terminal-drawer";
-import UserBadge from "./user-badge";
 
 export default function AppShell({
   variant,
   sidebar,
   topbar,
-  userEmail,
   children,
 }: {
   variant: "admin" | "customer";
   sidebar: ReactNode;
   topbar?: ReactNode;
-  userEmail?: string;
   children: ReactNode;
 }) {
   return (
@@ -57,7 +54,6 @@ export default function AppShell({
       </main>
       <CommandPalette variant={variant} />
       <TerminalDrawer />
-      {userEmail && <UserBadge email={userEmail} />}
     </div>
   );
 }

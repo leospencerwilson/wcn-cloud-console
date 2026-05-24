@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 type NavItem = {
   label: string;
   href: string;
+  icon: ReactNode;
   match?: (p: string) => boolean;
   badge?: { label: string; tone?: "crit" | "default" };
 };
@@ -16,20 +17,169 @@ type NavSection = {
   items: NavItem[];
 };
 
+const stroke = {
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.75,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+
+const ICON_SIZE = 15;
+function Svg({ children }: { children: ReactNode }) {
+  return (
+    <svg
+      width={ICON_SIZE}
+      height={ICON_SIZE}
+      viewBox="0 0 24 24"
+      aria-hidden
+      {...stroke}
+    >
+      {children}
+    </svg>
+  );
+}
+
+const I = {
+  overview: (
+    <Svg>
+      <rect x="3" y="3" width="7" height="9" rx="1.5" />
+      <rect x="14" y="3" width="7" height="5" rx="1.5" />
+      <rect x="14" y="12" width="7" height="9" rx="1.5" />
+      <rect x="3" y="16" width="7" height="5" rx="1.5" />
+    </Svg>
+  ),
+  apps: (
+    <Svg>
+      <path d="M3 7l9-4 9 4-9 4-9-4z" />
+      <path d="M3 12l9 4 9-4" />
+      <path d="M3 17l9 4 9-4" />
+    </Svg>
+  ),
+  env: (
+    <Svg>
+      <path d="M4 7h16" />
+      <path d="M4 12h10" />
+      <path d="M4 17h16" />
+      <circle cx="17" cy="12" r="1.6" />
+    </Svg>
+  ),
+  domains: (
+    <Svg>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z" />
+    </Svg>
+  ),
+  coolify: (
+    <Svg>
+      <path d="M4 16a5 5 0 0 1 2-9.6a6.5 6.5 0 0 1 12.5 2A4.5 4.5 0 0 1 18 17H7a3 3 0 0 1-3-1z" />
+    </Svg>
+  ),
+  supabase: (
+    <Svg>
+      <path d="M13 3L4 14h7l-1 7l9-11h-7l1-7z" />
+    </Svg>
+  ),
+  database: (
+    <Svg>
+      <ellipse cx="12" cy="5" rx="8" ry="3" />
+      <path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5" />
+      <path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6" />
+    </Svg>
+  ),
+  health: (
+    <Svg>
+      <path d="M3 12h4l2-7l4 14l2-7h6" />
+    </Svg>
+  ),
+  backups: (
+    <Svg>
+      <path d="M12 3a9 9 0 1 0 9 9" />
+      <path d="M21 3v6h-6" />
+      <circle cx="12" cy="12" r="2.5" />
+    </Svg>
+  ),
+  audit: (
+    <Svg>
+      <rect x="5" y="3" width="14" height="18" rx="2" />
+      <path d="M9 8h6" />
+      <path d="M9 12h6" />
+      <path d="M9 16h4" />
+    </Svg>
+  ),
+  team: (
+    <Svg>
+      <circle cx="9" cy="9" r="3" />
+      <path d="M3 19a6 6 0 0 1 12 0" />
+      <circle cx="17" cy="8" r="2.5" />
+      <path d="M15 14a5 5 0 0 1 6 4" />
+    </Svg>
+  ),
+  tokens: (
+    <Svg>
+      <circle cx="8" cy="14" r="4" />
+      <path d="M11 11l7-7" />
+      <path d="M15 7l3 3" />
+      <path d="M18 4l2 2" />
+    </Svg>
+  ),
+  customers: (
+    <Svg>
+      <rect x="3" y="6" width="18" height="14" rx="2" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M3 12h18" />
+    </Svg>
+  ),
+  capacity: (
+    <Svg>
+      <path d="M12 21a9 9 0 1 0-9-9" />
+      <path d="M12 12l5-3" />
+    </Svg>
+  ),
+  bulk: (
+    <Svg>
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </Svg>
+  ),
+  alerts: (
+    <Svg>
+      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+      <path d="M10 21a2 2 0 0 0 4 0" />
+    </Svg>
+  ),
+  invites: (
+    <Svg>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 7l9 6l9-6" />
+    </Svg>
+  ),
+  logout: (
+    <Svg>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5l-5-5" />
+      <path d="M21 12H9" />
+    </Svg>
+  ),
+};
+
 const ADMIN_SECTIONS: NavSection[] = [
   {
     items: [
-      { label: "Overview", href: "/admin", match: (p) => p === "/admin" },
-      { label: "Customers", href: "/admin/customers" },
-      { label: "Capacity", href: "/admin/capacity" },
+      { label: "Overview", href: "/admin", icon: I.overview, match: (p) => p === "/admin" },
+      { label: "Customers", href: "/admin/customers", icon: I.customers },
+      { label: "Capacity", href: "/admin/capacity", icon: I.capacity },
     ],
   },
   {
     heading: "Operations",
     items: [
-      { label: "Bulk ops", href: "/admin/bulk" },
-      { label: "Alerts", href: "/admin/alerts" },
-      { label: "Invites", href: "/admin/invites" },
+      { label: "Bulk ops", href: "/admin/bulk", icon: I.bulk },
+      { label: "Alerts", href: "/admin/alerts", icon: I.alerts },
+      { label: "Invites", href: "/admin/invites", icon: I.invites },
     ],
   },
 ];
@@ -40,29 +190,30 @@ const CUSTOMER_SECTIONS: NavSection[] = [
       {
         label: "Overview",
         href: "/dashboard",
+        icon: I.overview,
         match: (p) => p === "/dashboard",
       },
-      { label: "Apps", href: "/dashboard/apps" },
-      { label: "Environment", href: "/dashboard/environment" },
-      { label: "Domains", href: "/dashboard/domains" },
-      { label: "Coolify", href: "/dashboard/coolify" },
-      { label: "Supabase", href: "/dashboard/supabase" },
-      { label: "Database", href: "/dashboard/database" },
+      { label: "Deployed Apps", href: "/dashboard/apps", icon: I.apps },
+      { label: "Environment Variables", href: "/dashboard/environment", icon: I.env },
+      { label: "Domains", href: "/dashboard/domains", icon: I.domains },
+      { label: "Coolify", href: "/dashboard/coolify", icon: I.coolify },
+      { label: "Supabase", href: "/dashboard/supabase", icon: I.supabase },
+      { label: "Database", href: "/dashboard/database", icon: I.database },
     ],
   },
   {
     heading: "Health",
     items: [
-      { label: "Health", href: "/dashboard/health" },
-      { label: "Backups", href: "/dashboard/backups" },
-      { label: "Audit", href: "/dashboard/audit" },
+      { label: "Health", href: "/dashboard/health", icon: I.health },
+      { label: "Backups", href: "/dashboard/backups", icon: I.backups },
+      { label: "Audit", href: "/dashboard/audit", icon: I.audit },
     ],
   },
   {
     heading: "Access",
     items: [
-      { label: "Team", href: "/dashboard/team" },
-      { label: "API tokens", href: "/dashboard/api-tokens" },
+      { label: "Team", href: "/dashboard/team", icon: I.team },
+      { label: "API tokens", href: "/dashboard/api-tokens", icon: I.tokens },
     ],
   },
 ];
@@ -82,12 +233,11 @@ export default function Sidebar({
   variant,
   switcher,
   user,
-  footer,
-  showFooter = true,
 }: {
   variant: "admin" | "customer";
   switcher: SwitcherInfo;
   user: { email: string; name?: string };
+  /** legacy props — kept for callers, no-op now */
   footer?: ReactNode;
   showFooter?: boolean;
 }) {
@@ -251,7 +401,7 @@ export default function Sidebar({
                       display: "flex",
                       alignItems: "center",
                       gap: 10,
-                      padding: "6px 8px",
+                      padding: "7px 8px",
                       borderRadius: "var(--r-2)",
                       color: active ? "var(--text)" : "var(--text-2)",
                       fontSize: 12.5,
@@ -277,6 +427,19 @@ export default function Sidebar({
                         }}
                       />
                     )}
+                    <span
+                      aria-hidden
+                      style={{
+                        display: "inline-flex",
+                        width: 16,
+                        height: 16,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: active ? "var(--brand)" : "var(--text-3)",
+                      }}
+                    >
+                      {it.icon}
+                    </span>
                     <span style={{ flex: 1 }}>{it.label}</span>
                     {it.badge && (
                       <span
@@ -309,51 +472,84 @@ export default function Sidebar({
         ))}
       </div>
 
-      {showFooter && (
-        <div
-          className="flex items-center gap-2.5"
+      <div
+        style={{
+          borderTop: "1px solid var(--line)",
+          padding: "10px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
+        <span
           style={{
-            marginTop: "auto",
-            borderTop: "1px solid var(--line)",
-            padding: "10px 16px",
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            background:
+              "linear-gradient(135deg, var(--brand-2), var(--accent))",
+            display: "grid",
+            placeItems: "center",
+            color: "var(--bg)",
+            fontWeight: 700,
+            fontSize: 12,
+            flexShrink: 0,
           }}
         >
-          <span
-            style={{
-              width: 26,
-              height: 26,
-              borderRadius: "50%",
-              background:
-                "linear-gradient(135deg, var(--brand-2), var(--accent))",
-              display: "grid",
-              placeItems: "center",
-              color: "var(--bg)",
-              fontWeight: 700,
-              fontSize: 11,
-            }}
-          >
-            {avatarInitial}
-          </span>
-          <div className="leading-tight min-w-0 flex-1">
-            {user.name && (
-              <div style={{ fontSize: 12, fontWeight: 500 }}>{user.name}</div>
-            )}
+          {avatarInitial}
+        </span>
+        <div className="leading-tight min-w-0 flex-1">
+          {user.name && (
             <div
-              className="type-mono"
               style={{
-                fontSize: 10.5,
-                color: "var(--text-3)",
+                fontSize: 12,
+                fontWeight: 500,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
               }}
             >
-              {user.email}
+              {user.name}
             </div>
+          )}
+          <div
+            className="type-mono"
+            style={{
+              fontSize: 10.5,
+              color: "var(--text-3)",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+            title={user.email}
+          >
+            {user.email}
           </div>
-          {footer}
         </div>
-      )}
+        <form action="/api/auth/logout" method="post">
+          <button
+            type="submit"
+            aria-label="Sign out"
+            title="Sign out"
+            style={{
+              border: "1px solid var(--line)",
+              background: "transparent",
+              color: "var(--text-3)",
+              borderRadius: "var(--r-2)",
+              width: 28,
+              height: 28,
+              display: "grid",
+              placeItems: "center",
+              cursor: "pointer",
+              padding: 0,
+              transition: "color .12s, border-color .12s, background .12s",
+            }}
+            className="sb-logout"
+          >
+            {I.logout}
+          </button>
+        </form>
+      </div>
     </aside>
   );
 }

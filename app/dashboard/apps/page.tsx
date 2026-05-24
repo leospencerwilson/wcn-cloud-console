@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import { provisionerApps } from "@/lib/provisioner/apps-client";
 import { ProvisionerHttpError } from "@/lib/provisioner/apps-client";
-import { statusPill } from "@/lib/utils";
+import AppsTable from "./apps-table";
 import type { App } from "@/lib/provisioner/types";
 
 export const dynamic = "force-dynamic";
@@ -21,14 +21,6 @@ async function safeList(slug: string): Promise<
   }
 }
 
-function fmtSource(a: App): string {
-  if (a.source_type === "git") {
-    return `${a.source_repo ?? "—"} (${a.source_branch || "main"})`;
-  }
-  if (a.source_type === "dockerimage") return a.docker_image ?? "—";
-  return a.source_repo ?? "—";
-}
-
 export default async function DashboardAppsPage() {
   const session = await requireCustomerAdmin();
   const slug = session.appUser.customer_slug!;
@@ -37,7 +29,7 @@ export default async function DashboardAppsPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-baseline justify-between">
-        <h2 className="type-h2">— APPLICATIONS</h2>
+        <h2 className="type-h2">— DEPLOYED APPS</h2>
         <Link href="/dashboard/apps/new" className="btn btn-primary btn-sm">
           + New app
         </Link>
@@ -81,50 +73,7 @@ export default async function DashboardAppsPage() {
       )}
 
       {result.ok && result.apps.length > 0 && (
-        <Card>
-          <div className="px-2 py-2">
-            <table className="w-full text-[14px]">
-              <thead>
-                <tr style={{ color: "var(--color-muted)" }}>
-                  <th className="text-left px-6 py-3 type-eyebrow">Name</th>
-                  <th className="text-left px-6 py-3 type-eyebrow">Source</th>
-                  <th className="text-left px-6 py-3 type-eyebrow">Status</th>
-                  <th className="text-left px-6 py-3 type-eyebrow">Last deploy</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.apps.map((a) => (
-                  <tr
-                    key={a.id}
-                    className="border-t"
-                    style={{ borderColor: "var(--color-hairline)" }}
-                  >
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/dashboard/apps/${a.id}`}
-                        className="font-medium"
-                        style={{ color: "var(--color-navy)" }}
-                      >
-                        {a.name}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 type-mono text-[12px]" style={{ color: "var(--color-muted)" }}>
-                      {fmtSource(a)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={statusPill(a.status)}>{a.status}</span>
-                    </td>
-                    <td className="px-6 py-4 type-mono text-[12px]" style={{ color: "var(--color-muted)" }}>
-                      {a.last_deploy_at
-                        ? new Date(a.last_deploy_at).toLocaleString()
-                        : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+        <AppsTable slug={slug} apps={result.apps} />
       )}
     </div>
   );

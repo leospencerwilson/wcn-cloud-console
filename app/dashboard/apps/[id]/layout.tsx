@@ -15,12 +15,13 @@ export default async function DashboardAppLayout({
   children: React.ReactNode;
   params: Promise<{ id: string }>;
 }) {
-  await requireCustomerAdmin();
+  const session = await requireCustomerAdmin();
+  const slug = session.appUser.customer_slug!;
   const { id } = await params;
 
   let app;
   try {
-    app = await provisionerApps.apps.get(id);
+    app = await provisionerApps.apps.get(id, slug);
   } catch (err) {
     if (err instanceof ProvisionerHttpError && err.status === 404) {
       notFound();
