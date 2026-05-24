@@ -579,6 +579,39 @@ samp {
     70% { transform: scale(2.4); opacity: 0; }
     100% { transform: scale(2.4); opacity: 0; }
   }
+  .row-delete-btn {
+    appearance: none;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-4);
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0;
+    padding: 5px 10px 5px 8px;
+    border-radius: var(--r-2);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: color .14s ease, background .14s ease, border-color .14s ease,
+      box-shadow .14s ease, transform .14s ease;
+  }
+  .row-delete-btn svg { transition: transform .18s ease; }
+  .row-delete-btn:hover {
+    color: var(--crit);
+    background: color-mix(in oklch, var(--crit) 12%, transparent);
+    border-color: color-mix(in oklch, var(--crit) 32%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--crit) 10%, transparent);
+  }
+  .row-delete-btn:hover svg { transform: translateY(-0.5px) rotate(-3deg); }
+  .row-delete-btn:active { transform: scale(0.97); }
+  .row-delete-btn:focus-visible {
+    outline: none;
+    color: var(--crit);
+    border-color: color-mix(in oklch, var(--crit) 50%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--crit) 22%, transparent);
+  }
+
   .sb-link:hover {
     background: color-mix(in oklch, var(--text-4) 8%, transparent) !important;
     color: var(--text) !important;
