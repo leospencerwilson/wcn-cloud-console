@@ -13,6 +13,17 @@ type BuildPack = NonNullable<AppCreateInput["build_pack"]>;
 
 const NAME_RE = /^[a-z0-9][a-z0-9-]{0,62}$/;
 
+async function findAppByName(slug: string, name: string): Promise<App | null> {
+  try {
+    const r = await fetch(`/api/customers/${slug}/apps`, { cache: "no-store" });
+    if (!r.ok) return null;
+    const list = (await r.json().catch(() => [])) as App[];
+    return list.find((a) => a.name === name) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function sanitizeName(raw: string): string {
   return raw
     .toLowerCase()
@@ -74,15 +85,25 @@ export default function NewAppForm({ slug }: { slug: string }) {
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
+        // The upstream provisioner can throw mid-flight after the app has
+        // already been created (e.g. JSON parse of an empty Coolify reply).
+        // Recover by looking the app up by name and routing there.
+        const existing = await findAppByName(slug, name);
+        if (existing) {
+          router.push(`/dashboard/apps/${existing.id}`);
+          router.refresh();
+          return;
+        }
         setError(data.error || `Request failed (${res.status})`);
         setSubmitting(false);
         return;
       }
       const created = (await res.json().catch(() => null)) as App | null;
-      if (!created || !created.id) {
-        router.push(`/dashboard/apps`);
-      } else {
+      if (created && created.id) {
         router.push(`/dashboard/apps/${created.id}`);
+      } else {
+        const existing = await findAppByName(slug, name);
+        router.push(existing ? `/dashboard/apps/${existing.id}` : `/dashboard/apps`);
       }
       router.refresh();
     } catch (err) {
