@@ -87,39 +87,45 @@ export const provisionerApps = {
     create: (slug: string, input: AppCreateInput) =>
       p<App>("/apps", { slug, method: "POST", body: input }),
     get: (id: string, slug?: string) => p<App>(`/apps/${id}`, { slug }),
-    patch: (id: string, input: Partial<AppCreateInput>) =>
-      p<App>(`/apps/${id}`, { method: "PATCH", body: input }),
-    delete: (id: string) =>
-      p<{ ok: true }>(`/apps/${id}`, { method: "DELETE" }),
-    deploy: (id: string, force = false) =>
+    patch: (id: string, input: Partial<AppCreateInput>, slug?: string) =>
+      p<App>(`/apps/${id}`, { slug, method: "PATCH", body: input }),
+    delete: (id: string, slug?: string) =>
+      p<{ ok: true }>(`/apps/${id}`, { slug, method: "DELETE" }),
+    deploy: (id: string, force = false, slug?: string) =>
       p<DeployStatus>(`/apps/${id}/deploy`, {
+        slug,
         method: "POST",
         body: { force },
       }),
-    restart: (id: string) =>
+    restart: (id: string, slug?: string) =>
       p<{ ok: true; action: "restart"; status: string }>(`/apps/${id}/restart`, {
+        slug,
         method: "POST",
       }),
-    stop: (id: string) =>
+    stop: (id: string, slug?: string) =>
       p<{ ok: true; action: "stop"; status: string }>(`/apps/${id}/stop`, {
+        slug,
         method: "POST",
       }),
-    start: (id: string) =>
+    start: (id: string, slug?: string) =>
       p<{ ok: true; action: "start"; status: string }>(`/apps/${id}/start`, {
+        slug,
         method: "POST",
       }),
-    rollback: (id: string, deployment_uuid: string) =>
+    rollback: (id: string, deployment_uuid: string, slug?: string) =>
       p<DeployStatus>(`/apps/${id}/rollback`, {
+        slug,
         method: "POST",
         body: { deployment_uuid },
       }),
-    deployments: (id: string) =>
-      p<DeployStatus[]>(`/apps/${id}/deployments`),
-    logs: (id: string, tail = 200) =>
-      p<{ lines: string[] }>(`/apps/${id}/logs?tail=${tail}`),
-    metrics: (id: string, window: MetricsWindow, series: string) =>
+    deployments: (id: string, slug?: string) =>
+      p<DeployStatus[]>(`/apps/${id}/deployments`, { slug }),
+    logs: (id: string, tail = 200, slug?: string) =>
+      p<{ lines: string[] }>(`/apps/${id}/logs?tail=${tail}`, { slug }),
+    metrics: (id: string, window: MetricsWindow, series: string, slug?: string) =>
       p<AppMetricsResponse>(
         `/apps/${id}/metrics?window=${window}&series=${encodeURIComponent(series)}`,
+        { slug },
       ),
   },
   env: {

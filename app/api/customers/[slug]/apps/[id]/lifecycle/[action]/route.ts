@@ -9,7 +9,7 @@ const ALLOWED = new Set(["restart", "stop", "start"]);
 
 type Params = { slug: string; id: string; action: string };
 
-export const POST = withCustomerAuth<Params>(async (_req, { params }) => {
+export const POST = withCustomerAuth<Params>(async (_req, { params, slug }) => {
   if (!ALLOWED.has(params.action)) {
     return NextResponse.json(
       { error: `Unknown action "${params.action}"`, code: "invalid_action" },
@@ -17,6 +17,6 @@ export const POST = withCustomerAuth<Params>(async (_req, { params }) => {
     );
   }
   const action = params.action as "restart" | "stop" | "start";
-  const result = await provisionerApps.apps[action](params.id);
+  const result = await provisionerApps.apps[action](params.id, slug);
   return NextResponse.json(result);
 });

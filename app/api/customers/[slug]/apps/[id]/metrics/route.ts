@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 type Params = { slug: string; id: string };
 
-export const GET = withCustomerAuth<Params>(async (req: NextRequest, { params }) => {
+export const GET = withCustomerAuth<Params>(async (req: NextRequest, { params, slug }) => {
   const window = parseWindow(req.nextUrl.searchParams.get("window"));
   if (!window) {
     return NextResponse.json(
@@ -19,6 +19,6 @@ export const GET = withCustomerAuth<Params>(async (req: NextRequest, { params })
   const seriesParam =
     parseSeries(req.nextUrl.searchParams.get("series"), APP_SERIES) ??
     "cpu,ram,net";
-  const data = await provisionerApps.apps.metrics(params.id, window, seriesParam);
+  const data = await provisionerApps.apps.metrics(params.id, window, seriesParam, slug);
   return NextResponse.json(data);
 });

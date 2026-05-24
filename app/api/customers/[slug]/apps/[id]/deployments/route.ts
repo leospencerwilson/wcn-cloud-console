@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 type Params = { slug: string; id: string };
 
-export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
-  const deployments = await provisionerApps.apps.deployments(params.id);
+export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
+  const deployments = await provisionerApps.apps.deployments(params.id, slug);
   return NextResponse.json(deployments);
 });

@@ -16,7 +16,7 @@ export default async function DeployLogPage({
 
   let deployment;
   try {
-    const all = await provisionerApps.apps.deployments(id);
+    const all = await provisionerApps.apps.deployments(id, slug);
     deployment = all.find((d) => d.deployment_uuid === deploy_id) ?? null;
   } catch {
     deployment = null;

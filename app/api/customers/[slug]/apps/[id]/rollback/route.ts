@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 type Params = { slug: string; id: string };
 
-export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params }) => {
+export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, slug }) => {
   const body = (await req.json().catch(() => ({}))) as { deployment_uuid?: string };
   if (!body.deployment_uuid) {
     return NextResponse.json(
@@ -15,6 +15,6 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params }
       { status: 400 },
     );
   }
-  const result = await provisionerApps.apps.rollback(params.id, body.deployment_uuid);
+  const result = await provisionerApps.apps.rollback(params.id, body.deployment_uuid, slug);
   return NextResponse.json(result, { status: 202 });
 });
