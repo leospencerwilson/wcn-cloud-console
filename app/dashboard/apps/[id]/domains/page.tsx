@@ -17,7 +17,7 @@ export default async function DashboardAppDomainsPage({
   let initial: Awaited<ReturnType<typeof provisionerApps.domains.list>> = [];
   let loadError: string | null = null;
   try {
-    initial = await provisionerApps.domains.list(id);
+    initial = await provisionerApps.domains.list(id, slug);
   } catch (err) {
     if (err instanceof ProvisionerHttpError) {
       loadError = `${err.status} ${err.message}`;

@@ -8,12 +8,12 @@ export const runtime = "nodejs";
 
 type Params = { slug: string; id: string };
 
-export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
-  const tasks = await provisionerApps.cron.list(params.id);
+export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
+  const tasks = await provisionerApps.cron.list(params.id, slug);
   return NextResponse.json(tasks);
 });
 
-export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params }) => {
+export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, slug }) => {
   const body = (await req.json().catch(() => ({}))) as Partial<CronTaskInput>;
   if (!body.name || !body.command || !body.frequency) {
     return NextResponse.json(
@@ -26,6 +26,6 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params }
     command: body.command,
     frequency: body.frequency,
     container: body.container,
-  });
+  }, slug);
   return NextResponse.json(task, { status: 201 });
 });

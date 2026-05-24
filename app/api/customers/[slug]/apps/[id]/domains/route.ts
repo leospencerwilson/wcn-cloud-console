@@ -7,12 +7,12 @@ export const runtime = "nodejs";
 
 type Params = { slug: string; id: string };
 
-export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
-  const domains = await provisionerApps.domains.list(params.id);
+export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
+  const domains = await provisionerApps.domains.list(params.id, slug);
   return NextResponse.json(domains);
 });
 
-export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail }) => {
+export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail, slug }) => {
   const { hostname } = (await req.json()) as { hostname: string };
   if (!hostname || typeof hostname !== "string") {
     return NextResponse.json(
@@ -20,6 +20,6 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, 
       { status: 400 },
     );
   }
-  const domain = await provisionerApps.domains.add(params.id, hostname, userEmail);
+  const domain = await provisionerApps.domains.add(params.id, hostname, userEmail, slug);
   return NextResponse.json(domain, { status: 202 });
 });

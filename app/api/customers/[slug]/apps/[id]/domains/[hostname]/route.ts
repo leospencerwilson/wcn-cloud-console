@@ -7,14 +7,14 @@ export const runtime = "nodejs";
 
 type Params = { slug: string; id: string; hostname: string };
 
-export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
+export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
   const hostname = decodeURIComponent(params.hostname);
-  const domain = await provisionerApps.domains.status(params.id, hostname);
+  const domain = await provisionerApps.domains.status(params.id, hostname, slug);
   return NextResponse.json(domain);
 });
 
-export const DELETE = withCustomerAuth<Params>(async (_req, { params, userEmail }) => {
+export const DELETE = withCustomerAuth<Params>(async (_req, { params, userEmail, slug }) => {
   const hostname = decodeURIComponent(params.hostname);
-  await provisionerApps.domains.remove(params.id, hostname, userEmail);
+  await provisionerApps.domains.remove(params.id, hostname, userEmail, slug);
   return NextResponse.json({ ok: true });
 });

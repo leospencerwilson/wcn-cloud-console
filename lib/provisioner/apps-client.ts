@@ -129,9 +129,10 @@ export const provisionerApps = {
       ),
   },
   env: {
-    get: (appId: string) => p<EnvVar[]>(`/apps/${appId}/env`),
-    put: (appId: string, env: EnvVar[]) =>
-      p<EnvVar[]>(`/apps/${appId}/env`, { method: "PUT", body: env }),
+    get: (appId: string, slug?: string) =>
+      p<EnvVar[]>(`/apps/${appId}/env`, { slug }),
+    put: (appId: string, env: EnvVar[], slug?: string) =>
+      p<EnvVar[]>(`/apps/${appId}/env`, { slug, method: "PUT", body: env }),
     importText: (
       appId: string,
       body: {
@@ -140,88 +141,110 @@ export const provisionerApps = {
         is_preview?: boolean;
         ignore_errors?: boolean;
       },
+      slug?: string,
     ) =>
       p<{ imported: number; errors: string[] }>(
         `/apps/${appId}/env/import`,
-        { method: "POST", body },
+        { slug, method: "POST", body },
       ),
   },
   cron: {
-    list: (appId: string) => p<CronTask[]>(`/apps/${appId}/cron`),
-    create: (appId: string, input: CronTaskInput) =>
-      p<CronTask>(`/apps/${appId}/cron`, { method: "POST", body: input }),
-    remove: (appId: string, taskUuid: string) =>
-      p<{ ok: true }>(`/apps/${appId}/cron/${taskUuid}`, { method: "DELETE" }),
+    list: (appId: string, slug?: string) =>
+      p<CronTask[]>(`/apps/${appId}/cron`, { slug }),
+    create: (appId: string, input: CronTaskInput, slug?: string) =>
+      p<CronTask>(`/apps/${appId}/cron`, { slug, method: "POST", body: input }),
+    remove: (appId: string, taskUuid: string, slug?: string) =>
+      p<{ ok: true }>(`/apps/${appId}/cron/${taskUuid}`, {
+        slug,
+        method: "DELETE",
+      }),
   },
   domains: {
-    list: (appId: string) => p<AppDomain[]>(`/apps/${appId}/domains`),
-    add: (appId: string, hostname: string, actor?: string) =>
+    list: (appId: string, slug?: string) =>
+      p<AppDomain[]>(`/apps/${appId}/domains`, { slug }),
+    add: (appId: string, hostname: string, actor?: string, slug?: string) =>
       p<AppDomain>(`/apps/${appId}/domains`, {
+        slug,
         method: "POST",
         body: { hostname },
         actor,
       }),
-    status: (appId: string, hostname: string) =>
+    status: (appId: string, hostname: string, slug?: string) =>
       p<AppDomain>(
         `/apps/${appId}/domains/${encodeURIComponent(hostname)}/status`,
+        { slug },
       ),
-    remove: (appId: string, hostname: string, actor?: string) =>
+    remove: (appId: string, hostname: string, actor?: string, slug?: string) =>
       p<{ ok: true }>(
         `/apps/${appId}/domains/${encodeURIComponent(hostname)}`,
-        { method: "DELETE", actor },
+        { slug, method: "DELETE", actor },
       ),
   },
   certs: {
-    get: (appId: string, hostname: string) =>
+    get: (appId: string, hostname: string, slug?: string) =>
       p<DomainCertMetadata>(
         `/apps/${appId}/domains/${encodeURIComponent(hostname)}/cert`,
+        { slug },
       ),
     upload: (
       appId: string,
       hostname: string,
       input: DomainCertInput,
       actor?: string,
+      slug?: string,
     ) =>
       p<DomainCertMetadata>(
         `/apps/${appId}/domains/${encodeURIComponent(hostname)}/cert`,
-        { method: "POST", body: input, actor },
+        { slug, method: "POST", body: input, actor },
       ),
-    remove: (appId: string, hostname: string, actor?: string) =>
+    remove: (appId: string, hostname: string, actor?: string, slug?: string) =>
       p<{ ok: true }>(
         `/apps/${appId}/domains/${encodeURIComponent(hostname)}/cert`,
-        { method: "DELETE", actor },
+        { slug, method: "DELETE", actor },
       ),
   },
   redirects: {
-    list: (appId: string) => p<RedirectRule[]>(`/apps/${appId}/redirects`),
-    create: (appId: string, input: RedirectRuleInput, actor?: string) =>
+    list: (appId: string, slug?: string) =>
+      p<RedirectRule[]>(`/apps/${appId}/redirects`, { slug }),
+    create: (
+      appId: string,
+      input: RedirectRuleInput,
+      actor?: string,
+      slug?: string,
+    ) =>
       p<RedirectRule>(`/apps/${appId}/redirects`, {
+        slug,
         method: "POST",
         body: input,
         actor,
       }),
-    remove: (appId: string, id: number, actor?: string) =>
+    remove: (appId: string, id: number, actor?: string, slug?: string) =>
       p<{ ok: true }>(`/apps/${appId}/redirects/${id}`, {
+        slug,
         method: "DELETE",
         actor,
       }),
   },
   secrets: {
-    list: (appId: string) => p<Secret[]>(`/apps/${appId}/secrets`),
-    put: (appId: string, secrets: SecretInput[], actor?: string) =>
+    list: (appId: string, slug?: string) =>
+      p<Secret[]>(`/apps/${appId}/secrets`, { slug }),
+    put: (appId: string, secrets: SecretInput[], actor?: string, slug?: string) =>
       p<Secret[]>(`/apps/${appId}/secrets`, {
+        slug,
         method: "PUT",
         body: secrets,
         actor,
       }),
-    reveal: (appId: string, key: string, actor?: string) =>
+    reveal: (appId: string, key: string, actor?: string, slug?: string) =>
       p<{ key: string; value: string }>(`/apps/${appId}/secrets/reveal`, {
+        slug,
         method: "POST",
         body: { key },
         actor,
       }),
-    remove: (appId: string, key: string, actor?: string) =>
+    remove: (appId: string, key: string, actor?: string, slug?: string) =>
       p<{ ok: true }>(`/apps/${appId}/secrets/${encodeURIComponent(key)}`, {
+        slug,
         method: "DELETE",
         actor,
       }),

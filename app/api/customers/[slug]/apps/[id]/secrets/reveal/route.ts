@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 type Params = { slug: string; id: string };
 
-export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail }) => {
+export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail, slug }) => {
   const body = (await req.json().catch(() => ({}))) as {
     key?: string;
     password?: string;
@@ -39,6 +39,6 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, 
     );
   }
 
-  const result = await provisionerApps.secrets.reveal(params.id, body.key, userEmail);
+  const result = await provisionerApps.secrets.reveal(params.id, body.key, userEmail, slug);
   return NextResponse.json(result);
 });

@@ -8,12 +8,12 @@ export const runtime = "nodejs";
 
 type Params = { slug: string; id: string };
 
-export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
-  const rules = await provisionerApps.redirects.list(params.id);
+export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
+  const rules = await provisionerApps.redirects.list(params.id, slug);
   return NextResponse.json(rules);
 });
 
-export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail }) => {
+export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail, slug }) => {
   const body = (await req.json().catch(() => ({}))) as Partial<RedirectRuleInput>;
   if (!body.from_host || !body.to_url) {
     return NextResponse.json(
@@ -37,6 +37,7 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, 
       status_code: code,
     },
     userEmail,
+    slug,
   );
   return NextResponse.json(result, { status: 201 });
 });

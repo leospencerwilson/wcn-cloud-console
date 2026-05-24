@@ -13,8 +13,8 @@ type Body = {
   ignore_errors?: boolean;
 };
 
-export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params }) => {
+export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, slug }) => {
   const body = (await req.json()) as Body;
-  const result = await provisionerApps.env.importText(params.id, body);
+  const result = await provisionerApps.env.importText(params.id, body, slug);
   return NextResponse.json(result);
 });

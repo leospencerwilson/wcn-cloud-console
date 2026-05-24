@@ -12,6 +12,6 @@ export default async function DashboardAppEnvPage({
   const session = await requireCustomerAdmin();
   const slug = session.appUser.customer_slug!;
   const { id } = await params;
-  const env = await provisionerApps.env.get(id);
+  const env = await provisionerApps.env.get(id, slug);
   return <EnvEditor slug={slug} appId={id} initial={env} />;
 }

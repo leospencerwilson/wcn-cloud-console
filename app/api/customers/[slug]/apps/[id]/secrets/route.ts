@@ -10,12 +10,12 @@ const KEY_RE = /^[A-Z][A-Z0-9_]{0,63}$/;
 
 type Params = { slug: string; id: string };
 
-export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
-  const secrets = await provisionerApps.secrets.list(params.id);
+export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
+  const secrets = await provisionerApps.secrets.list(params.id, slug);
   return NextResponse.json(secrets);
 });
 
-export const PUT = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail }) => {
+export const PUT = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail, slug }) => {
   const body = (await req.json().catch(() => null)) as SecretInput[] | null;
   if (!Array.isArray(body) || body.length === 0) {
     return NextResponse.json(
@@ -40,6 +40,6 @@ export const PUT = withCustomerAuth<Params>(async (req: NextRequest, { params, u
       );
     }
   }
-  const result = await provisionerApps.secrets.put(params.id, body, userEmail);
+  const result = await provisionerApps.secrets.put(params.id, body, userEmail, slug);
   return NextResponse.json(result);
 });

@@ -12,12 +12,12 @@ type Params = { slug: string; id: string; hostname: string };
 const CERT_BLOCK = /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/;
 const KEY_BLOCK = /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]+?-----END [A-Z ]*PRIVATE KEY-----/;
 
-export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
-  const meta = await provisionerApps.certs.get(params.id, params.hostname);
+export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
+  const meta = await provisionerApps.certs.get(params.id, params.hostname, slug);
   return NextResponse.json(meta);
 });
 
-export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail }) => {
+export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail, slug }) => {
   const body = (await req.json().catch(() => ({}))) as DomainCertInput;
   if (!body.cert_pem || !CERT_BLOCK.test(body.cert_pem)) {
     return NextResponse.json(
@@ -42,11 +42,12 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, 
     params.hostname,
     body,
     userEmail,
+    slug,
   );
   return NextResponse.json(meta, { status: 201 });
 });
 
-export const DELETE = withCustomerAuth<Params>(async (_req, { params, userEmail }) => {
-  const result = await provisionerApps.certs.remove(params.id, params.hostname, userEmail);
+export const DELETE = withCustomerAuth<Params>(async (_req, { params, userEmail, slug }) => {
+  const result = await provisionerApps.certs.remove(params.id, params.hostname, userEmail, slug);
   return NextResponse.json(result);
 });

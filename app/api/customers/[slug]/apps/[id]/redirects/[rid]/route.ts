@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 type Params = { slug: string; id: string; rid: string };
 
-export const DELETE = withCustomerAuth<Params>(async (_req, { params, userEmail }) => {
+export const DELETE = withCustomerAuth<Params>(async (_req, { params, userEmail, slug }) => {
   const rid = Number(params.rid);
   if (!Number.isFinite(rid)) {
     return NextResponse.json(
@@ -15,6 +15,6 @@ export const DELETE = withCustomerAuth<Params>(async (_req, { params, userEmail 
       { status: 400 },
     );
   }
-  const result = await provisionerApps.redirects.remove(params.id, rid, userEmail);
+  const result = await provisionerApps.redirects.remove(params.id, rid, userEmail, slug);
   return NextResponse.json(result);
 });
