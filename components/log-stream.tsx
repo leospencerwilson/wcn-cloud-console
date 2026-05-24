@@ -57,6 +57,41 @@ function parseBlock(block: string): LogEvent | null {
 
 type Line = { kind: "log" | "stdout" | "stderr" | "system"; text: string };
 
+// Upstream provisioner errors sometimes arrive as JSON-in-JSON
+// (e.g. {"error":"{\"error\":\"Server Error\",\"code\":\"coolify_error\"}","code":"upstream_error"}).
+// Unwrap repeatedly and surface the deepest human-readable message.
+function prettifyError(raw: string): string {
+  let cur: unknown = raw;
+  for (let i = 0; i < 5; i++) {
+    if (typeof cur !== "string") break;
+    const trimmed = cur.trim();
+    if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) break;
+    try {
+      cur = JSON.parse(trimmed);
+    } catch {
+      break;
+    }
+  }
+  const seen = new Set<unknown>();
+  while (cur && typeof cur === "object" && !seen.has(cur)) {
+    seen.add(cur);
+    const obj = cur as Record<string, unknown>;
+    const next = obj.error ?? obj.message ?? obj.detail;
+    if (next === undefined) break;
+    if (typeof next === "string") {
+      const t = next.trim();
+      if (t.startsWith("{") || t.startsWith("[")) {
+        try { cur = JSON.parse(t); continue; } catch { cur = next; break; }
+      }
+      cur = next;
+      break;
+    }
+    cur = next;
+  }
+  if (typeof cur === "string") return cur;
+  try { return JSON.stringify(cur); } catch { return String(cur); }
+}
+
 export default function LogStream({
   source,
   height = 420,
@@ -102,7 +137,7 @@ export default function LogStream({
         });
         if (!res.ok || !res.body) {
           const text = await res.text().catch(() => "");
-          setErrMsg(text || `HTTP ${res.status}`);
+          setErrMsg(text ? prettifyError(text) : `HTTP ${res.status}`);
           setStatus("error");
           return;
         }
@@ -129,7 +164,7 @@ export default function LogStream({
               setStatus("done");
               ctrl.abort();
             } else if (ev.type === "error") {
-              setErrMsg(ev.message || "Stream error");
+              setErrMsg(ev.message ? prettifyError(ev.message) : "Stream error");
               setStatus("error");
               ctrl.abort();
             }
