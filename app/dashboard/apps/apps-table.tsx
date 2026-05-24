@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { statusPill } from "@/lib/utils";
@@ -40,6 +40,19 @@ export default function AppsTable({
     setConfirmName("");
     setError(null);
   }
+
+  useEffect(() => {
+    if (!target) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeDelete();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, deleting]);
 
   async function confirmDelete() {
     if (!target || confirmName !== target.name) return;
@@ -149,11 +162,15 @@ export default function AppsTable({
 
       {target && (
         <div className="modal-backdrop" onClick={closeDelete}>
-          <div
+          <form
             className="modal-panel"
             role="dialog"
             aria-modal="true"
             onClick={(e) => e.stopPropagation()}
+            onSubmit={(e) => {
+              e.preventDefault();
+              confirmDelete();
+            }}
             style={{ maxWidth: 460 }}
           >
             <header className="modal-header">
@@ -214,20 +231,44 @@ export default function AppsTable({
                 Cancel
               </button>
               <button
-                type="button"
+                type="submit"
                 className="btn btn-primary btn-sm"
-                onClick={confirmDelete}
                 disabled={deleting || confirmName !== target.name}
                 style={{
                   background: "var(--crit)",
                   borderColor: "var(--crit)",
                   color: "white",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
                 }}
               >
-                {deleting ? "Deleting…" : "Delete app"}
+                <span>{deleting ? "Deleting…" : "Delete app"}</span>
+                {!deleting && (
+                  <kbd
+                    aria-hidden
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: 18,
+                      height: 18,
+                      padding: "0 5px",
+                      fontSize: 11,
+                      lineHeight: 1,
+                      fontFamily: "var(--font-mono, ui-monospace, monospace)",
+                      borderRadius: 4,
+                      background: "rgba(255,255,255,0.18)",
+                      border: "1px solid rgba(255,255,255,0.28)",
+                      color: "white",
+                    }}
+                  >
+                    ↵
+                  </kbd>
+                )}
               </button>
             </footer>
-          </div>
+          </form>
         </div>
       )}
     </>
