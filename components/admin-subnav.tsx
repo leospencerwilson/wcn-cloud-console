@@ -11,6 +11,11 @@ const ITEMS: { label: string; href: string; match: (p: string) => boolean }[] = 
     match: (p) => p.startsWith("/admin/customers"),
   },
   {
+    label: "Tiers",
+    href: "/admin/tiers",
+    match: (p) => p.startsWith("/admin/tiers"),
+  },
+  {
     label: "Invites",
     href: "/admin/invites",
     match: (p) => p.startsWith("/admin/invites"),

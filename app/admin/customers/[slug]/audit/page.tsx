@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireWcnAdmin } from "@/lib/auth/session";
 import { getCustomer } from "@/lib/db/customers";
-import AuditLog from "@/components/audit-log";
+import AuditTable from "@/components/audit-table";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,7 @@ export default async function AdminCustomerAuditPage({
       <div>
         <h2 className="type-h2">{customer.name} · audit log</h2>
       </div>
-      <AuditLog slug={slug} />
+      <AuditTable slug={slug} />
     </div>
   );
 }

@@ -1,12 +1,61 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { getCustomer } from "@/lib/db/customers";
-import { getVmByCustomerSlug } from "@/lib/db/vms";
+import { getVmByCustomerSlug, type Vm } from "@/lib/db/vms";
 import { statusPill } from "@/lib/utils";
-import VmOperations from "./vm-operations";
 import CustomerAlertsCallout from "@/components/customer-alerts-callout";
-import ImpersonateButton from "./impersonate-button";
+import RecentAudit from "./recent-audit";
+import RecentJobs from "./recent-jobs";
+
+interface QuickLink {
+  label: string;
+  href: string;
+  display: string;
+}
+
+function buildQuickLinks(slug: string, vm: Vm | null): QuickLink[] {
+  const links: QuickLink[] = [];
+  const proxmoxBase = process.env.PROXMOX_BASE_URL?.replace(/\/+$/, "");
+  const cfAccount = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const cfZone = process.env.CLOUDFLARE_ZONE_NAME ?? "western-communication.com";
+
+  if (vm && proxmoxBase) {
+    const href = `${proxmoxBase}/#v1:0:=qemu/${vm.vmid}:4::::::`;
+    links.push({
+      label: "PROXMOX VM",
+      href,
+      display: `${proxmoxBase.replace(/^https?:\/\//, "")} · qemu/${vm.vmid}`,
+    });
+  }
+
+  if (vm && vm.status !== "destroyed") {
+    const href = `https://admin-${slug}.western-communication.com`;
+    links.push({
+      label: "COOLIFY",
+      href,
+      display: `admin-${slug}.western-communication.com`,
+    });
+  }
+
+  if (cfAccount) {
+    const href = vm?.tunnel_id
+      ? `https://one.dash.cloudflare.com/${cfAccount}/networks/tunnels/cfd_tunnel/${vm.tunnel_id}`
+      : `https://one.dash.cloudflare.com/${cfAccount}/networks/tunnels`;
+    links.push({
+      label: "CLOUDFLARE TUNNEL",
+      href,
+      display: vm?.tunnel_id ? vm.tunnel_id : "tunnels list",
+    });
+
+    links.push({
+      label: "DNS RECORDS",
+      href: `https://dash.cloudflare.com/${cfAccount}/${cfZone}/dns/records`,
+      display: `${cfZone} · DNS`,
+    });
+  }
+
+  return links;
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -20,15 +69,14 @@ export default async function CustomerOverviewPage({ params }: PageProps) {
   ]);
   if (!customer) notFound();
 
+  const quickLinks = buildQuickLinks(slug, vm);
+
   return (
     <div className="space-y-14">
       <section>
         <div className="flex items-baseline justify-between mb-5">
           <h2 className="type-h2">— VM</h2>
-          <div className="flex items-center gap-4">
-            <ImpersonateButton slug={customer.slug} customerName={customer.name} />
-            <span className="type-meta">Proxmox + cloudflared tunnel</span>
-          </div>
+          <span className="type-meta">Proxmox + cloudflared tunnel</span>
         </div>
         <Card>
           <div className="px-8 py-8">
@@ -62,105 +110,44 @@ export default async function CustomerOverviewPage({ params }: PageProps) {
         </Card>
       </section>
 
-      {vm && <VmOperations slug={customer.slug} />}
-
-      {vm && <CustomerAlertsCallout slug={customer.slug} />}
-
-      {vm && (
+      {quickLinks.length > 0 && (
         <section>
           <div className="flex items-baseline justify-between mb-5">
-            <h2 className="type-h2">— TOOLS</h2>
-            <span className="type-meta">Per-customer admin views</span>
+            <h2 className="type-h2">§ QUICK LINKS</h2>
+            <span className="type-meta">Jump to external dashboards</span>
           </div>
           <Card>
-            <div className="px-8 py-2">
-              <ul>
-                {[
-                  { href: `/admin/customers/${customer.slug}/metrics`, label: "Metrics", meta: "CPU · RAM · disk · network" },
-                  { href: `/admin/customers/${customer.slug}/operations`, label: "VM resize", meta: "Cores, memory, disk" },
-                  { href: `/admin/customers/${customer.slug}/snapshots`, label: "Snapshots", meta: "Take · revert · delete" },
-                  { href: `/admin/customers/${customer.slug}/backups`, label: "Backups", meta: "Nightly + on-demand" },
-                  { href: `/admin/customers/${customer.slug}/alerts`, label: "Alerts", meta: "Active + recent firings" },
-                  { href: `/admin/customers/${customer.slug}/audit`, label: "Audit log", meta: "Every privileged action" },
-                ].map((row) => (
-                  <li
-                    key={row.href}
-                    className="border-b-hairline border-b last:border-b-0"
-                    style={{ borderColor: "var(--color-hairline)" }}
-                  >
-                    <Link
-                      href={row.href}
-                      className="flex items-center justify-between py-5 group"
-                    >
-                      <div>
-                        <div
-                          className="font-medium text-[15px]"
-                          style={{ color: "var(--color-navy)" }}
-                        >
-                          {row.label}
-                        </div>
-                        <div className="type-meta mt-1">{row.meta}</div>
-                      </div>
-                      <span
-                        className="type-mono text-[12px]"
-                        style={{ color: "var(--color-muted)" }}
+            <div className="px-8 py-8">
+              <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-7">
+                {quickLinks.map((link) => (
+                  <div key={link.label}>
+                    <dt className="type-eyebrow mb-3">— {link.label}</dt>
+                    <dd>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="type-mono text-[13px]"
+                        style={{ color: "var(--color-navy)" }}
                       >
-                        →
-                      </span>
-                    </Link>
-                  </li>
+                        {link.display} ↗
+                      </a>
+                    </dd>
+                  </div>
                 ))}
-              </ul>
+              </dl>
             </div>
           </Card>
         </section>
       )}
 
-      <section>
-        <div className="flex items-baseline justify-between mb-5">
-          <h2 className="type-h2">— ADMIN</h2>
-          <span className="type-meta">Provisioner jobs &amp; tools</span>
-        </div>
-        <Card>
-          <div className="px-8 py-2">
-            {customer.last_job_id ? (
-              <ul>
-                <li
-                  className="border-b-hairline border-b last:border-b-0"
-                  style={{ borderColor: "var(--color-hairline)" }}
-                >
-                  <Link
-                    href={`/admin/customers/${customer.slug}/jobs/${customer.last_job_id}`}
-                    className="flex items-center justify-between py-5 group"
-                  >
-                    <div>
-                      <div
-                        className="font-medium text-[15px]"
-                        style={{ color: "var(--color-navy)" }}
-                      >
-                        Last provisioner job
-                      </div>
-                      <div className="type-meta mt-1">
-                        Streamed logs from the most recent run
-                      </div>
-                    </div>
-                    <span
-                      className="type-mono text-[12px]"
-                      style={{ color: "var(--color-muted)" }}
-                    >
-                      {customer.last_job_id}
-                    </span>
-                  </Link>
-                </li>
-              </ul>
-            ) : (
-              <p className="type-meta py-5">
-                No provisioner jobs yet for this customer.
-              </p>
-            )}
-          </div>
-        </Card>
-      </section>
+      {vm && <RecentAudit slug={customer.slug} />}
+
+      {vm && <CustomerAlertsCallout slug={customer.slug} />}
+
+      {customer.last_job_id && (
+        <RecentJobs slug={customer.slug} lastJobId={customer.last_job_id} />
+      )}
     </div>
   );
 }

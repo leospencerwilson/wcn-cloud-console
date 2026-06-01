@@ -71,7 +71,21 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-7">
+      {error && (
+        <div
+          className="px-4 py-3 text-[13px] leading-[1.5] border type-mono"
+          role="alert"
+          style={{
+            color: "var(--color-danger, #b3261e)",
+            borderColor: "var(--color-danger, #b3261e)",
+            background: "var(--color-danger-bg, #fdecea)",
+          }}
+        >
+          {error}
+        </div>
+      )}
+
       <div>
         <Label htmlFor="email">Email</Label>
         <Input
@@ -79,10 +93,12 @@ export default function LoginForm() {
           type="email"
           autoComplete="email"
           required
+          disabled={loading}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
+
       <div>
         <Label htmlFor="password">Password</Label>
         <Input
@@ -90,24 +106,47 @@ export default function LoginForm() {
           type="password"
           autoComplete="current-password"
           required
+          disabled={loading}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-      {error && (
-        <p
-          className="text-[13px] font-medium"
-          role="alert"
-          style={{ color: "#B91C1C" }}
+
+      <div className="pt-4">
+        <Button
+          type="submit"
+          disabled={loading}
+          aria-busy={loading}
+          className="w-full"
         >
-          {error}
-        </p>
-      )}
-      <div className="pt-2">
-        <Button type="submit" disabled={loading} className="w-full">
-          {loading ? "Signing in…" : "Sign in"}
+          {loading ? (
+            <span className="inline-flex items-center justify-center gap-2">
+              <Spinner />
+              Signing in…
+            </span>
+          ) : (
+            "Sign in"
+          )}
         </Button>
       </div>
     </form>
+  );
+}
+
+function Spinner() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      aria-hidden="true"
+      className="animate-spin"
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
   );
 }

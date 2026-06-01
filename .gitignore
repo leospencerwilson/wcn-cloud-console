@@ -6,3 +6,9 @@ node_modules
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+# Playwright E2E artifacts
+/test-results
+/playwright-report
+/playwright/.cache
+/tests/.auth

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import type {
@@ -46,10 +46,15 @@ function parseList(s: string): string[] {
 
 export default function BulkWizard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialSlugs = useMemo(() => {
+    const raw = searchParams?.get("slugs") ?? "";
+    return parseList(raw).join(", ");
+  }, [searchParams]);
 
   const [step, setStep] = useState<Step>(1);
   const [op, setOp] = useState<BulkOperation>("vm.restart");
-  const [slugsText, setSlugsText] = useState("");
+  const [slugsText, setSlugsText] = useState(initialSlugs);
   const [excludeText, setExcludeText] = useState("");
   const [tiers, setTiers] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<string[]>([]);

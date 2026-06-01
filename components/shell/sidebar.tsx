@@ -171,6 +171,7 @@ const ADMIN_SECTIONS: NavSection[] = [
     items: [
       { label: "Overview", href: "/admin", icon: I.overview, match: (p) => p === "/admin" },
       { label: "Customers", href: "/admin/customers", icon: I.customers },
+      { label: "Tiers", href: "/admin/tiers", icon: I.capacity },
       { label: "Capacity", href: "/admin/capacity", icon: I.capacity },
     ],
   },

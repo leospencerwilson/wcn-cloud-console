@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireWcnAdmin } from "@/lib/auth/session";
-import { createCustomer, setLastJobId, writeAudit } from "@/lib/db/customers";
+import { createCustomer, getCustomer, setLastJobId, writeAudit } from "@/lib/db/customers";
 import { sendCustomerCreatedEmail } from "@/lib/email/send-customer-created";
 import { startProvision } from "@/lib/provisioner/client";
 
@@ -16,7 +16,12 @@ const schema = z.object({
   contactEmail: z.string().email(),
 });
 
-export async function createCustomerAction(formData: FormData): Promise<void> {
+export type CreateCustomerState = { error?: string } | undefined;
+
+export async function createCustomerAction(
+  _prev: CreateCustomerState,
+  formData: FormData,
+): Promise<CreateCustomerState> {
   const session = await requireWcnAdmin();
   const parsed = schema.safeParse({
     slug: formData.get("slug"),
@@ -25,12 +30,24 @@ export async function createCustomerAction(formData: FormData): Promise<void> {
     contactEmail: formData.get("contactEmail"),
   });
   if (!parsed.success) {
-    throw new Error(
-      `Invalid input: ${parsed.error.issues.map((i) => i.message).join(", ")}`,
-    );
+    return {
+      error: `Invalid input: ${parsed.error.issues.map((i) => i.message).join(", ")}`,
+    };
   }
 
-  const customer = await createCustomer(parsed.data);
+  const existing = await getCustomer(parsed.data.slug);
+  if (existing) {
+    return { error: `Slug "${parsed.data.slug}" is already taken.` };
+  }
+
+  let customer;
+  try {
+    customer = await createCustomer(parsed.data);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { error: `Failed to create customer: ${msg}` };
+  }
+
   await writeAudit(
     session.appUser.email,
     "customer.created",
@@ -58,8 +75,6 @@ export async function createCustomerAction(formData: FormData): Promise<void> {
     }
   }
 
-  // Kick off provisioning. If the trigger fails, the customer row stays in
-  // 'provisioning' so an operator can retry from the customer page.
   let jobId: string | null = null;
   try {
     const job = await startProvision({
@@ -67,7 +82,7 @@ export async function createCustomerAction(formData: FormData): Promise<void> {
       tier: customer.tier,
       name: customer.name,
       email: customer.contact_email,
-      resume: true, // the row already exists from createCustomer()
+      resume: true,
     });
     jobId = job.jobId;
     await setLastJobId(customer.slug, job.jobId);
@@ -81,9 +96,5 @@ export async function createCustomerAction(formData: FormData): Promise<void> {
     );
   }
 
-  if (jobId) {
-    redirect(`/admin/customers/${customer.slug}/jobs/${jobId}`);
-  } else {
-    redirect(`/admin/customers?error=provisioner_unreachable&slug=${customer.slug}`);
-  }
+  redirect(`/admin/customers/${customer.slug}?provisioning=1`);
 }

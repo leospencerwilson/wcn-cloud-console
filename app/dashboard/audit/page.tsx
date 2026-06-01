@@ -1,5 +1,5 @@
 import { requireCustomerAdmin } from "@/lib/auth/session";
-import AuditLog from "@/components/audit-log";
+import AuditTable from "@/components/audit-table";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ export default async function DashboardAuditPage() {
           domain changes, secret reveals.
         </p>
       </div>
-      <AuditLog slug={slug} />
+      <AuditTable slug={slug} />
     </div>
   );
 }

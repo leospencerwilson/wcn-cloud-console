@@ -82,3 +82,20 @@ export async function openJobStream(jobId: string): Promise<Response> {
     cache: "no-store",
   });
 }
+
+export async function getJobLog(jobId: string): Promise<string> {
+  const res = await fetch(`${baseUrl()}/jobs/${jobId}/log`, {
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`provisioner ${res.status}`);
+  return await res.text();
+}
+
+export async function cancelJob(jobId: string): Promise<Response> {
+  return fetch(`${baseUrl()}/jobs/${jobId}/cancel`, {
+    method: "POST",
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+}
