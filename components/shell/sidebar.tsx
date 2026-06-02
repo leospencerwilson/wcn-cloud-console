@@ -125,6 +125,13 @@ const I = {
       <path d="M18 4l2 2" />
     </Svg>
   ),
+  apiDocs: (
+    <Svg>
+      <path d="M4 4h11a3 3 0 0 1 3 3v13" />
+      <path d="M4 4v16h11a3 3 0 0 1 3-3" />
+      <path d="M8 8h6M8 12h6M8 16h4" />
+    </Svg>
+  ),
   customers: (
     <Svg>
       <rect x="3" y="6" width="18" height="14" rx="2" />
@@ -231,6 +238,7 @@ const CUSTOMER_SECTIONS: NavSection[] = [
     items: [
       { label: "Team", href: "/dashboard/team", icon: I.team },
       { label: "API tokens", href: "/dashboard/api-tokens", icon: I.tokens },
+      { label: "API docs", href: "/dashboard/api-docs", icon: I.apiDocs },
     ],
   },
 ];

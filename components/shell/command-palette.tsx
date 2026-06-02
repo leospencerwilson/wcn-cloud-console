@@ -29,6 +29,7 @@ const CUSTOMER_CMDS: Cmd[] = [
   { id: "c-hl", label: "Health", group: "Customer", href: "/dashboard/health" },
   { id: "c-tm", label: "Team", group: "Customer", href: "/dashboard/team" },
   { id: "c-tk", label: "API tokens", group: "Customer", href: "/dashboard/api-tokens" },
+  { id: "c-ad", label: "API docs", group: "Customer", href: "/dashboard/api-docs" },
   { id: "c-au", label: "Audit", group: "Customer", href: "/dashboard/audit" },
 ];
 

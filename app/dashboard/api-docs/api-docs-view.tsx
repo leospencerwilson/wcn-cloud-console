@@ -1,0 +1,402 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import {
+  SECTIONS,
+  type Endpoint,
+  type Method,
+  type Section,
+} from "./spec";
+
+type Lang = "curl" | "js";
+
+const METHOD_TONE: Record<Method, string> = {
+  GET: "var(--ok)",
+  POST: "var(--brand)",
+  PUT: "var(--brand)",
+  PATCH: "var(--accent)",
+  DELETE: "var(--crit)",
+};
+
+/* Flat list of [section.id, endpoint?.id] for the scroll-spy. */
+type AnchorRef = { id: string; sectionId: string; endpointId?: string };
+
+function buildAnchors(): AnchorRef[] {
+  const out: AnchorRef[] = [];
+  for (const s of SECTIONS) {
+    out.push({ id: s.id, sectionId: s.id });
+    if (s.endpoints) {
+      for (const e of s.endpoints) {
+        out.push({
+          id: `${s.id}--${e.id}`,
+          sectionId: s.id,
+          endpointId: e.id,
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/* Find the currently-focused endpoint based on the active anchor — used to
+ * drive the right-hand code panel. Falls back to the first endpoint in the
+ * active section if no specific endpoint is in view. */
+function findActiveEndpoint(activeId: string): Endpoint | null {
+  for (const s of SECTIONS) {
+    if (!s.endpoints) continue;
+    if (activeId === s.id) {
+      return s.endpoints[0] ?? null;
+    }
+    for (const e of s.endpoints) {
+      if (`${s.id}--${e.id}` === activeId) return e;
+    }
+  }
+  return null;
+}
+
+/* Tiny markdown-ish renderer: paragraphs, fenced code blocks, inline code,
+ * and pipe tables. Good enough for our docs without pulling in markdown-it. */
+function renderProse(text: string) {
+  const parts: React.ReactNode[] = [];
+  const blocks = text.split(/\n\n+/);
+  blocks.forEach((block, i) => {
+    const trimmed = block.trim();
+    if (!trimmed) return;
+
+    // Fenced code block (```lang\n…\n```)
+    const fence = /^```(\w+)?\n([\s\S]*?)\n```$/.exec(trimmed);
+    if (fence) {
+      parts.push(
+        <pre key={i} className="api-doc-codeblock">
+          <code>{fence[2]}</code>
+        </pre>,
+      );
+      return;
+    }
+
+    // Pipe table (|h|h|\n|--|--|\n|c|c|)
+    if (trimmed.startsWith("|") && trimmed.includes("\n|--")) {
+      const lines = trimmed.split("\n");
+      const head = lines[0].split("|").slice(1, -1).map((s) => s.trim());
+      const body = lines.slice(2).map((l) =>
+        l.split("|").slice(1, -1).map((s) => s.trim()),
+      );
+      parts.push(
+        <div key={i} className="api-doc-table-wrap">
+          <table className="api-doc-table">
+            <thead>
+              <tr>
+                {head.map((h, hi) => (
+                  <th key={hi}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {body.map((row, ri) => (
+                <tr key={ri}>
+                  {row.map((c, ci) => (
+                    <td key={ci}>{renderInline(c)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>,
+      );
+      return;
+    }
+
+    // Plain paragraph with inline `code`, **bold**, [links](url)
+    parts.push(
+      <p key={i} className="api-doc-p">
+        {renderInline(trimmed)}
+      </p>,
+    );
+  });
+  return parts;
+}
+
+function renderInline(text: string): React.ReactNode {
+  // Order matters: code first (so its content isn't bolded), then links, then bold.
+  const out: React.ReactNode[] = [];
+  let i = 0;
+  let key = 0;
+  // eslint-disable-next-line no-useless-escape
+  const re = /(`[^`]+`)|(\[[^\]]+\]\([^)]+\))|(\*\*[^*]+\*\*)/g;
+  let m;
+  while ((m = re.exec(text)) != null) {
+    if (m.index > i) out.push(text.slice(i, m.index));
+    const seg = m[0];
+    if (seg.startsWith("`")) {
+      out.push(<code key={key++} className="api-doc-inline-code">{seg.slice(1, -1)}</code>);
+    } else if (seg.startsWith("[")) {
+      const linkM = /\[([^\]]+)\]\(([^)]+)\)/.exec(seg);
+      if (linkM) out.push(
+        <Link key={key++} href={linkM[2]} className="api-doc-link">
+          {linkM[1]}
+        </Link>,
+      );
+    } else if (seg.startsWith("**")) {
+      out.push(<strong key={key++}>{seg.slice(2, -2)}</strong>);
+    }
+    i = m.index + seg.length;
+  }
+  if (i < text.length) out.push(text.slice(i));
+  return out;
+}
+
+function MethodBadge({ method }: { method: Method }) {
+  return (
+    <span
+      className="api-doc-method"
+      style={{ "--method-tone": METHOD_TONE[method] } as React.CSSProperties}
+    >
+      {method}
+    </span>
+  );
+}
+
+function CodeBlock({
+  lang,
+  code,
+  label,
+}: {
+  lang: "bash" | "js" | "json";
+  code: string;
+  label?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="api-doc-codeblock-wrap">
+      {label && (
+        <div className="api-doc-codeblock-label">
+          <span>{label}</span>
+        </div>
+      )}
+      <pre className={`api-doc-codeblock api-doc-codeblock--${lang}`}>
+        <button
+          type="button"
+          className="api-doc-copy"
+          onClick={() => {
+            navigator.clipboard.writeText(code).then(() => {
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1200);
+            });
+          }}
+          title="Copy"
+        >
+          {copied ? "copied" : "copy"}
+        </button>
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
+}
+
+export default function ApiDocsView() {
+  const [lang, setLang] = useState<Lang>("curl");
+  const [activeId, setActiveId] = useState<string>(SECTIONS[0]?.id ?? "");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const anchors = useMemo(() => buildAnchors(), []);
+
+  // Scroll-spy: pick the active anchor as the one closest to the top of the
+  // viewport that's already past the threshold.
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const elements: HTMLElement[] = [];
+    for (const a of anchors) {
+      const el = document.getElementById(a.id);
+      if (el) elements.push(el);
+    }
+    const io = new IntersectionObserver(
+      () => {
+        let best: { id: string; top: number } | null = null;
+        for (const el of elements) {
+          const r = el.getBoundingClientRect();
+          // The 'active' region is anything whose top is within
+          // [- viewport*0.4, + viewport*0.5]. Pick the one closest to the
+          // 30% line.
+          const targetLine = window.innerHeight * 0.3;
+          if (r.top - targetLine < 0 && r.bottom > 0) {
+            const d = Math.abs(r.top - targetLine);
+            if (!best || d < best.top) best = { id: el.id, top: d };
+          }
+        }
+        if (best) setActiveId(best.id);
+      },
+      { threshold: [0, 0.25, 0.5, 0.75, 1], rootMargin: "-30% 0px -60% 0px" },
+    );
+    elements.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [anchors]);
+
+  const activeEndpoint = findActiveEndpoint(activeId);
+  const activeSectionId = activeId.includes("--")
+    ? activeId.split("--")[0]
+    : activeId;
+
+  return (
+    <div className="api-docs-layout">
+      {/* ── LEFT NAV ────────────────────────────────────────────────── */}
+      <nav className="api-docs-nav" aria-label="API sections">
+        <p className="type-eyebrow" style={{ marginBottom: 10 }}>
+          § REFERENCE
+        </p>
+        <ul>
+          {SECTIONS.map((s) => (
+            <li key={s.id}>
+              <a
+                href={`#${s.id}`}
+                className={`api-docs-nav-section${activeSectionId === s.id ? " is-active" : ""}`}
+              >
+                {s.title}
+              </a>
+              {s.endpoints && (
+                <ul>
+                  {s.endpoints.map((e) => (
+                    <li key={e.id}>
+                      <a
+                        href={`#${s.id}--${e.id}`}
+                        className={`api-docs-nav-endpoint${activeId === `${s.id}--${e.id}` ? " is-active" : ""}`}
+                      >
+                        <MethodBadge method={e.method} />
+                        <span>{e.title}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* ── MIDDLE: PROSE + ENDPOINT DETAILS ────────────────────────── */}
+      <div className="api-docs-main" ref={containerRef}>
+        {SECTIONS.map((s) => (
+          <SectionBlock key={s.id} section={s} />
+        ))}
+      </div>
+
+      {/* ── RIGHT: STICKY CODE PANEL ─────────────────────────────────── */}
+      <aside className="api-docs-code">
+        <div className="api-docs-code-inner">
+          <div className="api-docs-code-tabs" role="tablist">
+            {(["curl", "js"] as Lang[]).map((l) => (
+              <button
+                key={l}
+                role="tab"
+                aria-selected={lang === l}
+                type="button"
+                className={`api-docs-code-tab${lang === l ? " is-active" : ""}`}
+                onClick={() => setLang(l)}
+              >
+                {l === "curl" ? "curl" : "JavaScript"}
+              </button>
+            ))}
+          </div>
+
+          {activeEndpoint ? (
+            <>
+              <CodeBlock
+                lang={lang === "curl" ? "bash" : "js"}
+                code={lang === "curl" ? activeEndpoint.examples.curl : activeEndpoint.examples.js}
+                label={`Request — ${activeEndpoint.method} ${activeEndpoint.path}`}
+              />
+              {activeEndpoint.examples.response && (
+                <CodeBlock
+                  lang="json"
+                  code={activeEndpoint.examples.response}
+                  label="Response"
+                />
+              )}
+            </>
+          ) : (
+            <div className="api-docs-code-empty">
+              Pick an endpoint on the left to see request / response examples.
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function SectionBlock({ section }: { section: Section }) {
+  return (
+    <section
+      id={section.id}
+      className="api-doc-section"
+      style={{ scrollMarginTop: 24 }}
+    >
+      <h2 className="api-doc-section-title">{section.title}</h2>
+      {section.intro && (
+        <div className="api-doc-prose">{renderProse(section.intro)}</div>
+      )}
+      {section.endpoints &&
+        section.endpoints.map((e) => (
+          <EndpointBlock key={e.id} section={section} endpoint={e} />
+        ))}
+    </section>
+  );
+}
+
+function EndpointBlock({ section, endpoint }: { section: Section; endpoint: Endpoint }) {
+  return (
+    <article
+      id={`${section.id}--${endpoint.id}`}
+      className="api-doc-endpoint"
+      style={{ scrollMarginTop: 24 }}
+    >
+      <h3 className="api-doc-endpoint-title">
+        <MethodBadge method={endpoint.method} />
+        <code className="api-doc-endpoint-path">{endpoint.path}</code>
+        <span className="api-doc-endpoint-name">{endpoint.title}</span>
+      </h3>
+      <div className="api-doc-prose">{renderProse(endpoint.description)}</div>
+      {endpoint.scope && (
+        <p className="api-doc-scope">
+          Required scope: <code>{endpoint.scope}</code>
+        </p>
+      )}
+      {endpoint.params && endpoint.params.length > 0 && (
+        <div className="api-doc-params">
+          <p className="type-eyebrow" style={{ marginBottom: 8 }}>
+            § PARAMETERS
+          </p>
+          <table className="api-doc-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>In</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {endpoint.params.map((p) => (
+                <tr key={p.name}>
+                  <td>
+                    <code className="api-doc-inline-code">{p.name}</code>
+                    {p.required && <span className="api-doc-required"> required</span>}
+                  </td>
+                  <td>{p.in}</td>
+                  <td>{p.type}</td>
+                  <td>{renderInline(p.description)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {endpoint.stub && (
+        <p className="api-doc-stub-note">
+          Reference stub — expanded examples and field-level documentation
+          coming in a follow-up.
+        </p>
+      )}
+    </article>
+  );
+}

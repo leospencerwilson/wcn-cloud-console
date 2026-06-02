@@ -1445,4 +1445,264 @@ samp {
     font-weight: 700;
     font-size: 10.5px;
   }
+
+  /* ───────────────────────── API DOCS ─────────────────────────────
+     3-column Stripe-style layout: left sticky nav, middle prose,
+     right sticky code panel. */
+
+  .api-docs-layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr) 440px;
+    gap: 28px;
+    align-items: start;
+    margin-top: 18px;
+  }
+  @media (max-width: 1280px) {
+    .api-docs-layout {
+      grid-template-columns: 220px minmax(0, 1fr);
+    }
+    .api-docs-code { display: none; }
+  }
+  @media (max-width: 880px) {
+    .api-docs-layout {
+      grid-template-columns: 1fr;
+    }
+    .api-docs-nav { display: none; }
+  }
+
+  .api-docs-nav {
+    position: sticky;
+    top: 16px;
+    align-self: start;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding-right: 6px;
+    font-size: 13px;
+  }
+  .api-docs-nav ul { list-style: none; padding: 0; margin: 0; }
+  .api-docs-nav > ul > li + li { margin-top: 6px; }
+  .api-docs-nav-section {
+    display: block;
+    padding: 5px 8px;
+    border-radius: var(--r-1, 4px);
+    color: var(--text-2);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .api-docs-nav-section:hover {
+    background: color-mix(in oklch, var(--text-4) 8%, transparent);
+    color: var(--text);
+  }
+  .api-docs-nav-section.is-active {
+    background: color-mix(in oklch, var(--brand) 14%, transparent);
+    color: var(--brand);
+  }
+  .api-docs-nav-endpoint {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 3px 8px 3px 14px;
+    border-radius: var(--r-1, 4px);
+    color: var(--text-3);
+    text-decoration: none;
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+  .api-docs-nav-endpoint:hover {
+    background: color-mix(in oklch, var(--text-4) 6%, transparent);
+    color: var(--text-2);
+  }
+  .api-docs-nav-endpoint.is-active {
+    background: color-mix(in oklch, var(--brand) 10%, transparent);
+    color: var(--text);
+  }
+
+  .api-docs-main {
+    min-width: 0;
+    max-width: 760px;
+  }
+  .api-doc-section {
+    padding-bottom: 56px;
+    margin-bottom: 56px;
+    border-bottom: 1px solid var(--line);
+  }
+  .api-doc-section:last-child {
+    border-bottom: none;
+  }
+  .api-doc-section-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+  }
+  .api-doc-prose { color: var(--text-2); font-size: 14px; line-height: 1.6; }
+  .api-doc-p { margin: 0 0 12px; }
+  .api-doc-link { color: var(--brand); text-decoration: underline; text-decoration-thickness: 1px; }
+  .api-doc-inline-code {
+    font: 12.5px/1.4 var(--font-mono, ui-monospace, monospace);
+    background: color-mix(in oklch, var(--text-4) 12%, transparent);
+    padding: 1.5px 5px;
+    border-radius: 3px;
+    color: var(--text);
+  }
+
+  .api-doc-endpoint {
+    padding-top: 28px;
+    margin-top: 28px;
+    border-top: 1px solid color-mix(in oklch, var(--line) 60%, transparent);
+  }
+  .api-doc-endpoint-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 12px;
+  }
+  .api-doc-endpoint-path {
+    font: 13px var(--font-mono, ui-monospace, monospace);
+    color: var(--text);
+    background: color-mix(in oklch, var(--text-4) 10%, transparent);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .api-doc-endpoint-name {
+    color: var(--text-2);
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .api-doc-method {
+    --method-tone: var(--brand);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5px 7px;
+    border-radius: 4px;
+    font: 600 10.5px/1 var(--font-mono, ui-monospace, monospace);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: color-mix(in oklch, var(--method-tone) 18%, transparent);
+    color: var(--method-tone);
+    min-width: 48px;
+  }
+
+  .api-doc-scope { font-size: 12.5px; color: var(--text-3); margin: 8px 0 14px; }
+  .api-doc-stub-note { font-size: 12.5px; color: var(--text-3); font-style: italic; margin-top: 12px; }
+  .api-doc-required { font-size: 11px; color: var(--crit); font-weight: 500; margin-left: 4px; }
+
+  .api-doc-table-wrap { overflow-x: auto; margin: 10px 0 14px; }
+  .api-doc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .api-doc-table th,
+  .api-doc-table td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid color-mix(in oklch, var(--line) 80%, transparent);
+    vertical-align: top;
+  }
+  .api-doc-table th {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    font-weight: 600;
+  }
+  .api-doc-params { margin-top: 14px; }
+
+  .api-doc-codeblock-wrap {
+    margin: 12px 0;
+    border-radius: var(--r-2, 6px);
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .api-doc-codeblock-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: color-mix(in oklch, var(--text-4) 8%, transparent);
+    font: 600 11px/1 var(--font-mono, ui-monospace, monospace);
+    color: var(--text-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line);
+  }
+  .api-doc-codeblock {
+    position: relative;
+    margin: 0;
+    padding: 14px 16px;
+    background: color-mix(in oklch, var(--text-4) 5%, var(--surface));
+    overflow-x: auto;
+    font: 12.5px/1.55 var(--font-mono, ui-monospace, monospace);
+    color: var(--text);
+  }
+  .api-doc-codeblock code { font: inherit; color: inherit; }
+  .api-doc-codeblock--json { background: color-mix(in oklch, var(--ok) 4%, var(--surface)); }
+  .api-doc-codeblock--js   { background: color-mix(in oklch, var(--brand) 4%, var(--surface)); }
+  .api-doc-codeblock--bash { background: color-mix(in oklch, var(--text-4) 7%, var(--surface)); }
+
+  .api-doc-copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    appearance: none;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: 3px 8px;
+    font: 10.5px/1 var(--font-mono, ui-monospace, monospace);
+    color: var(--text-3);
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s ease;
+  }
+  .api-doc-codeblock:hover .api-doc-copy { opacity: 1; }
+  .api-doc-copy:hover { color: var(--text); border-color: var(--text-3); }
+
+  .api-docs-code {
+    position: sticky;
+    top: 16px;
+    align-self: start;
+    max-height: calc(100vh - 32px);
+  }
+  .api-docs-code-inner {
+    border: 1px solid var(--line);
+    border-radius: var(--r-2, 6px);
+    background: var(--surface);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: inherit;
+  }
+  .api-docs-code-tabs { display: flex; border-bottom: 1px solid var(--line); }
+  .api-docs-code-tab {
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 9px 16px;
+    font: 12px/1 var(--font-mono, ui-monospace, monospace);
+    color: var(--text-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .api-docs-code-tab:hover { color: var(--text-2); }
+  .api-docs-code-tab.is-active {
+    color: var(--text);
+    border-bottom-color: var(--brand);
+  }
+  .api-docs-code .api-doc-codeblock-wrap {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .api-docs-code .api-doc-codeblock-wrap:last-child { border-bottom: none; }
+  .api-docs-code-empty {
+    padding: 22px 18px;
+    font-size: 12.5px;
+    color: var(--text-3);
+    text-align: center;
+  }
 }
