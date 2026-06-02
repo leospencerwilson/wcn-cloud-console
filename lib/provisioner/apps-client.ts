@@ -118,8 +118,15 @@ export const provisionerApps = {
         method: "POST",
         body: { deployment_uuid },
       }),
-    deployments: (id: string, slug?: string) =>
-      p<DeployStatus[]>(`/apps/${id}/deployments`, { slug }),
+    // Provisioner returns `{count, deployments: [...]}`; older shape was a bare
+    // array. Unwrap either so callers always get DeployStatus[].
+    deployments: async (id: string, slug?: string) => {
+      const r = await p<DeployStatus[] | { deployments?: DeployStatus[] }>(
+        `/apps/${id}/deployments`,
+        { slug },
+      );
+      return Array.isArray(r) ? r : r.deployments ?? [];
+    },
     logs: (id: string, tail = 200, slug?: string) =>
       p<{ lines: string[] }>(`/apps/${id}/logs?tail=${tail}`, { slug }),
     metrics: (id: string, window: MetricsWindow, series: string, slug?: string) =>
