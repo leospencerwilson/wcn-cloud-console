@@ -25,7 +25,6 @@ const ADMIN_CMDS: Cmd[] = [
 const CUSTOMER_CMDS: Cmd[] = [
   { id: "c-ov", label: "Overview", group: "Customer", href: "/dashboard" },
   { id: "c-apps", label: "Apps", group: "Customer", href: "/dashboard/apps" },
-  { id: "c-co", label: "Coolify", group: "Customer", href: "/dashboard/coolify" },
   { id: "c-sb", label: "Supabase", group: "Customer", href: "/dashboard/supabase" },
   { id: "c-hl", label: "Health", group: "Customer", href: "/dashboard/health" },
   { id: "c-tm", label: "Team", group: "Customer", href: "/dashboard/team" },

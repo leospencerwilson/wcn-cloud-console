@@ -226,10 +226,17 @@ export default function DomainsManager({
               autoComplete="off"
             />
           </div>
-          <button type="submit" className="btn btn-primary" disabled={adding}>
-            <IconPlus />
-            {adding ? "Adding…" : "Add domain"}
-          </button>
+          <div className="vm-action-group" role="group" aria-label="Add domain">
+            <button
+              type="submit"
+              className="vm-action vm-action--start"
+              disabled={adding}
+              title="Add this hostname to the app"
+            >
+              <IconPlus />
+              <span>{adding ? "Adding…" : "Add domain"}</span>
+            </button>
+          </div>
         </form>
       </Card>
 
