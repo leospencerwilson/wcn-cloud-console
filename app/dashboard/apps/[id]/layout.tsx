@@ -92,7 +92,6 @@ export default async function DashboardAppLayout({
           { label: "Cron", href: `/dashboard/apps/${id}/cron` },
           { label: "Console", href: `/dashboard/apps/${id}/console` },
           { label: "Environment", href: `/dashboard/apps/${id}/env` },
-          { label: "Secrets", href: `/dashboard/apps/${id}/secrets` },
           { label: "Domains", href: `/dashboard/apps/${id}/domains` },
           { label: "Deploy", href: `/dashboard/apps/${id}/deploy` },
         ]}
