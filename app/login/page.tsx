@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { getSession } from "@/lib/auth/session";
 import LoginForm from "./login-form";
+import CircuitField from "@/components/circuit-field";
 
 export default async function LoginPage() {
   const session = await getSession();
@@ -9,8 +10,9 @@ export default async function LoginPage() {
     redirect(session.appUser.role === "wcn_admin" ? "/admin" : "/dashboard");
   }
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-16">
-      <div className="w-full max-w-md space-y-12">
+    <main className="relative overflow-hidden min-h-screen flex items-center justify-center px-6 py-16">
+      <CircuitField />
+      <div className="relative z-10 w-full max-w-md space-y-12">
         <header>
           <p className="type-eyebrow mb-5">§ SIGN IN</p>
           <h1 className="type-h1 mb-3">Welcome back.</h1>

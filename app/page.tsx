@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import CircuitField from "@/components/circuit-field";
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6">
-      <div className="max-w-2xl w-full">
+    <main className="relative overflow-hidden min-h-screen flex flex-col items-center justify-center px-6">
+      <CircuitField />
+      <div className="relative z-10 max-w-2xl w-full">
         <p className="type-eyebrow mb-6">§ WCN CLOUD CONSOLE</p>
         <h1 className="type-h1 mb-6">WCN Cloud Console</h1>
         <p

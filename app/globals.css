@@ -587,6 +587,103 @@ samp {
     .dot-online::before { animation: none; }
   }
 
+  /* Interactive circuit-board backdrop (sign-in / landing pages) */
+  .circuit-field {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    --mx: 50%;
+    --my: 45%;
+    --on: 0;
+  }
+  .circuit-layer {
+    position: absolute;
+    inset: 0;
+  }
+  .circuit-layer svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  /* Always-on base so the board structure is visible at rest */
+  .circuit-dim {
+    color: var(--line-hi);
+    opacity: 0.55;
+  }
+  /* Soft brand spotlight that tracks the cursor — guaranteed-visible glow */
+  .circuit-spot {
+    position: absolute;
+    inset: 0;
+    opacity: var(--on);
+    transition: opacity 0.4s ease;
+    background: radial-gradient(
+      240px 240px at var(--mx) var(--my),
+      color-mix(in oklch, var(--brand) 26%, transparent),
+      transparent 70%
+    );
+  }
+  /* Bright traces, revealed within a radius that tracks the cursor */
+  .circuit-glow {
+    color: var(--brand);
+    opacity: calc(0.18 + var(--on) * 0.82);
+    transition: opacity 0.4s ease;
+    filter: drop-shadow(0 0 5px color-mix(in oklch, var(--brand) 70%, transparent))
+      drop-shadow(0 0 14px color-mix(in oklch, var(--brand) 40%, transparent));
+    -webkit-mask-image: radial-gradient(
+      240px 240px at var(--mx) var(--my),
+      #000 0%,
+      rgba(0, 0, 0, 0.6) 42%,
+      transparent 76%
+    );
+    mask-image: radial-gradient(
+      240px 240px at var(--mx) var(--my),
+      #000 0%,
+      rgba(0, 0, 0, 0.6) 42%,
+      transparent 76%
+    );
+  }
+  .trace-live {
+    stroke-dasharray: 3 11;
+    animation: trace-flow 1.1s linear infinite;
+  }
+  @keyframes trace-flow {
+    to {
+      stroke-dashoffset: -28;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .trace-live {
+      animation: none;
+      stroke-dasharray: none;
+    }
+    .circuit-glow {
+      transition: none;
+    }
+  }
+
+  /* Inline field status spinner (e.g. slug availability check) */
+  @keyframes slug-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .slug-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    border: 2px solid var(--line-hi);
+    border-top-color: var(--brand);
+    animation: slug-spin 0.7s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slug-spinner {
+      animation-duration: 1.6s;
+    }
+  }
+
   /* Circular tickboxes */
   .chk-round {
     appearance: none;

@@ -35,6 +35,86 @@ function SubmitButton() {
   );
 }
 
+/** Availability indicator shown inside the slug input, on the right. */
+function SlugStatus({ state }: { state: Availability["state"] }) {
+  if (state === "idle") return null;
+
+  const wrap = (node: React.ReactNode, label: string) => (
+    <span
+      title={label}
+      aria-label={label}
+      role="img"
+      style={{
+        position: "absolute",
+        right: 9,
+        top: "50%",
+        transform: "translateY(-50%)",
+        display: "inline-flex",
+        alignItems: "center",
+        pointerEvents: "none",
+      }}
+    >
+      {node}
+    </span>
+  );
+
+  if (state === "checking") {
+    return wrap(<span className="slug-spinner" />, "Checking availability…");
+  }
+
+  if (state === "available") {
+    return wrap(
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+        <circle cx="12" cy="12" r="11" fill="var(--ok)" />
+        <path
+          d="M7 12.5l3.2 3.2L17 9"
+          fill="none"
+          stroke="var(--bg)"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>,
+      "Slug available",
+    );
+  }
+
+  const tone = state === "taken" ? "var(--crit)" : "var(--warn)";
+  const label =
+    state === "taken"
+      ? "Slug already taken"
+      : state === "invalid"
+        ? "Invalid slug format"
+        : "Couldn’t verify availability";
+  const glyph =
+    state === "taken" ? (
+      <path
+        d="M8.5 8.5l7 7M15.5 8.5l-7 7"
+        stroke="var(--bg)"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+    ) : (
+      <>
+        <path
+          d="M12 7v5.5"
+          stroke="var(--bg)"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+        <circle cx="12" cy="16.5" r="1.25" fill="var(--bg)" />
+      </>
+    );
+
+  return wrap(
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+      <circle cx="12" cy="12" r="11" fill={tone} />
+      {glyph}
+    </svg>,
+    label,
+  );
+}
+
 export default function NewCustomerForm() {
   const [state, formAction] = useActionState<CreateCustomerState, FormData>(
     createCustomerAction,
@@ -95,24 +175,22 @@ export default function NewCustomerForm() {
     };
   }, [slug]);
 
-  const availabilityMsg = (() => {
-    switch (availability.state) {
-      case "checking":
-        return { text: "checking…", color: "var(--color-muted)" };
-      case "available":
-        return { text: "✓ available", color: "var(--color-success, #1f7a3a)" };
-      case "taken":
-        return { text: "× already taken", color: "var(--color-danger, #b3261e)" };
-      case "invalid":
-        return {
-          text: "Use 2–40 lowercase letters, digits or hyphens.",
-          color: "var(--color-danger, #b3261e)",
-        };
-      case "error":
-        return { text: "couldn’t verify availability", color: "var(--color-muted)" };
-      default:
-        return null;
-    }
+  // The positive/checking states are now shown by the inline icon inside the
+  // input; only problems get an explanatory line below.
+  const belowMsg = (() => {
+    if (availability.state === "taken")
+      return { text: "That slug is already taken.", color: "var(--crit)" };
+    if (availability.state === "invalid" || (!slugValid && slug !== ""))
+      return {
+        text: "Use 2–40 lowercase letters, digits or hyphens.",
+        color: "var(--crit)",
+      };
+    if (availability.state === "error")
+      return {
+        text: "Couldn’t verify availability.",
+        color: "var(--text-3)",
+      };
+    return null;
   })();
 
   return (
@@ -143,18 +221,29 @@ export default function NewCustomerForm() {
 
       <div>
         <Label htmlFor="slug">Slug</Label>
-        <Input
-          id="slug"
-          name="slug"
-          required
-          pattern="^[a-z0-9-]{2,40}$"
-          placeholder="acme"
-          value={slug}
-          onChange={(e) => {
-            setSlugTouched(true);
-            setSlug(e.target.value);
-          }}
-        />
+        <div style={{ position: "relative" }}>
+          <Input
+            id="slug"
+            name="slug"
+            required
+            pattern="^[a-z0-9-]{2,40}$"
+            placeholder="acme"
+            value={slug}
+            aria-invalid={
+              availability.state === "taken" ||
+              availability.state === "invalid" ||
+              (!slugValid && slug !== "")
+            }
+            onChange={(e) => {
+              setSlugTouched(true);
+              setSlug(e.target.value);
+            }}
+            style={{
+              paddingRight: availability.state === "idle" ? undefined : 34,
+            }}
+          />
+          <SlugStatus state={availability.state} />
+        </div>
         <p
           className="text-[12px] mt-3 leading-[1.5]"
           style={{ color: "var(--color-muted)" }}
@@ -164,20 +253,12 @@ export default function NewCustomerForm() {
             {slug || "slug"}.western-communication.com
           </code>
         </p>
-        {availabilityMsg && (
+        {belowMsg && (
           <p
             className="text-[12px] mt-2 leading-[1.5]"
-            style={{ color: availabilityMsg.color }}
+            style={{ color: belowMsg.color }}
           >
-            {availabilityMsg.text}
-          </p>
-        )}
-        {!slugValid && availability.state !== "invalid" && (
-          <p
-            className="text-[12px] mt-2 leading-[1.5]"
-            style={{ color: "var(--color-danger, #b3261e)" }}
-          >
-            Use 2–40 lowercase letters, digits or hyphens.
+            {belowMsg.text}
           </p>
         )}
       </div>
