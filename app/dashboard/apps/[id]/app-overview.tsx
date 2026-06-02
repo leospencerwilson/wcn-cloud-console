@@ -224,7 +224,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
           </button>
           <button
             type="button"
-            className="vm-action"
+            className="vm-action vm-action--rebuild"
             disabled={deploying}
             onClick={() => onDeploy(true)}
             title="Rebuild without using the layer cache"
@@ -270,15 +270,17 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
 
         <div className="flex-1" />
         {!deleteConfirming ? (
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={() => setDeleteConfirming(true)}
-            style={{ color: "var(--color-danger, #b03020)" }}
-          >
-            <IconTrash />
-            Delete app
-          </button>
+          <div className="vm-action-group" role="group" aria-label="Delete">
+            <button
+              type="button"
+              className="vm-action vm-action--stop"
+              onClick={() => setDeleteConfirming(true)}
+              title="Delete this app (asks for confirmation)"
+            >
+              <IconTrash />
+              <span>Delete app</span>
+            </button>
+          </div>
         ) : (
           <div className="flex items-center gap-2">
             <span className="type-mono text-[12px]" style={{ color: "var(--color-muted)" }}>

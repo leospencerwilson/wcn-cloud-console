@@ -44,6 +44,8 @@
   --accent: oklch(0.82 0.15 75);
   --accent-2: oklch(0.70 0.16 60);
   --accent-ink: oklch(0.22 0.06 70);
+  /* Used for the Force-rebuild action — distinct from brand (Deploy) and stop (destructive). */
+  --rebuild: oklch(0.70 0.18 305);
 
   --ok: oklch(0.74 0.14 155);
   --ok-dim: oklch(0.50 0.10 155);
@@ -113,6 +115,7 @@
   --brand: oklch(0.55 0.16 250);
   --brand-2: oklch(0.48 0.16 255);
   --brand-ink: oklch(0.99 0.012 250);
+  --rebuild: oklch(0.54 0.20 305);
   --accent: oklch(0.64 0.15 65);
   --accent-2: oklch(0.56 0.16 55);
   --accent-ink: oklch(0.99 0.012 70);
@@ -956,6 +959,7 @@ samp {
   .vm-action--stop { --tone: var(--crit); }
   .vm-action--start { --tone: var(--ok); }
   .vm-action--view { --tone: var(--accent); }
+  .vm-action--rebuild { --tone: var(--rebuild); }
 
   .heartbeat-dot {
     --hb: var(--ok);
