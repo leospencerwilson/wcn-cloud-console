@@ -1,4 +1,5 @@
 import { requireCustomerAdmin } from "@/lib/auth/session";
+import { PageHeader } from "@/components/page-header";
 import TokensManager from "./tokens-manager";
 
 export const dynamic = "force-dynamic";
@@ -8,14 +9,11 @@ export default async function DashboardTokensPage() {
   const slug = session.appUser.customer_slug!;
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="type-h2">API tokens</h2>
-        <p className="mt-2 text-[13px]" style={{ color: "var(--color-muted)" }}>
-          Tokens authenticate machine-to-machine calls. Scopes restrict what each
-          token can do. The plaintext token is shown <strong>once</strong> at
-          creation and never again.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Access"
+        title="API tokens"
+        subtitle="Programmatic access to the WCN Cloud API."
+      />
       <TokensManager slug={slug} currentEmail={session.appUser.email} />
     </div>
   );

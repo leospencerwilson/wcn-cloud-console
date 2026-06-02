@@ -1,4 +1,5 @@
 import { requireCustomerAdmin } from "@/lib/auth/session";
+import { PageHeader } from "@/components/page-header";
 import HealthPanel from "./health-panel";
 import MetricsDashboard from "@/components/metrics-dashboard";
 
@@ -12,9 +13,11 @@ export default async function DashboardHealthPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="type-h2">Health</h2>
-      </div>
+      <PageHeader
+        eyebrow="Health"
+        title="Health"
+        subtitle="Live status and uptime for your environment."
+      />
 
       <HealthPanel slug={slug} apex={apex} />
 

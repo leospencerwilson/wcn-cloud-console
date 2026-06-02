@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { requireWcnAdmin } from "@/lib/auth/session";
 import { listTiers, type Tier } from "@/lib/db/tiers";
 import { query } from "@/lib/db/pool";
@@ -82,9 +83,11 @@ export default async function TiersPage() {
 
   return (
     <div className="space-y-14">
-      <header>
-        <p className="type-eyebrow">§ TIERS</p>
-      </header>
+      <PageHeader
+        eyebrow="Tiers"
+        title="Plan tiers"
+        subtitle="Resource and pricing definitions consumed by the provisioner at deploy time."
+      />
 
       <Card>
         <div className="px-8 py-6">

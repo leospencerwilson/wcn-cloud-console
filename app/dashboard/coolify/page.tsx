@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import { getCustomer } from "@/lib/db/customers";
+import { PageHeader } from "@/components/page-header";
 import ServerCard from "./server-card";
 import WebhookOverview from "./webhook-overview";
 import EnvOverview from "./env-overview";
@@ -19,31 +20,26 @@ export default async function DashboardCoolifyPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-baseline justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="type-h2">Coolify</h2>
-          <p
-            className="mt-2 text-[13px]"
-            style={{ color: "var(--text-3)" }}
+      <PageHeader
+        eyebrow="Coolify"
+        title="Coolify"
+        subtitle="Your self-hosted deployment platform."
+        actions={
+          <a
+            href={upstream}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-ghost type-mono"
+            style={{
+              padding: "6px 12px",
+              fontSize: 12,
+              textDecoration: "none",
+            }}
           >
-            Server health, push-to-deploy webhooks, environment, and scheduled
-            tasks across every app in this environment.
-          </p>
-        </div>
-        <a
-          href={upstream}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-ghost type-mono"
-          style={{
-            padding: "6px 12px",
-            fontSize: 12,
-            textDecoration: "none",
-          }}
-        >
-          Open Coolify ↗
-        </a>
-      </div>
+            Open Coolify ↗
+          </a>
+        }
+      />
 
       <ServerCard slug={slug} />
       <WebhookOverview slug={slug} />

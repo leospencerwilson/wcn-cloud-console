@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import { getCustomer } from "@/lib/db/customers";
+import { PageHeader } from "@/components/page-header";
 import ConnectionCard from "./connection-card";
 import SchemaBrowser from "./schema-browser";
 
@@ -19,31 +20,22 @@ export default async function DashboardSupabasePage() {
   if (!tierHasSupabase) {
     return (
       <div className="space-y-6">
-        <div>
-          <h2 className="type-h2">Supabase</h2>
-          <p
-            className="mt-2 text-[13px]"
-            style={{ color: "var(--text-3)" }}
-          >
-            Your plan (<strong>site</strong> tier) does not include a Supabase
-            stack. Contact WCN if you need database services.
-          </p>
-        </div>
+        <PageHeader
+          eyebrow="Supabase"
+          title="Supabase"
+          subtitle="Your managed Postgres and authentication backend."
+        />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="type-h2">Supabase</h2>
-        <p
-          className="mt-2 text-[13px]"
-          style={{ color: "var(--text-3)" }}
-        >
-          Connection strings, schema browser, and a one-click jump to Studio.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Supabase"
+        title="Supabase"
+        subtitle="Your managed Postgres and authentication backend."
+      />
 
       <ConnectionCard slug={slug} />
 

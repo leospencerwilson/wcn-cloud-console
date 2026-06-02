@@ -1,4 +1,5 @@
 import { requireWcnAdmin } from "@/lib/auth/session";
+import { PageHeader } from "@/components/page-header";
 import { getCapacity } from "@/lib/provisioner/capacity-client";
 import { ProvisionerHttpError } from "@/lib/provisioner/apps-client";
 import type { CapacityReport } from "@/lib/provisioner/types";
@@ -21,12 +22,11 @@ export default async function AdminCapacityPage() {
   }
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="type-h2">Cluster capacity</h2>
-        <p className="mt-2 text-[13px]" style={{ color: "var(--color-muted)" }}>
-          Static snapshot of node load and headroom. Refresh on demand.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Capacity"
+        title="Cluster capacity"
+        subtitle="CPU, memory, and storage headroom across Proxmox nodes."
+      />
       <CapacityView initial={report} initialError={loadError} />
     </div>
   );

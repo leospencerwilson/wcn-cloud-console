@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { listCustomersWithVm } from "@/lib/db/customers";
 import { CustomersTable } from "./customers-table";
 
@@ -7,9 +8,11 @@ export default async function CustomersPage() {
 
   return (
     <div className="space-y-14">
-      <header>
-        <p className="type-eyebrow">§ CUSTOMERS</p>
-      </header>
+      <PageHeader
+        eyebrow="Customers"
+        title="Customers"
+        subtitle="Every provisioned customer environment and its live VM status."
+      />
 
       <Card>
         <div className="px-8 py-6">

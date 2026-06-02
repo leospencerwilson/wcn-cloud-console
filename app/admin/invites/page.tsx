@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { listInvites } from "@/lib/db/invites";
 import { roleLabel } from "@/lib/utils";
 
@@ -17,15 +18,16 @@ export default async function InvitesPage() {
 
   return (
     <div className="space-y-14">
-      <header className="flex items-end justify-between gap-6">
-        <div>
-          <p className="type-eyebrow mb-5">§ ACCESS</p>
-          <h1 className="type-h1">Pending invites.</h1>
-        </div>
-        <Link href="/admin/invites/new">
-          <Button>Send invite</Button>
-        </Link>
-      </header>
+      <PageHeader
+        eyebrow="Access"
+        title="Pending invites"
+        subtitle="Outstanding invitations to the console."
+        actions={
+          <Link href="/admin/invites/new">
+            <Button>Send invite</Button>
+          </Link>
+        }
+      />
 
       <Card>
         <div className="px-8 py-6">

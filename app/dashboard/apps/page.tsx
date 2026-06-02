@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import { provisionerApps } from "@/lib/provisioner/apps-client";
 import { ProvisionerHttpError } from "@/lib/provisioner/apps-client";
@@ -28,12 +29,16 @@ export default async function DashboardAppsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-baseline justify-between">
-        <h2 className="type-h2">— DEPLOYED APPS</h2>
-        <Link href="/dashboard/apps/new" className="btn btn-primary btn-sm">
-          + New app
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="Apps"
+        title="Deployed apps"
+        subtitle="Applications running in your environment."
+        actions={
+          <Link href="/dashboard/apps/new" className="btn btn-primary btn-sm">
+            + New app
+          </Link>
+        }
+      />
 
       {!result.ok && (
         <Card>

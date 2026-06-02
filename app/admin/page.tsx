@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { listCustomers } from "@/lib/db/customers";
 import { countAppUsers } from "@/lib/db/users";
 import { countPendingInvites } from "@/lib/db/invites";
@@ -47,9 +48,11 @@ export default async function AdminHome() {
 
   return (
     <div className="space-y-14">
-      <header>
-        <p className="type-eyebrow mb-5">§ OVERVIEW</p>
-      </header>
+      <PageHeader
+        eyebrow="Overview"
+        title="Fleet overview"
+        subtitle="Fleet-wide health, capacity, and recent activity."
+      />
 
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <Stat label="Customers" value={customers.length} delay={0} />
