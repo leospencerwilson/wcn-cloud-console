@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { VmActionGroup } from "@/components/vm-action-group";
 import type { VmAction, VmPower } from "@/lib/provisioner/vms-client";
 
 const POLL_INTERVAL_MS = 5000;
@@ -70,33 +71,7 @@ export default function VmActionButtons({ slug }: { slug: string }) {
 
   return (
     <>
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          disabled={!power || busy !== null || power.state !== "running"}
-          onClick={() => setConfirm("restart")}
-        >
-          {busy === "restart" ? "Restarting…" : "Restart"}
-        </button>
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          disabled={!power || busy !== null || power.state === "stopped"}
-          onClick={() => setConfirm("stop")}
-          style={{ color: "var(--color-danger, #b03020)" }}
-        >
-          {busy === "stop" ? "Stopping…" : "Stop"}
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary btn-sm"
-          disabled={!power || busy !== null || power.state === "running"}
-          onClick={() => setConfirm("start")}
-        >
-          {busy === "start" ? "Starting…" : "Start"}
-        </button>
-      </div>
+      <VmActionGroup power={power} busy={busy} onAction={setConfirm} />
       {error && (
         <span
           className="type-mono text-[11px]"

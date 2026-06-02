@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { VmActionGroup } from "@/components/vm-action-group";
 import { statusPill } from "@/lib/utils";
 import type { VmAction, VmPower } from "@/lib/provisioner/vms-client";
 
@@ -169,31 +170,7 @@ export default function VmOperations({ slug }: { slug: string }) {
               § ACTIONS
             </span>
             <div className="flex-1" />
-            <button
-              type="button"
-              className="btn btn-ghost"
-              disabled={!power || busy !== null || power.state !== "running"}
-              onClick={() => setConfirm("restart")}
-            >
-              {busy === "restart" ? "Restarting…" : "Restart"}
-            </button>
-            <button
-              type="button"
-              className="btn btn-ghost"
-              disabled={!power || busy !== null || power.state === "stopped"}
-              onClick={() => setConfirm("stop")}
-              style={{ color: "var(--color-danger, #b03020)" }}
-            >
-              {busy === "stop" ? "Stopping…" : "Stop"}
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={!power || busy !== null || power.state === "running"}
-              onClick={() => setConfirm("start")}
-            >
-              {busy === "start" ? "Starting…" : "Start"}
-            </button>
+            <VmActionGroup power={power} busy={busy} onAction={setConfirm} />
           </div>
 
           {actionError && (
