@@ -57,10 +57,10 @@ export default async function NewInvitePage({ searchParams }: PageProps) {
               }}
             >
               {email_status === "failed"
-                ? "— INVITE CREATED, EMAIL FAILED"
+                ? "§ INVITE CREATED, EMAIL FAILED"
                 : email_status === "skipped"
-                  ? "— INVITE CREATED, EMAIL NOT SENT"
-                  : "— INVITE CREATED & EMAILED"}
+                  ? "§ INVITE CREATED, EMAIL NOT SENT"
+                  : "§ INVITE CREATED & EMAILED"}
             </p>
             <p
               className="text-[14px] leading-[1.55] mb-5"

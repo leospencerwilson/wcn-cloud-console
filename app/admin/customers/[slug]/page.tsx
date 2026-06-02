@@ -75,7 +75,7 @@ export default async function CustomerOverviewPage({ params }: PageProps) {
     <div className="space-y-14">
       <section>
         <div className="flex items-baseline justify-between mb-5">
-          <h2 className="type-h2">— VM</h2>
+          <h2 className="type-h2">§ VM</h2>
           <span className="type-meta">Proxmox + cloudflared tunnel</span>
         </div>
         <Card>
@@ -83,21 +83,21 @@ export default async function CustomerOverviewPage({ params }: PageProps) {
             {vm ? (
               <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-7">
                 <div>
-                  <dt className="type-eyebrow mb-3">— VM ID</dt>
+                  <dt className="type-eyebrow mb-3">§ VM ID</dt>
                   <dd className="type-mono text-[14px]">{vm.vmid}</dd>
                 </div>
                 <div>
-                  <dt className="type-eyebrow mb-3">— IP</dt>
+                  <dt className="type-eyebrow mb-3">§ IP</dt>
                   <dd className="type-mono text-[14px]">{vm.ip ?? "—"}</dd>
                 </div>
                 <div>
-                  <dt className="type-eyebrow mb-3">— STATUS</dt>
+                  <dt className="type-eyebrow mb-3">§ STATUS</dt>
                   <dd>
                     <span className={statusPill(vm.status)}>{vm.status}</span>
                   </dd>
                 </div>
                 <div>
-                  <dt className="type-eyebrow mb-3">— HOST</dt>
+                  <dt className="type-eyebrow mb-3">§ HOST</dt>
                   <dd className="type-mono text-[14px]">
                     {vm.proxmox_node ?? "—"}
                   </dd>
@@ -121,7 +121,7 @@ export default async function CustomerOverviewPage({ params }: PageProps) {
               <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-7">
                 {quickLinks.map((link) => (
                   <div key={link.label}>
-                    <dt className="type-eyebrow mb-3">— {link.label}</dt>
+                    <dt className="type-eyebrow mb-3">§ {link.label}</dt>
                     <dd>
                       <a
                         href={link.href}

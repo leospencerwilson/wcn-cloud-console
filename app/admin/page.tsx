@@ -103,7 +103,7 @@ function Stat({
     <div className="fade-rise" style={{ animationDelay: `${delay}ms` }}>
       <Card>
         <div className="px-8 py-8">
-          <p className="type-eyebrow mb-6">— {label.toUpperCase()}</p>
+          <p className="type-eyebrow mb-6">§ {label.toUpperCase()}</p>
           <div className="type-marquee" title={hint}>
             {value}
           </div>

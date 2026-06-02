@@ -9,7 +9,7 @@ export default async function RecentAudit({ slug }: { slug: string }) {
   return (
     <section>
       <div className="flex items-baseline justify-between mb-5">
-        <h2 className="type-h2">— RECENT ACTIVITY</h2>
+        <h2 className="type-h2">§ RECENT ACTIVITY</h2>
         <Link
           href={`/admin/customers/${slug}/audit`}
           className="type-mono text-[12px]"

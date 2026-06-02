@@ -16,6 +16,37 @@ const INITIAL: Probe = {
   checked_at: null,
 };
 
+// Probe the public site directly from the browser — same mechanism the admin
+// health tab uses, so the result reflects real reachability.
+async function probeHealthz(url: string): Promise<Probe> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 2000);
+  const start = performance.now();
+  const checked_at = new Date().toISOString();
+  try {
+    const res = await fetch(url, {
+      signal: ctrl.signal,
+      cache: "no-store",
+      redirect: "manual",
+    });
+    const ms = Math.round(performance.now() - start);
+    if (res.ok)
+      return { state: "online", status: res.status, latency_ms: ms, checked_at };
+    if (res.status === 502 || res.status === 503)
+      return { state: "rebooting", status: res.status, latency_ms: ms, checked_at };
+    return {
+      state: "offline",
+      status: res.status || null,
+      latency_ms: ms,
+      checked_at,
+    };
+  } catch {
+    return { state: "offline", status: null, latency_ms: null, checked_at };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 const BAR_SLOTS = 14;
 const LATENCY_MAX_MS = 400;
 
@@ -36,13 +67,7 @@ function latencyTone(ms: number | null): "ok" | "warn" | "crit" {
   return "crit";
 }
 
-export default function HealthPanel({
-  slug,
-  apex,
-}: {
-  slug: string;
-  apex: string;
-}) {
+export default function HealthPanel({ apex }: { apex: string }) {
   const healthz = `https://${apex}/healthz`;
   const [probe, setProbe] = useState<Probe>(INITIAL);
   const [samples, setSamples] = useState<
@@ -53,33 +78,18 @@ export default function HealthPanel({
   useEffect(() => {
     let alive = true;
     const tick = async () => {
-      try {
-        const res = await fetch(
-          `/api/customers/${slug}/health/probe`,
-          { cache: "no-store" },
-        );
-        if (!res.ok) throw new Error(String(res.status));
-        const data = (await res.json()) as Probe;
-        if (alive) setProbe(data);
-      } catch {
-        if (alive)
-          setProbe({
-            state: "offline",
-            status: null,
-            latency_ms: null,
-            checked_at: new Date().toISOString(),
-          });
-      }
+      const data = await probeHealthz(healthz);
+      if (alive) setProbe(data);
     };
     tick();
     const id = setInterval(() => {
       if (document.visibilityState === "visible") tick();
-    }, 1000);
+    }, 5000);
     return () => {
       alive = false;
       clearInterval(id);
     };
-  }, [slug]);
+  }, [healthz]);
 
   useEffect(() => {
     if (!probe.checked_at || probe.checked_at === lastChecked.current) return;

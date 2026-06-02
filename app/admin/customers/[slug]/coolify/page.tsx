@@ -16,7 +16,7 @@ export default async function CustomerCoolifyPage({ params }: PageProps) {
   return (
     <div className="space-y-8">
       <div className="flex items-baseline justify-between">
-        <h2 className="type-h2">— COOLIFY</h2>
+        <h2 className="type-h2">§ COOLIFY</h2>
         <span className="type-meta">Apps and deployments dashboard</span>
       </div>
       <Card>

@@ -119,7 +119,7 @@ export default function VmOperations({ slug }: { slug: string }) {
   return (
     <section>
       <div className="flex items-baseline justify-between mb-5">
-        <h2 className="type-h2">— OPERATIONS</h2>
+        <h2 className="type-h2">§ OPERATIONS</h2>
         <span className="type-meta">Live VM state · Proxmox</span>
       </div>
       <Card>
@@ -135,7 +135,7 @@ export default function VmOperations({ slug }: { slug: string }) {
 
           <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-7">
             <div>
-              <dt className="type-eyebrow mb-3">— STATE</dt>
+              <dt className="type-eyebrow mb-3">§ STATE</dt>
               <dd>
                 {power ? (
                   <span className={statusPill(power.state)}>{power.state}</span>
@@ -145,19 +145,19 @@ export default function VmOperations({ slug }: { slug: string }) {
               </dd>
             </div>
             <div>
-              <dt className="type-eyebrow mb-3">— UPTIME</dt>
+              <dt className="type-eyebrow mb-3">§ UPTIME</dt>
               <dd className="type-mono text-[14px]">
                 {power ? fmtUptime(power.uptime) : "—"}
               </dd>
             </div>
             <div>
-              <dt className="type-eyebrow mb-3">— CPU</dt>
+              <dt className="type-eyebrow mb-3">§ CPU</dt>
               <dd className="type-mono text-[14px]">
                 {power ? `${cpuPct}% / ${power.cpus} vCPU` : "—"}
               </dd>
             </div>
             <div>
-              <dt className="type-eyebrow mb-3">— MEMORY</dt>
+              <dt className="type-eyebrow mb-3">§ MEMORY</dt>
               <dd className="type-mono text-[14px]">
                 {power
                   ? `${fmtBytes(power.mem)} / ${fmtBytes(power.maxmem)} (${memPct}%)`

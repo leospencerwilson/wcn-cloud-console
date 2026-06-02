@@ -144,7 +144,7 @@ export default function StatusView({ initial }: { initial: PublicStatus }) {
         </section>
 
         <section>
-          <h2 className="type-eyebrow mb-5">— SERVICES</h2>
+          <h2 className="type-eyebrow mb-5">§ SERVICES</h2>
           <ul
             style={{
               border: "1px solid var(--color-hairline)",
@@ -191,7 +191,7 @@ export default function StatusView({ initial }: { initial: PublicStatus }) {
         </section>
 
         <section>
-          <h2 className="type-eyebrow mb-5">— UPTIME</h2>
+          <h2 className="type-eyebrow mb-5">§ UPTIME</h2>
           <div
             className="grid grid-cols-3 gap-px"
             style={{
@@ -210,7 +210,7 @@ export default function StatusView({ initial }: { initial: PublicStatus }) {
                 className="px-6 py-6 text-center"
                 style={{ background: "white" }}
               >
-                <p className="type-eyebrow mb-3">— {u.label}</p>
+                <p className="type-eyebrow mb-3">§ {u.label}</p>
                 <p
                   className="font-display text-[28px] tabular-nums"
                   style={{ color: "var(--color-navy)" }}
@@ -226,7 +226,7 @@ export default function StatusView({ initial }: { initial: PublicStatus }) {
         </section>
 
         <section>
-          <h2 className="type-eyebrow mb-5">— RECENT INCIDENTS</h2>
+          <h2 className="type-eyebrow mb-5">§ RECENT INCIDENTS</h2>
           {data.incidents.length === 0 ? (
             <p
               className="px-6 py-6 type-mono text-[13px]"

@@ -116,7 +116,7 @@ export default function NewAppForm({ slug }: { slug: string }) {
   return (
     <div className="space-y-8">
       <div className="flex items-baseline justify-between">
-        <h2 className="type-h2">— NEW APPLICATION</h2>
+        <h2 className="type-h2">§ NEW APPLICATION</h2>
         <Link
           href="/dashboard/apps"
           className="type-mono text-[12px]"

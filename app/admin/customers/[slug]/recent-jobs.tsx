@@ -12,7 +12,7 @@ export default function RecentJobs({
   return (
     <section>
       <div className="flex items-baseline justify-between mb-5">
-        <h2 className="type-h2">— ADMIN</h2>
+        <h2 className="type-h2">§ ADMIN</h2>
         <span className="type-meta">Provisioner jobs</span>
       </div>
       <Card>

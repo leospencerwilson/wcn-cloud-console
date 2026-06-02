@@ -68,7 +68,7 @@ export default function HealthPanel({ apex }: { apex: string }) {
   return (
     <div className="space-y-8">
       <div className="flex items-baseline justify-between">
-        <h2 className="type-h2">— HEALTH</h2>
+        <h2 className="type-h2">§ HEALTH</h2>
         <span className="type-meta">Polled every 5s from your browser</span>
       </div>
       <Card>
@@ -85,7 +85,7 @@ export default function HealthPanel({ apex }: { apex: string }) {
 
           <dl className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-7">
             <div>
-              <dt className="type-eyebrow mb-3">— ENDPOINT</dt>
+              <dt className="type-eyebrow mb-3">§ ENDPOINT</dt>
               <dd className="type-mono text-[13px]">
                 <a
                   href={healthz}
@@ -98,7 +98,7 @@ export default function HealthPanel({ apex }: { apex: string }) {
               </dd>
             </div>
             <div>
-              <dt className="type-eyebrow mb-3">— LATENCY</dt>
+              <dt className="type-eyebrow mb-3">§ LATENCY</dt>
               <dd className="type-mono text-[14px]">
                 {probeResult.latencyMs != null
                   ? `${probeResult.latencyMs} ms`
@@ -106,7 +106,7 @@ export default function HealthPanel({ apex }: { apex: string }) {
               </dd>
             </div>
             <div>
-              <dt className="type-eyebrow mb-3">— LAST CHECK</dt>
+              <dt className="type-eyebrow mb-3">§ LAST CHECK</dt>
               <dd className="type-mono text-[14px]">
                 {probeResult.checkedAt
                   ? new Date(probeResult.checkedAt).toLocaleTimeString()

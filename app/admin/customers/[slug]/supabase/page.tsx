@@ -19,7 +19,7 @@ export default async function CustomerSupabasePage({ params }: PageProps) {
   return (
     <div className="space-y-8">
       <div className="flex items-baseline justify-between">
-        <h2 className="type-h2">— SUPABASE</h2>
+        <h2 className="type-h2">§ SUPABASE</h2>
         <span className="type-meta">Database, auth, storage</span>
       </div>
       <Card>

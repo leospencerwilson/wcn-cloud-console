@@ -3,6 +3,7 @@ import TabStrip from "@/components/tab-strip";
 import { getCustomer } from "@/lib/db/customers";
 import { getVmByCustomerSlug } from "@/lib/db/vms";
 import { statusPill } from "@/lib/utils";
+import { TierBadge } from "@/components/tier-badge";
 import ImpersonateButton from "./impersonate-button";
 import VmActionButtons from "./vm-action-buttons";
 
@@ -47,11 +48,8 @@ export default async function CustomerLayout({ children, params }: Props) {
         >
           <span className="type-mono">{customer.slug}</span>
           <span aria-hidden>·</span>
-          <span>
-            Tier{" "}
-            <strong style={{ color: "var(--color-charcoal)" }}>
-              {customer.tier}
-            </strong>
+          <span className="inline-flex items-center gap-2">
+            Tier <TierBadge tierId={customer.tier} />
           </span>
           <span aria-hidden>·</span>
           <span className={statusPill(customer.status)}>{customer.status}</span>
