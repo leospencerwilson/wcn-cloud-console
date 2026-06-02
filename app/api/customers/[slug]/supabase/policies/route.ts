@@ -17,11 +17,10 @@ export const POST = withCustomerAuth<{ slug: string }>(async (req, { slug }) => 
 });
 
 export const DELETE = withCustomerAuth<{ slug: string }>(async (req, { slug }) => {
-  const schema = req.nextUrl.searchParams.get("schema") || "";
   const table = req.nextUrl.searchParams.get("table") || "";
   const name = req.nextUrl.searchParams.get("name") || "";
-  if (!schema || !table || !name) {
-    return NextResponse.json({ error: "schema, table, name required", code: "missing_params" }, { status: 400 });
+  if (!table || !name) {
+    return NextResponse.json({ error: "table, name required", code: "missing_params" }, { status: 400 });
   }
-  return NextResponse.json(await provisionerSupabase.policyDelete(slug, schema, table, name));
+  return NextResponse.json(await provisionerSupabase.policyDelete(slug, table, name));
 });

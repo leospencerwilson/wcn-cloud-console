@@ -38,7 +38,7 @@ export default function PoliciesView({ slug }: { slug: string }) {
     if (!confirm(`Drop policy "${p.name}" on ${p.schemaname}.${p.tablename}?`)) return;
     setError(null);
     const res = await fetch(
-      `/api/customers/${slug}/supabase/policies?schema=${encodeURIComponent(p.schemaname)}&table=${encodeURIComponent(p.tablename)}&name=${encodeURIComponent(p.name)}`,
+      `/api/customers/${slug}/supabase/policies?table=${encodeURIComponent(p.tablename)}&name=${encodeURIComponent(p.name)}`,
       { method: "DELETE" },
     );
     if (!res.ok) {
@@ -186,7 +186,6 @@ function CreatePolicyDialog({
   onClose: () => void;
   onCreated: () => void;
 }) {
-  const [schema, setSchema] = useState("public");
   const [table, setTable] = useState("");
   const [name, setName] = useState("");
   const [cmd, setCmd] = useState<Cmd>("SELECT");
@@ -205,7 +204,6 @@ function CreatePolicyDialog({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          schema: schema.trim(),
           table: table.trim(),
           name: name.trim(),
           cmd,
@@ -230,11 +228,8 @@ function CreatePolicyDialog({
   return (
     <Modal title="New RLS policy" onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
-        <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <FormField label="Schema">
-            <input value={schema} onChange={(e) => setSchema(e.target.value)} className="type-mono" style={inputStyle} required />
-          </FormField>
-          <FormField label="Table">
+        <div className="grid" style={{ gridTemplateColumns: "1fr", gap: 12 }}>
+          <FormField label="Table (public schema)">
             <input value={table} onChange={(e) => setTable(e.target.value)} className="type-mono" style={inputStyle} placeholder="orders" required />
           </FormField>
         </div>

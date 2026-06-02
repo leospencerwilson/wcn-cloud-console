@@ -149,7 +149,6 @@ export type BucketCreateInput = {
 };
 
 export type PolicyCreateInput = {
-  schema: string;
   table: string;
   name: string;
   cmd?: "SELECT" | "INSERT" | "UPDATE" | "DELETE" | "ALL";
@@ -157,6 +156,97 @@ export type PolicyCreateInput = {
   using?: string;
   with_check?: string;
   permissive?: boolean;
+};
+
+/* ── Table Editor ──────────────────────────────────────────────────── */
+
+export type TableSummary = {
+  schema: "public";
+  name: string;
+  size_bytes: number;
+  estimated_rows: number;
+};
+
+export type TableRowsResp = {
+  rows: Record<string, unknown>[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
+export type ColumnInfo = {
+  name: string;
+  data_type: string;
+  udt_name: string;
+  nullable: boolean;
+  default: string | null;
+  character_maximum_length: number | null;
+  numeric_precision: number | null;
+  numeric_scale: number | null;
+  ordinal_position: number;
+  comment: string | null;
+  identity: boolean;
+  primary_key: boolean;
+};
+
+export type TableInfo = {
+  columns: ColumnInfo[];
+  comment: string | null;
+  rls_enabled: boolean;
+};
+
+export type ForeignKeyInput = {
+  ref_table: string;
+  ref_column: string;
+  on_delete?: "NO ACTION" | "RESTRICT" | "CASCADE" | "SET NULL" | "SET DEFAULT";
+  on_update?: "NO ACTION" | "RESTRICT" | "CASCADE" | "SET NULL" | "SET DEFAULT";
+};
+
+export type ColumnInput = {
+  name: string;
+  type: string;
+  nullable?: boolean;
+  default?: string;
+  primary_key?: boolean;
+  unique?: boolean;
+  identity?: "always" | "by_default" | false;
+  check?: string;
+  comment?: string;
+  foreign_key?: ForeignKeyInput;
+};
+
+export type CreateTableInput = {
+  name: string;
+  columns: ColumnInput[];
+  comment?: string;
+};
+
+export type AlterTableInput = {
+  new_name?: string;
+  comment?: string;
+};
+
+export type AlterColumnInput = {
+  new_name?: string;
+  type?: string;
+  type_using?: string;
+  nullable?: boolean;
+  default?: string;
+  drop_default?: boolean;
+  comment?: string;
+};
+
+export type RowInput = {
+  values: Record<string, unknown>;
+};
+
+export type RowUpdateInput = {
+  pk: Record<string, unknown>;
+  values: Record<string, unknown>;
+};
+
+export type RowDeleteInput = {
+  pk: Record<string, unknown>;
 };
 
 export const provisionerSupabase = {
@@ -192,9 +282,9 @@ export const provisionerSupabase = {
     call<RlsPolicy[]>(`/vms/${slug}/supabase/policies`),
   policyCreate: (slug: string, input: PolicyCreateInput) =>
     call<{ ok: true; sql: string }>(`/vms/${slug}/supabase/policies`, { method: "POST", body: input }),
-  policyDelete: (slug: string, schema: string, table: string, name: string) =>
+  policyDelete: (slug: string, table: string, name: string) =>
     call<{ ok: true }>(
-      `/vms/${slug}/supabase/policies?schema=${encodeURIComponent(schema)}&table=${encodeURIComponent(table)}&name=${encodeURIComponent(name)}`,
+      `/vms/${slug}/supabase/policies?table=${encodeURIComponent(table)}&name=${encodeURIComponent(name)}`,
       { method: "DELETE" },
     ),
 
@@ -202,4 +292,41 @@ export const provisionerSupabase = {
     call<RealtimeOverview>(`/vms/${slug}/supabase/realtime`),
   functions: (slug: string) =>
     call<FunctionsOverview>(`/vms/${slug}/supabase/functions`),
+
+  /* ── Table Editor ── */
+  tables: (slug: string) =>
+    call<TableSummary[]>(`/vms/${slug}/db/tables`),
+  tableInfo: (slug: string, table: string) =>
+    call<TableInfo>(`/vms/${slug}/db/tables/${encodeURIComponent(table)}/info`),
+  tableRows: (slug: string, table: string, limit = 50, offset = 0) =>
+    call<TableRowsResp>(
+      `/vms/${slug}/db/rows?table=${encodeURIComponent(table)}&limit=${limit}&offset=${offset}`,
+    ),
+
+  createTable: (slug: string, input: CreateTableInput) =>
+    call<{ ok: true }>(`/vms/${slug}/db/tables`, { method: "POST", body: input }),
+  alterTable: (slug: string, table: string, patch: AlterTableInput) =>
+    call<{ ok: true }>(`/vms/${slug}/db/tables/${encodeURIComponent(table)}`, { method: "PATCH", body: patch }),
+  dropTable: (slug: string, table: string) =>
+    call<{ ok: true }>(`/vms/${slug}/db/tables/${encodeURIComponent(table)}`, { method: "DELETE" }),
+
+  addColumn: (slug: string, table: string, input: ColumnInput) =>
+    call<{ ok: true }>(`/vms/${slug}/db/tables/${encodeURIComponent(table)}/columns`, { method: "POST", body: input }),
+  alterColumn: (slug: string, table: string, column: string, patch: AlterColumnInput) =>
+    call<{ ok: true }>(
+      `/vms/${slug}/db/tables/${encodeURIComponent(table)}/columns/${encodeURIComponent(column)}`,
+      { method: "PATCH", body: patch },
+    ),
+  dropColumn: (slug: string, table: string, column: string) =>
+    call<{ ok: true }>(
+      `/vms/${slug}/db/tables/${encodeURIComponent(table)}/columns/${encodeURIComponent(column)}`,
+      { method: "DELETE" },
+    ),
+
+  insertRow: (slug: string, table: string, input: RowInput) =>
+    call<{ ok: true }>(`/vms/${slug}/db/tables/${encodeURIComponent(table)}/rows`, { method: "POST", body: input }),
+  updateRow: (slug: string, table: string, input: RowUpdateInput) =>
+    call<{ ok: true }>(`/vms/${slug}/db/tables/${encodeURIComponent(table)}/rows`, { method: "PATCH", body: input }),
+  deleteRow: (slug: string, table: string, input: RowDeleteInput) =>
+    call<{ ok: true }>(`/vms/${slug}/db/tables/${encodeURIComponent(table)}/rows`, { method: "DELETE", body: input }),
 };
