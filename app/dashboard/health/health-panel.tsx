@@ -16,39 +16,39 @@ const INITIAL: Probe = {
   checked_at: null,
 };
 
-// Probe the public site directly from the browser — same mechanism the admin
-// health tab uses, so the result reflects real reachability.
-async function probeHealthz(url: string): Promise<Probe> {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 2000);
-  const start = performance.now();
-  const checked_at = new Date().toISOString();
-  try {
-    const res = await fetch(url, {
-      signal: ctrl.signal,
-      cache: "no-store",
-      redirect: "manual",
-    });
-    const ms = Math.round(performance.now() - start);
-    if (res.ok)
-      return { state: "online", status: res.status, latency_ms: ms, checked_at };
-    if (res.status === 502 || res.status === 503)
-      return { state: "rebooting", status: res.status, latency_ms: ms, checked_at };
-    return {
-      state: "offline",
-      status: res.status || null,
-      latency_ms: ms,
-      checked_at,
-    };
-  } catch {
-    return { state: "offline", status: null, latency_ms: null, checked_at };
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 const BAR_SLOTS = 14;
 const LATENCY_MAX_MS = 400;
+const PROBE_INTERVAL_MS = 5000;
+
+// Probe via the server-side proxy. A direct browser fetch to the customer
+// apex would fail CORS — Caddy on the VM doesn't emit Access-Control-Allow-*
+// headers, so the cross-origin call from console.* always errors out and
+// the panel read "Offline" even when the site was up. The Next.js route
+// runs the probe Node-side, follows redirects, and returns a normalised
+// { state, status, latency_ms, checked_at } object.
+async function probeHealthz(slug: string): Promise<Probe> {
+  try {
+    const res = await fetch(`/api/customers/${slug}/health/probe`, {
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return {
+        state: "offline",
+        status: null,
+        latency_ms: null,
+        checked_at: new Date().toISOString(),
+      };
+    }
+    return (await res.json()) as Probe;
+  } catch {
+    return {
+      state: "offline",
+      status: null,
+      latency_ms: null,
+      checked_at: new Date().toISOString(),
+    };
+  }
+}
 
 function tone(state: Probe["state"]) {
   if (state === "online")
@@ -57,7 +57,8 @@ function tone(state: Probe["state"]) {
     return { color: "var(--warn)", label: "Rebooting", pill: "pill-warn" };
   if (state === "offline")
     return { color: "var(--crit)", label: "Offline", pill: "pill-crit" };
-  return { color: "var(--text-3)", label: "Checking…", pill: "pill-muted" };
+  // checking — pulsing yellow until the first probe returns
+  return { color: "var(--warn)", label: "Checking…", pill: "pill-warn" };
 }
 
 function latencyTone(ms: number | null): "ok" | "warn" | "crit" {
@@ -67,29 +68,33 @@ function latencyTone(ms: number | null): "ok" | "warn" | "crit" {
   return "crit";
 }
 
-export default function HealthPanel({ apex }: { apex: string }) {
+export default function HealthPanel({
+  apex,
+  slug,
+}: {
+  apex: string;
+  slug: string;
+}) {
   const healthz = `https://${apex}/healthz`;
   const [probe, setProbe] = useState<Probe>(INITIAL);
-  const [samples, setSamples] = useState<
-    { id: number; ms: number | null }[]
-  >([]);
+  const [samples, setSamples] = useState<{ id: number; ms: number | null }[]>([]);
   const lastChecked = useRef<string | null>(null);
 
   useEffect(() => {
     let alive = true;
     const tick = async () => {
-      const data = await probeHealthz(healthz);
+      const data = await probeHealthz(slug);
       if (alive) setProbe(data);
     };
     tick();
     const id = setInterval(() => {
       if (document.visibilityState === "visible") tick();
-    }, 5000);
+    }, PROBE_INTERVAL_MS);
     return () => {
       alive = false;
       clearInterval(id);
     };
-  }, [healthz]);
+  }, [slug]);
 
   useEffect(() => {
     if (!probe.checked_at || probe.checked_at === lastChecked.current) return;
@@ -103,34 +108,24 @@ export default function HealthPanel({ apex }: { apex: string }) {
   const t = tone(probe.state);
 
   return (
-    <section
-      className="surface-card"
-      style={{ padding: 0, overflow: "hidden" }}
-    >
+    <section className="surface-card" style={{ padding: 0, overflow: "hidden" }}>
       <div
         className="flex items-center gap-4 flex-wrap"
-        style={{
-          padding: "18px 22px",
-          borderBottom: "1px solid var(--line)",
-        }}
+        style={{ padding: "18px 22px", borderBottom: "1px solid var(--line)" }}
       >
         <span
           aria-hidden
-          className={`heartbeat-dot${probe.state === "online" ? "" : " is-static"}`}
+          className={`heartbeat-dot${probe.state === "offline" ? " is-static" : ""}`}
           style={{ ["--hb" as string]: t.color }}
         />
-        <div
-          style={{
-            fontSize: 17,
-            fontWeight: 500,
-            letterSpacing: "-0.01em",
-          }}
-        >
+        <div style={{ fontSize: 17, fontWeight: 500, letterSpacing: "-0.01em" }}>
           {t.label}
         </div>
-        <span className={t.pill} style={{ marginLeft: 4 }}>
-          {probe.status != null ? `HTTP ${probe.status}` : "—"}
-        </span>
+        {probe.status != null && (
+          <span className={t.pill} style={{ marginLeft: 4 }}>
+            HTTP {probe.status}
+          </span>
+        )}
       </div>
       <dl
         className="grid"
@@ -150,40 +145,47 @@ export default function HealthPanel({ apex }: { apex: string }) {
               fontSize: 12.5,
               color: "var(--brand)",
               textDecoration: "none",
-              borderBottom: "1px dashed color-mix(in oklch, var(--brand) 40%, transparent)",
+              borderBottom:
+                "1px dashed color-mix(in oklch, var(--brand) 40%, transparent)",
             }}
           >
             {healthz.replace(/^https?:\/\//, "")}
           </a>
         </Field>
-        <Field label="Latency">
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 6,
-              alignItems: "flex-start",
-            }}
-          >
-            <LatencyBars samples={samples} />
+
+        {samples.length > 0 && (
+          <Field label="Latency">
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                alignItems: "flex-start",
+              }}
+            >
+              <LatencyBars samples={samples} />
+              {probe.latency_ms != null && (
+                <span
+                  className="type-mono"
+                  style={{ fontSize: 12, color: "var(--text-3)" }}
+                >
+                  {probe.latency_ms} ms
+                </span>
+              )}
+            </div>
+          </Field>
+        )}
+
+        {probe.checked_at && (
+          <Field label="Last check">
             <span
               className="type-mono"
-              style={{ fontSize: 12, color: "var(--text-3)" }}
+              style={{ fontSize: 13, color: "var(--text)" }}
             >
-              {probe.latency_ms != null ? `${probe.latency_ms} ms` : "—"}
+              {new Date(probe.checked_at).toLocaleTimeString()}
             </span>
-          </div>
-        </Field>
-        <Field label="Last check">
-          <span
-            className="type-mono"
-            style={{ fontSize: 13, color: "var(--text)" }}
-          >
-            {probe.checked_at
-              ? new Date(probe.checked_at).toLocaleTimeString()
-              : "—"}
-          </span>
-        </Field>
+          </Field>
+        )}
       </dl>
     </section>
   );

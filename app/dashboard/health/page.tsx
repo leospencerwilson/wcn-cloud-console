@@ -19,7 +19,7 @@ export default async function DashboardHealthPage() {
         subtitle="Live status and uptime for your environment."
       />
 
-      <HealthPanel apex={apex} />
+      <HealthPanel apex={apex} slug={slug} />
 
       <div>
         <h3 className="type-h3" style={{ marginBottom: 14 }}>
