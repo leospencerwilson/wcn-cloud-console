@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { IconRefresh } from "@/components/ui/icons";
+import { IconPlus, IconRefresh, IconTrash, IconX, IconCheck } from "@/components/ui/icons";
 import type {
   StorageBucket,
   StorageObject,
@@ -24,6 +24,7 @@ export default function StorageView({ slug }: { slug: string }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -37,6 +38,9 @@ export default function StorageView({ slug }: { slug: string }) {
         const list = (await res.json()) as StorageBucket[];
         setBuckets(list);
         if (!selectedBucket && list.length > 0) setSelectedBucket(list[0].name);
+        else if (selectedBucket && !list.find((b) => b.name === selectedBucket)) {
+          setSelectedBucket(list[0]?.name ?? null);
+        }
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Network error");
@@ -47,6 +51,18 @@ export default function StorageView({ slug }: { slug: string }) {
 
   useEffect(() => { refresh(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [slug]);
 
+  async function onDeleteBucket(name: string) {
+    if (!confirm(`Delete bucket "${name}"? All objects inside will be deleted first. This cannot be undone.`)) return;
+    setError(null);
+    const res = await fetch(`/api/customers/${slug}/supabase/storage/buckets/${encodeURIComponent(name)}`, { method: "DELETE" });
+    if (!res.ok) {
+      const e = (await res.json().catch(() => ({}))) as { error?: string };
+      setError(e.error || `Delete failed (${res.status})`);
+    } else {
+      refresh();
+    }
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -56,54 +72,46 @@ export default function StorageView({ slug }: { slug: string }) {
         >
           <span className="type-eyebrow">
             § BUCKETS
-            {buckets && (
-              <span style={{ color: "var(--text-3)", marginLeft: 10 }}>
-                {buckets.length}
-              </span>
-            )}
+            {buckets && <span style={{ color: "var(--text-3)", marginLeft: 10 }}>{buckets.length}</span>}
           </span>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={refresh}
-            disabled={loading}
-          >
-            <IconRefresh />
-            {loading ? "Refreshing…" : "Refresh"}
-          </button>
+          <div className="flex items-center gap-3">
+            <button type="button" className="btn btn-ghost btn-sm" onClick={refresh} disabled={loading}>
+              <IconRefresh />
+              {loading ? "Refreshing…" : "Refresh"}
+            </button>
+            <div className="vm-action-group" role="group" aria-label="New bucket">
+              <button
+                type="button"
+                className="vm-action vm-action--start"
+                onClick={() => setCreating(true)}
+                title="Create a new storage bucket"
+              >
+                <IconPlus />
+                <span>New bucket</span>
+              </button>
+            </div>
+          </div>
         </div>
-        {error ? (
-          <div className="px-6 py-6 type-mono text-[12px]" style={{ color: "var(--crit)" }}>
+
+        {error && (
+          <div className="px-6 py-3 type-mono text-[12px]" style={{ color: "var(--crit)", borderBottom: "1px solid var(--line)" }}>
             {error}
           </div>
-        ) : !buckets ? (
-          <div className="px-6 py-6 type-mono text-[12px]" style={{ color: "var(--text-3)" }}>
-            Loading…
-          </div>
+        )}
+
+        {!buckets ? (
+          <div className="px-6 py-6 type-mono text-[12px]" style={{ color: "var(--text-3)" }}>Loading…</div>
         ) : buckets.length === 0 ? (
           <div className="px-6 py-6 type-mono text-[12px]" style={{ color: "var(--text-3)" }}>
-            (no buckets yet)
+            (no buckets yet — click New bucket to create one)
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
-                  {["Name", "Public", "Objects", "Total size", "Created"].map((h) => (
-                    <th
-                      key={h}
-                      style={{
-                        textAlign: "left",
-                        padding: "8px 12px",
-                        fontSize: 11,
-                        letterSpacing: "0.06em",
-                        textTransform: "uppercase",
-                        color: "var(--text-3)",
-                        borderBottom: "1px solid var(--line)",
-                      }}
-                    >
-                      {h}
-                    </th>
+                  {["Name", "Public", "Objects", "Total size", "Created", ""].map((h) => (
+                    <th key={h} style={thStyle}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -113,22 +121,27 @@ export default function StorageView({ slug }: { slug: string }) {
                     key={b.id}
                     style={{
                       borderBottom: "1px solid var(--line)",
-                      background: selectedBucket === b.name
-                        ? "color-mix(in oklch, var(--brand) 8%, transparent)"
-                        : undefined,
+                      background: selectedBucket === b.name ? "color-mix(in oklch, var(--brand) 8%, transparent)" : undefined,
                       cursor: "pointer",
                     }}
                     onClick={() => setSelectedBucket(b.name)}
                   >
-                    <Td>
-                      <strong style={{ color: "var(--text)" }}>{b.name}</strong>
-                    </Td>
-                    <Td muted>
-                      {b.public ? "public" : "private"}
-                    </Td>
+                    <Td><strong style={{ color: "var(--text)" }}>{b.name}</strong></Td>
+                    <Td muted>{b.public ? "public" : "private"}</Td>
                     <Td muted>{b.object_count.toLocaleString()}</Td>
                     <Td muted>{fmtBytes(b.total_bytes)}</Td>
                     <Td muted>{new Date(b.created_at).toLocaleDateString()}</Td>
+                    <Td>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={(e) => { e.stopPropagation(); onDeleteBucket(b.name); }}
+                        style={{ color: "var(--crit)" }}
+                        title="Delete bucket"
+                      >
+                        <IconTrash />
+                      </button>
+                    </Td>
                   </tr>
                 ))}
               </tbody>
@@ -137,42 +150,74 @@ export default function StorageView({ slug }: { slug: string }) {
         )}
       </Card>
 
-      {selectedBucket && <ObjectsTable slug={slug} bucket={selectedBucket} />}
+      {selectedBucket && <ObjectsTable slug={slug} bucket={selectedBucket} onChange={refresh} />}
+
+      {creating && (
+        <CreateBucketDialog
+          slug={slug}
+          onClose={() => setCreating(false)}
+          onCreated={() => { setCreating(false); refresh(); }}
+        />
+      )}
     </div>
   );
 }
 
-function ObjectsTable({ slug, bucket }: { slug: string; bucket: string }) {
+function ObjectsTable({
+  slug,
+  bucket,
+  onChange,
+}: {
+  slug: string;
+  bucket: string;
+  onChange: () => void;
+}) {
   const [resp, setResp] = useState<StorageObjectsResp | null>(null);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset to page 1 when bucket changes
   useEffect(() => { setOffset(0); }, [bucket]);
 
-  useEffect(() => {
-    let alive = true;
+  const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
-    fetch(
-      `/api/customers/${slug}/supabase/storage/objects?bucket=${encodeURIComponent(bucket)}&limit=${PAGE_SIZE}&offset=${offset}`,
-      { cache: "no-store" },
-    )
-      .then(async (r) => {
-        if (!alive) return;
-        if (!r.ok) {
-          const e = (await r.json().catch(() => ({}))) as { error?: string };
-          setError(e.error || `HTTP ${r.status}`);
-          setResp(null);
-        } else {
-          setResp((await r.json()) as StorageObjectsResp);
-        }
-      })
-      .catch((e) => { if (alive) setError(e instanceof Error ? e.message : "Network error"); })
-      .finally(() => { if (alive) setLoading(false); });
-    return () => { alive = false; };
+    try {
+      const r = await fetch(
+        `/api/customers/${slug}/supabase/storage/objects?bucket=${encodeURIComponent(bucket)}&limit=${PAGE_SIZE}&offset=${offset}`,
+        { cache: "no-store" },
+      );
+      if (!r.ok) {
+        const e = (await r.json().catch(() => ({}))) as { error?: string };
+        setError(e.error || `HTTP ${r.status}`);
+        setResp(null);
+      } else {
+        setResp((await r.json()) as StorageObjectsResp);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Network error");
+    } finally {
+      setLoading(false);
+    }
   }, [slug, bucket, offset]);
+
+  useEffect(() => { refresh(); }, [refresh]);
+
+  async function onDeleteObject(name: string) {
+    if (!confirm(`Delete object "${name}"? This cannot be undone.`)) return;
+    setError(null);
+    const res = await fetch(
+      `/api/customers/${slug}/supabase/storage/objects?bucket=${encodeURIComponent(bucket)}&name=${encodeURIComponent(name)}`,
+      { method: "DELETE" },
+    );
+    if (!res.ok) {
+      const e = (await res.json().catch(() => ({}))) as { error?: string };
+      setError(e.error || `Delete failed (${res.status})`);
+    } else {
+      refresh();
+      onChange();
+    }
+  }
 
   return (
     <Card>
@@ -182,11 +227,7 @@ function ObjectsTable({ slug, bucket }: { slug: string; bucket: string }) {
       >
         <span className="type-eyebrow">
           § OBJECTS IN {bucket.toUpperCase()}
-          {resp && (
-            <span style={{ color: "var(--text-3)", marginLeft: 10 }}>
-              {resp.total} total
-            </span>
-          )}
+          {resp && <span style={{ color: "var(--text-3)", marginLeft: 10 }}>{resp.total} total</span>}
         </span>
       </div>
       {error ? (
@@ -195,34 +236,21 @@ function ObjectsTable({ slug, bucket }: { slug: string; bucket: string }) {
         <div className="px-6 py-6 type-mono text-[12px]" style={{ color: "var(--text-3)" }}>Loading…</div>
       ) : !resp || resp.objects.length === 0 ? (
         <div className="px-6 py-6 type-mono text-[12px]" style={{ color: "var(--text-3)" }}>
-          (no objects in this bucket)
+          (no objects in this bucket — upload via the Supabase CLI or storage-js for now)
         </div>
       ) : (
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
-                {["Name", "Size", "Type", "Updated"].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      textAlign: "left",
-                      padding: "8px 12px",
-                      fontSize: 11,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                      color: "var(--text-3)",
-                      borderBottom: "1px solid var(--line)",
-                    }}
-                  >
-                    {h}
-                  </th>
+                {["Name", "Size", "Type", "Updated", ""].map((h) => (
+                  <th key={h} style={thStyle}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {resp.objects.map((o) => (
-                <ObjectRow key={`${o.bucket_id}/${o.name}`} o={o} />
+                <ObjectRow key={`${o.bucket_id}/${o.name}`} o={o} onDelete={() => onDeleteObject(o.name)} />
               ))}
             </tbody>
           </table>
@@ -237,22 +265,8 @@ function ObjectsTable({ slug, bucket }: { slug: string; bucket: string }) {
             {Math.min(resp.total, offset + 1)} – {Math.min(resp.total, offset + resp.objects.length)} of {resp.total}
           </span>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
-              disabled={loading || offset === 0}
-            >
-              ← Prev
-            </button>
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              onClick={() => setOffset(offset + PAGE_SIZE)}
-              disabled={loading || offset + PAGE_SIZE >= resp.total}
-            >
-              Next →
-            </button>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))} disabled={loading || offset === 0}>← Prev</button>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOffset(offset + PAGE_SIZE)} disabled={loading || offset + PAGE_SIZE >= resp.total}>Next →</button>
           </div>
         </div>
       )}
@@ -260,14 +274,148 @@ function ObjectsTable({ slug, bucket }: { slug: string; bucket: string }) {
   );
 }
 
-function ObjectRow({ o }: { o: StorageObject }) {
+function ObjectRow({ o, onDelete }: { o: StorageObject; onDelete: () => void }) {
   return (
     <tr style={{ borderBottom: "1px solid var(--line)" }}>
       <Td><span className="type-mono" style={{ fontSize: 12 }}>{o.name}</span></Td>
       <Td muted>{fmtBytes(o.size_bytes)}</Td>
       <Td muted>{o.mime_type ?? "—"}</Td>
       <Td muted>{new Date(o.updated_at).toLocaleString()}</Td>
+      <Td>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={onDelete}
+          style={{ color: "var(--crit)" }}
+          title="Delete object"
+        >
+          <IconTrash />
+        </button>
+      </Td>
     </tr>
+  );
+}
+
+function CreateBucketDialog({
+  slug,
+  onClose,
+  onCreated,
+}: {
+  slug: string;
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [isPublic, setPublic] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/customers/${slug}/supabase/storage/buckets`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), public: isPublic }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+        setError(data.error || data.message || `Create failed (${res.status})`);
+        return;
+      }
+      onCreated();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Network error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal title="New bucket" onClose={onClose}>
+      <form onSubmit={submit} className="space-y-4">
+        <FormField label="Name (lowercase letters, digits, . _ -)">
+          <input
+            type="text"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="type-mono"
+            style={inputStyle}
+            placeholder="my-bucket"
+            pattern="[a-z0-9][a-z0-9._-]*"
+          />
+        </FormField>
+        <label className="flex items-center gap-2 type-mono text-[12px]" style={{ color: "var(--text-2)" }}>
+          <input type="checkbox" checked={isPublic} onChange={(e) => setPublic(e.target.checked)} />
+          Public bucket (objects served without auth)
+        </label>
+        {error && (
+          <p className="type-mono text-[12px]" style={{ color: "var(--crit)" }}>{error}</p>
+        )}
+        <div className="flex justify-end gap-3 pt-2">
+          <button type="button" className="btn btn-ghost" onClick={onClose}><IconX />Cancel</button>
+          <button type="submit" className="btn btn-primary" disabled={saving || !name.trim()}>
+            <IconCheck />{saving ? "Creating…" : "Create bucket"}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+const inputStyle: React.CSSProperties = {
+  display: "block",
+  width: "100%",
+  padding: "7px 10px",
+  fontSize: 13,
+  background: "var(--surface)",
+  border: "1px solid var(--line)",
+  borderRadius: 3,
+  color: "var(--text)",
+};
+
+const thStyle: React.CSSProperties = {
+  textAlign: "left",
+  padding: "8px 12px",
+  fontSize: 11,
+  letterSpacing: "0.06em",
+  textTransform: "uppercase",
+  color: "var(--text-3)",
+  borderBottom: "1px solid var(--line)",
+};
+
+function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="type-eyebrow" style={{ color: "var(--text-3)", marginBottom: 6, fontSize: 10.5 }}>
+        {label}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.4)" }}
+      onClick={onClose}
+    >
+      <div className="w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+        <Card>
+          <div className="px-7 py-6 space-y-5">
+            <p className="type-eyebrow">§ {title.toUpperCase()}</p>
+            {children}
+          </div>
+        </Card>
+      </div>
+    </div>
   );
 }
 

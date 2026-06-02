@@ -14,3 +14,12 @@ export const GET = withCustomerAuth<{ slug: string }>(async (req, { slug }) => {
   const offset = Math.max(parseInt(req.nextUrl.searchParams.get("offset") || "0", 10) || 0, 0);
   return NextResponse.json(await provisionerSupabase.storageObjects(slug, bucket, limit, offset));
 });
+
+export const DELETE = withCustomerAuth<{ slug: string }>(async (req, { slug }) => {
+  const bucket = req.nextUrl.searchParams.get("bucket") || "";
+  const name = req.nextUrl.searchParams.get("name") || "";
+  if (!bucket || !name) {
+    return NextResponse.json({ error: "bucket and name required", code: "missing_params" }, { status: 400 });
+  }
+  return NextResponse.json(await provisionerSupabase.storageDeleteObject(slug, bucket, name));
+});
