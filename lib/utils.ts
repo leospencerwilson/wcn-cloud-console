@@ -54,3 +54,87 @@ export function roleLabel(role: string | null | undefined): string {
       return role ?? "";
   }
 }
+
+/* ── Audit action formatting ──────────────────────────────────────────────
+   Raw audit keys like "admin.impersonate.stop" or "deprovision-done" are hard
+   to scan. We turn them into readable labels and a semantic tone for colour. */
+
+export type AuditTone = "ok" | "warn" | "crit" | "info" | "neutral";
+
+// Nouns that should be rephrased / acronyms that stay uppercase.
+const ACTION_NOUNS: Record<string, string> = {
+  vm: "VM",
+  dns: "DNS",
+  tls: "TLS",
+  ssl: "SSL",
+  api: "API",
+  env: "environment",
+  impersonate: "impersonation",
+  provision: "provisioning",
+  deprovision: "deprovisioning",
+};
+
+// Verb tokens normalised to past tense for natural reading.
+const ACTION_VERBS: Record<string, string> = {
+  start: "started",
+  started: "started",
+  stop: "stopped",
+  stopped: "stopped",
+  done: "completed",
+  complete: "completed",
+  completed: "completed",
+  fail: "failed",
+  failed: "failed",
+  create: "created",
+  created: "created",
+  delete: "deleted",
+  deleted: "deleted",
+  remove: "removed",
+  removed: "removed",
+  update: "updated",
+  updated: "updated",
+  revoke: "revoked",
+  revoked: "revoked",
+  reveal: "revealed",
+  revealed: "revealed",
+  add: "added",
+  added: "added",
+  rename: "renamed",
+  resize: "resized",
+  reboot: "rebooted",
+  restart: "restarted",
+  deploy: "deployed",
+  rollback: "rolled back",
+  import: "imported",
+  export: "exported",
+  enable: "enabled",
+  disable: "disabled",
+  restore: "restored",
+};
+
+export function auditActionTone(action: string): AuditTone {
+  const a = action.toLowerCase();
+  if (/(fail|error|denied|reject)/.test(a)) return "crit";
+  if (a.includes("impersonate")) return "info";
+  if (/(deprovision|destroy|delete|remove|archive|revoke|stop|abort|disable)/.test(a))
+    return "warn";
+  if (/(start|done|complete|create|provision|success|deploy|add|enable|restore)/.test(a))
+    return "ok";
+  return "neutral";
+}
+
+export function formatAuditAction(action: string): {
+  label: string;
+  tone: AuditTone;
+} {
+  const tone = auditActionTone(action);
+  const tokens = action.split(/[.\-_]/).filter(Boolean);
+  if (tokens[0] === "admin") tokens.shift();
+  if (tokens.length === 0) return { label: action, tone };
+  const words = tokens.map((t) => {
+    const k = t.toLowerCase();
+    return ACTION_VERBS[k] ?? ACTION_NOUNS[k] ?? k;
+  });
+  const joined = words.join(" ");
+  return { label: joined.charAt(0).toUpperCase() + joined.slice(1), tone };
+}

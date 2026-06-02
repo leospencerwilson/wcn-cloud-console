@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { IconChevronLeft, IconChevronRight, IconX } from "@/components/ui/icons";
 import { RelativeTime } from "@/components/relative-time";
+import { AuditAction } from "@/components/audit-action";
 
 interface AuditRow {
   id: string;
@@ -276,7 +277,9 @@ export default function AuditTable({ slug }: { slug?: string }) {
                       <RelativeTime iso={row.ts} />
                     </td>
                     <td>{row.actor}</td>
-                    <td className="type-mono">{row.action}</td>
+                    <td>
+                      <AuditAction action={row.action} />
+                    </td>
                     <td className="type-mono">{row.slug ?? "—"}</td>
                   </tr>
                 ))}

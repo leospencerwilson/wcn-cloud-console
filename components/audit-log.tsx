@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { IconRefresh } from "@/components/ui/icons";
+import { AuditAction } from "@/components/audit-action";
 import type { AuditEvent } from "@/lib/provisioner/types";
 
 const PREFIXES = [
@@ -202,7 +203,9 @@ export default function AuditLog({ slug }: { slug: string }) {
                   >
                     {e.actor}
                   </td>
-                  <td className="px-6 py-3 type-mono text-[12px]">{e.action}</td>
+                  <td className="px-6 py-3 text-[12px]">
+                    <AuditAction action={e.action} />
+                  </td>
                   <td
                     className="px-6 py-3 type-mono text-[11px]"
                     style={{ color: "var(--color-muted)", wordBreak: "break-all" }}
