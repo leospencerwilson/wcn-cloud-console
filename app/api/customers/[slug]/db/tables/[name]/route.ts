@@ -6,11 +6,11 @@ import type { AlterTableInput } from "@/lib/provisioner/supabase-client";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export const PATCH = withCustomerAuth<{ slug: string; name: string }>(async (req, { slug, name }) => {
+export const PATCH = withCustomerAuth<{ slug: string; name: string }>(async (req, { slug, params }) => {
   const body = (await req.json().catch(() => ({}))) as AlterTableInput;
-  return NextResponse.json(await provisionerSupabase.alterTable(slug, name, body));
+  return NextResponse.json(await provisionerSupabase.alterTable(slug, params.name, body));
 });
 
-export const DELETE = withCustomerAuth<{ slug: string; name: string }>(async (_req, { slug, name }) => {
-  return NextResponse.json(await provisionerSupabase.dropTable(slug, name));
+export const DELETE = withCustomerAuth<{ slug: string; name: string }>(async (_req, { slug, params }) => {
+  return NextResponse.json(await provisionerSupabase.dropTable(slug, params.name));
 });

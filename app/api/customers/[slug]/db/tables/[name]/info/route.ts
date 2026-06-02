@@ -5,6 +5,6 @@ import { provisionerSupabase } from "@/lib/provisioner/supabase-client";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export const GET = withCustomerAuth<{ slug: string; name: string }>(async (_req, { slug, name }) => {
-  return NextResponse.json(await provisionerSupabase.tableInfo(slug, name));
+export const GET = withCustomerAuth<{ slug: string; name: string }>(async (_req, { slug, params }) => {
+  return NextResponse.json(await provisionerSupabase.tableInfo(slug, params.name));
 });
