@@ -7,10 +7,8 @@ import type { FunctionsOverview } from "@/lib/provisioner/supabase-client";
 
 export default function FunctionsView({
   slug,
-  studioUrl,
 }: {
   slug: string;
-  studioUrl: string;
 }) {
   const [data, setData] = useState<FunctionsOverview | null>(null);
   const [loading, setLoading] = useState(false);
@@ -71,23 +69,23 @@ export default function FunctionsView({
             No Edge Functions registered in the <code className="type-mono">supabase_functions</code> schema yet.
           </p>
           <p className="text-[12.5px]" style={{ color: "var(--text-3)" }}>
-            Deploy new functions via the Supabase CLI or the embedded Studio:
+            Deploy new functions with the Supabase CLI, pointed at your project URL
+            from the <strong>Connection</strong> tab:
           </p>
-          <a
-            href={`${studioUrl}/functions`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary"
+          <pre
+            className="type-mono"
             style={{
-              display: "inline-flex",
-              padding: "8px 14px",
-              fontSize: 12.5,
-              textDecoration: "none",
-              marginTop: 6,
+              padding: "10px 12px",
+              background: "var(--surface-1)",
+              border: "1px solid var(--line)",
+              borderRadius: 3,
+              fontSize: 12,
+              color: "var(--text-2)",
+              overflowX: "auto",
             }}
           >
-            Open in Studio
-          </a>
+{`supabase functions deploy hello --project-ref <ref>`}
+          </pre>
         </div>
       ) : (
         <div style={{ overflowX: "auto" }}>
