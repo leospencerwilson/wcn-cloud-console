@@ -79,6 +79,17 @@ export const provisionerDb = {
       body: JSON.stringify(input),
       actor,
     }),
+  rows: (slug: string, schema: string, table: string, limit = 50, offset = 0) =>
+    call<DbRowsResp>(
+      `/vms/${slug}/db/rows?schema=${encodeURIComponent(schema)}&table=${encodeURIComponent(table)}&limit=${limit}&offset=${offset}`,
+    ),
+};
+
+export type DbRowsResp = {
+  rows: Record<string, unknown>[];
+  total: number;
+  limit: number;
+  offset: number;
 };
 
 export type { DbQueryError };
