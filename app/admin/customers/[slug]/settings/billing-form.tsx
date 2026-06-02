@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { IconSave } from "@/components/ui/icons";
 import { updateBillingAction, type ActionState } from "./actions";
 
 interface Props {
@@ -26,6 +27,7 @@ function Submit() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
+      <IconSave />
       {pending ? "Saving…" : "Save"}
     </Button>
   );

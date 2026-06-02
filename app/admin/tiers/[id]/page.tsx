@@ -6,6 +6,7 @@ import { requireWcnAdmin } from "@/lib/auth/session";
 import { countCustomersOnTier, getTier } from "@/lib/db/tiers";
 import EditTierForm from "./edit-tier-form";
 import { archiveTierAction } from "./actions";
+import { IconChevronLeft, IconTrash } from "@/components/ui/icons";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -41,7 +42,7 @@ export default async function EditTierPage({ params }: PageProps) {
           </p>
         </div>
         <Link href="/admin/tiers">
-          <Button variant="secondary">Back</Button>
+          <Button variant="secondary"><IconChevronLeft />Back</Button>
         </Link>
       </header>
 
@@ -71,6 +72,7 @@ export default async function EditTierPage({ params }: PageProps) {
               disabled={archiveDisabled}
               title={archiveTooltip}
             >
+              <IconTrash />
               {tier.archived ? "Archived" : "Archive tier"}
             </Button>
           </form>

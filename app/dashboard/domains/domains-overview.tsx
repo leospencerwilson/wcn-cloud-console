@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { IconPlus, IconX, IconCopy, IconExternal, IconCheck, IconArrowRight } from "@/components/ui/icons";
 import { domainPill } from "@/lib/domain-status";
 import type { App, AppDomain } from "@/lib/provisioner/types";
 
@@ -186,6 +187,7 @@ export default function DomainsOverview({ slug }: { slug: string }) {
             onClick={() => setShowAdd(true)}
             style={{ padding: "6px 12px", fontSize: 12 }}
           >
+            <IconPlus />
             Add domain
           </button>
         </div>
@@ -275,7 +277,8 @@ export default function DomainsOverview({ slug }: { slug: string }) {
                           textDecoration: "none",
                         }}
                       >
-                        Manage →
+                        <IconArrowRight />
+                        Manage
                       </Link>
                     </td>
                   </tr>
@@ -390,6 +393,7 @@ function AddDomainModal({
             className="btn-ghost"
             style={{ padding: "4px 8px", fontSize: 12 }}
           >
+            <IconX />
             Close
           </button>
         </div>
@@ -453,6 +457,7 @@ function AddDomainModal({
                 className="btn-ghost"
                 style={{ padding: "6px 12px", fontSize: 12 }}
               >
+                <IconX />
                 Cancel
               </button>
               <button
@@ -461,6 +466,7 @@ function AddDomainModal({
                 disabled={saving}
                 style={{ padding: "6px 14px", fontSize: 12 }}
               >
+                <IconPlus />
                 {saving ? "Adding…" : "Add domain"}
               </button>
             </div>
@@ -532,6 +538,7 @@ function AddDomainModal({
                     className="btn-ghost"
                     style={{ padding: "4px 8px", fontSize: 11 }}
                   >
+                    <IconCopy />
                     {copied ? "copied" : "copy"}
                   </button>
                 </div>
@@ -555,7 +562,8 @@ function AddDomainModal({
                   textDecoration: "none",
                 }}
               >
-                Open in app →
+                <IconExternal />
+                Open in app
               </Link>
               <button
                 type="button"
@@ -563,6 +571,7 @@ function AddDomainModal({
                 className="btn-primary"
                 style={{ padding: "6px 14px", fontSize: 12 }}
               >
+                <IconCheck />
                 Done
               </button>
             </div>

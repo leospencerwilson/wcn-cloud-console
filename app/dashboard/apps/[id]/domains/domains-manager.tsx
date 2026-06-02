@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { domainPill } from "@/lib/domain-status";
+import { IconRefresh, IconPlus, IconTrash } from "@/components/ui/icons";
 import type { AppDomain } from "@/lib/provisioner/types";
 
 const HOSTNAME_RE =
@@ -191,6 +192,7 @@ export default function DomainsManager({
           </p>
         </div>
         <button type="button" className="btn btn-ghost btn-sm" onClick={refreshAll}>
+          <IconRefresh />
           Refresh
         </button>
       </div>
@@ -225,6 +227,7 @@ export default function DomainsManager({
             />
           </div>
           <button type="submit" className="btn btn-primary" disabled={adding}>
+            <IconPlus />
             {adding ? "Adding…" : "Add domain"}
           </button>
         </form>
@@ -276,6 +279,7 @@ export default function DomainsManager({
                     onClick={() => onRemove(d.hostname)}
                     style={{ color: "var(--color-danger, #b03020)" }}
                   >
+                    <IconTrash />
                     Remove
                   </button>
                 </div>

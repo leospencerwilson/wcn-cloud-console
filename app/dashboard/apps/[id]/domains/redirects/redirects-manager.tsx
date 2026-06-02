@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { IconLink, IconRefresh, IconTrash } from "@/components/ui/icons";
 import type { RedirectRule } from "@/lib/provisioner/types";
 
 export default function RedirectsManager({
@@ -192,6 +193,7 @@ export default function RedirectsManager({
           </label>
           <div className="md:col-span-3">
             <button type="submit" className="btn btn-primary" disabled={creating}>
+              <IconLink />
               {creating ? "Adding…" : "Add redirect"}
             </button>
           </div>
@@ -211,6 +213,7 @@ export default function RedirectsManager({
         >
           <span className="type-eyebrow">§ CONFIGURED REDIRECTS</span>
           <button type="button" className="btn btn-ghost btn-sm" onClick={fetchRules}>
+            <IconRefresh />
             {loading ? "Refreshing…" : "Refresh"}
           </button>
         </div>
@@ -264,6 +267,7 @@ export default function RedirectsManager({
                       onClick={() => onDelete(r.id)}
                       style={{ color: "var(--color-danger, #b03020)" }}
                     >
+                      <IconTrash />
                       {deleting === r.id ? "Deleting…" : "Delete"}
                     </button>
                   </td>

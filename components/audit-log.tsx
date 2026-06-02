@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { IconRefresh } from "@/components/ui/icons";
 import type { AuditEvent } from "@/lib/provisioner/types";
 
 const PREFIXES = [
@@ -151,6 +152,7 @@ export default function AuditLog({ slug }: { slug: string }) {
           </label>
           <div className="flex-1" />
           <button type="button" className="btn btn-ghost btn-sm" onClick={fetchEvents}>
+            <IconRefresh />
             {loading ? "Loading…" : "Refresh"}
           </button>
         </div>

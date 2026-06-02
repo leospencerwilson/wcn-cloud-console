@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { IconRefresh, IconUserPlus, IconTrash, IconX, IconCopy, IconCheck } from "@/components/ui/icons";
 import type {
   TeamInviteCreated,
   TeamMember,
@@ -117,6 +118,7 @@ export default function TeamManager({
           <span className="type-eyebrow">§ TEAM MEMBERS</span>
           <div className="flex items-center gap-2">
             <button type="button" className="btn btn-ghost btn-sm" onClick={load}>
+              <IconRefresh />
               {loading ? "Refreshing…" : "Refresh"}
             </button>
             <button
@@ -124,6 +126,7 @@ export default function TeamManager({
               className="btn btn-primary btn-sm"
               onClick={() => setInviteOpen(true)}
             >
+              <IconUserPlus />
               Invite user
             </button>
           </div>
@@ -210,6 +213,7 @@ export default function TeamManager({
                           className="btn btn-ghost btn-sm"
                           onClick={() => revoke(m)}
                         >
+                          <IconTrash />
                           Revoke
                         </button>
                       )}
@@ -293,6 +297,7 @@ function InviteModal({
             § {issued ? "INVITE CREATED" : "INVITE A TEAM MEMBER"}
           </span>
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+            <IconX />
             Close
           </button>
         </div>
@@ -323,9 +328,11 @@ function InviteModal({
                   className="btn btn-primary btn-sm"
                   onClick={copyLink}
                 >
+                  <IconCopy />
                   {copied ? "Copied!" : "Copy link"}
                 </button>
                 <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+                  <IconCheck />
                   Done
                 </button>
               </div>
@@ -384,6 +391,7 @@ function InviteModal({
               )}
               <div className="flex justify-end gap-2">
                 <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+                  <IconX />
                   Cancel
                 </button>
                 <button
@@ -391,6 +399,7 @@ function InviteModal({
                   className="btn btn-primary btn-sm"
                   disabled={busy || !email}
                 >
+                  <IconUserPlus />
                   {busy ? "Creating…" : "Create invite"}
                 </button>
               </div>

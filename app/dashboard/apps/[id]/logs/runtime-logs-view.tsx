@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { IconRefresh } from "@/components/ui/icons";
 import LogStream from "@/components/log-stream";
 
 const TAIL_PRESETS = [100, 300, 1000];
@@ -61,6 +62,7 @@ export default function RuntimeLogsView({
             className="btn btn-ghost btn-sm"
             onClick={() => setStreamKey((k) => k + 1)}
           >
+            <IconRefresh />
             Reconnect
           </button>
         </div>

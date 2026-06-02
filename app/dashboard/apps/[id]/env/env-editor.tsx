@@ -2,6 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  IconPlus,
+  IconUpload,
+  IconDownload,
+  IconEye,
+  IconEyeOff,
+  IconTrash,
+  IconRefresh,
+  IconSave,
+  IconX,
+} from "@/components/ui/icons";
 import type { EnvVar } from "@/lib/provisioner/types";
 
 type Kind = "runtime" | "build" | "preview";
@@ -270,13 +281,15 @@ export default function EnvEditor({
             className="btn btn-ghost btn-sm"
             onClick={addRow}
           >
-            + Add
+            <IconPlus />
+            Add
           </button>
           <button
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={() => setImportOpen(true)}
           >
+            <IconUpload />
             Import .env
           </button>
           <button
@@ -285,6 +298,7 @@ export default function EnvEditor({
             onClick={onExport}
             disabled={rows.length === 0}
           >
+            <IconDownload />
             Export .env
           </button>
         </div>
@@ -313,7 +327,8 @@ export default function EnvEditor({
               className="btn btn-ghost btn-sm"
               onClick={addRow}
             >
-              + Add first variable
+              <IconPlus />
+              Add first variable
             </button>
           </div>
         ) : (
@@ -410,6 +425,7 @@ export default function EnvEditor({
               onClick={discard}
               disabled={saving}
             >
+              <IconRefresh />
               Discard
             </button>
             <button
@@ -418,6 +434,7 @@ export default function EnvEditor({
               onClick={onSave}
               disabled={saving}
             >
+              <IconSave />
               {saving ? "Saving…" : "Save changes"}
             </button>
           </div>
@@ -494,6 +511,7 @@ function EnvRow({
             onClick={onToggleReveal}
             title={row._revealed ? "Hide" : "Reveal for 30s"}
           >
+            {row._revealed ? <IconEyeOff /> : <IconEye />}
             {row._revealed ? `Hide · ${remaining}s` : "Show"}
           </button>
         </div>
@@ -528,7 +546,7 @@ function EnvRow({
           title="Remove"
           aria-label="Remove"
         >
-          ×
+          <IconTrash />
         </button>
       </td>
     </tr>
@@ -738,6 +756,7 @@ function ImportDialog({
             onClick={onClose}
             disabled={busy}
           >
+            <IconX />
             Cancel
           </button>
           <button
@@ -746,6 +765,7 @@ function ImportDialog({
             onClick={submit}
             disabled={busy}
           >
+            <IconUpload />
             {busy ? "Importing…" : "Import and replace"}
           </button>
         </div>

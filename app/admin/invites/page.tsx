@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
 import { listInvites } from "@/lib/db/invites";
 import { roleLabel } from "@/lib/utils";
+import { IconSend } from "@/components/ui/icons";
 
 function pillFor(status: string) {
   if (status === "pending") return "pill pill-pending";
@@ -24,7 +25,7 @@ export default async function InvitesPage() {
         subtitle="Outstanding invitations to the console."
         actions={
           <Link href="/admin/invites/new">
-            <Button>Send invite</Button>
+            <Button><IconSend />Send invite</Button>
           </Link>
         }
       />

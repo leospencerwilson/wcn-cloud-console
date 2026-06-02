@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { IconPlus } from "@/components/ui/icons";
 import { PageHeader } from "@/components/page-header";
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import { provisionerApps } from "@/lib/provisioner/apps-client";
@@ -35,7 +36,8 @@ export default async function DashboardAppsPage() {
         subtitle="Applications running in your environment."
         actions={
           <Link href="/dashboard/apps/new" className="btn btn-primary btn-sm">
-            + New app
+            <IconPlus />
+            New app
           </Link>
         }
       />
@@ -71,6 +73,7 @@ export default async function DashboardAppsPage() {
               or container image.
             </p>
             <Link href="/dashboard/apps/new" className="btn btn-primary">
+              <IconPlus />
               Create your first app
             </Link>
           </div>

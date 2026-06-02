@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { IconCamera, IconRefresh, IconTrash, IconX, IconCheck } from "@/components/ui/icons";
 import type { VmSnapshot } from "@/lib/provisioner/vms-client";
 
 const NAME_RE = /^[A-Za-z][A-Za-z0-9_-]{0,39}$/;
@@ -169,6 +170,7 @@ export default function SnapshotsManager({ slug }: { slug: string }) {
           </label>
           <div className="md:col-span-2">
             <button type="submit" className="btn btn-primary" disabled={taking}>
+              <IconCamera />
               {taking ? "Taking…" : "Take snapshot"}
             </button>
           </div>
@@ -191,6 +193,7 @@ export default function SnapshotsManager({ slug }: { slug: string }) {
         >
           <span className="type-eyebrow">§ SNAPSHOTS</span>
           <button type="button" className="btn btn-ghost btn-sm" onClick={fetchSnaps}>
+            <IconRefresh />
             {loading ? "Refreshing…" : "Refresh"}
           </button>
         </div>
@@ -242,6 +245,7 @@ export default function SnapshotsManager({ slug }: { slug: string }) {
                         setConfirmInput("");
                       }}
                     >
+                      <IconRefresh />
                       Revert
                     </button>
                     <button
@@ -251,6 +255,7 @@ export default function SnapshotsManager({ slug }: { slug: string }) {
                       onClick={() => onDelete(s.name)}
                       style={{ color: "var(--color-danger, #b03020)" }}
                     >
+                      <IconTrash />
                       {deleting === s.name ? "Deleting…" : "Delete"}
                     </button>
                   </td>
@@ -302,6 +307,7 @@ export default function SnapshotsManager({ slug }: { slug: string }) {
                   onClick={() => setConfirmRevert(null)}
                   disabled={reverting}
                 >
+                  <IconX />
                   Cancel
                 </button>
                 <button
@@ -311,6 +317,7 @@ export default function SnapshotsManager({ slug }: { slug: string }) {
                   disabled={reverting || confirmInput !== confirmRevert}
                   style={{ background: "var(--color-danger, #b03020)" }}
                 >
+                  <IconCheck />
                   {reverting ? "Reverting…" : "Confirm revert"}
                 </button>
               </div>

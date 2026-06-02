@@ -1,6 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import {
+  IconCopy,
+  IconPlus,
+  IconCheck,
+  IconSave,
+  IconX,
+  IconTrash,
+} from "@/components/ui/icons";
 import type {
   AppWebhookConfig,
   AppWebhookCreated,
@@ -61,6 +69,7 @@ function CopyField({ value }: { value: string }) {
           setTimeout(() => setCopied(false), 1200);
         }}
       >
+        <IconCopy />
         {copied ? "Copied" : "Copy"}
       </button>
     </div>
@@ -200,6 +209,7 @@ export default function DeployManager({
             onClick={create}
             disabled={busy || !branch.trim()}
           >
+            <IconPlus />
             {busy ? "Generating…" : "Generate webhook"}
           </button>
         </div>
@@ -261,6 +271,7 @@ export default function DeployManager({
               className="btn-ghost"
               onClick={() => setJustCreated(null)}
             >
+              <IconCheck />
               I&apos;ve saved them
             </button>
           </div>
@@ -309,6 +320,7 @@ export default function DeployManager({
               onClick={() => patch({ branch })}
               disabled={busy || !branch.trim() || !branchDirty}
             >
+              <IconSave />
               Save branch
             </button>
           </div>
@@ -344,6 +356,7 @@ export default function DeployManager({
             onClick={() => patch({ enabled: !config.enabled })}
             disabled={busy}
           >
+            {config.enabled ? <IconX /> : <IconCheck />}
             {config.enabled ? "Disable" : "Enable"}
           </button>
           <button
@@ -353,6 +366,7 @@ export default function DeployManager({
             disabled={busy}
             style={{ marginLeft: "auto" }}
           >
+            <IconTrash />
             Delete webhook
           </button>
         </div>

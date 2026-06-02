@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { listCustomers } from "@/lib/db/customers";
 import { createInviteAction } from "./actions";
+import { IconSend } from "@/components/ui/icons";
 
 interface PageProps {
   searchParams: Promise<{
@@ -134,7 +135,7 @@ export default async function NewInvitePage({ searchParams }: PageProps) {
               </select>
             </div>
             <div className="pt-4">
-              <Button type="submit">Send invite</Button>
+              <Button type="submit"><IconSend />Send invite</Button>
             </div>
           </form>
         </div>

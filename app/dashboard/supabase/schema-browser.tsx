@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { IconDatabase } from "@/components/ui/icons";
 import type { DbColumn, DbSizes, DbTable } from "@/lib/provisioner/types";
 
 function fmtBytes(n: number): string {
@@ -238,7 +239,8 @@ export default function SchemaBrowser({ slug }: { slug: string }) {
             textDecoration: "none",
           }}
         >
-          Open SQL editor →
+          <IconDatabase />
+          Open SQL editor
         </a>
       </div>
     </section>

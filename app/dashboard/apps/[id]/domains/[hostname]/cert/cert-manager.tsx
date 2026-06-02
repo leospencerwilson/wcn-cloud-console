@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { IconTrash, IconUpload } from "@/components/ui/icons";
 import type { DomainCertMetadata } from "@/lib/provisioner/types";
 
 const PEM_CERT = /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/;
@@ -144,6 +145,7 @@ export default function CertManager({
               onClick={onRemove}
               disabled={removing}
             >
+              <IconTrash />
               {removing ? "Removing…" : "Remove"}
             </button>
           </div>
@@ -280,6 +282,7 @@ export default function CertManager({
           )}
           <div className="flex justify-end">
             <button type="submit" className="btn btn-primary btn-sm" disabled={uploading}>
+              <IconUpload />
               {uploading ? "Uploading…" : meta?.uploaded ? "Replace" : "Upload"}
             </button>
           </div>

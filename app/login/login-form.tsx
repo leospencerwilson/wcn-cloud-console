@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { IconLogIn } from "@/components/ui/icons";
 
 // Allow post-login redirects only to *.western-communication.com (any scheme
 // normalised to https) or relative same-origin paths. Anything else falls
@@ -125,7 +126,10 @@ export default function LoginForm() {
               Signing in…
             </span>
           ) : (
-            "Sign in"
+            <span className="inline-flex items-center justify-center gap-2">
+              <IconLogIn />
+              Sign in
+            </span>
           )}
         </Button>
       </div>

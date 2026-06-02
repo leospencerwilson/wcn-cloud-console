@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { IconCheck } from "@/components/ui/icons";
 import { acceptInvite } from "./actions";
 
 interface Props {
@@ -76,6 +77,7 @@ export default function AcceptForm({ token, email }: Props) {
       )}
       <div className="pt-2">
         <Button type="submit" disabled={pending} className="w-full">
+          <IconCheck />
           {pending ? "Setting up…" : "Set password"}
         </Button>
       </div>

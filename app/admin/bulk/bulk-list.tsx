@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import type { BulkJob, BulkJobStatus } from "@/lib/provisioner/types";
+import { IconArrowRight, IconRefresh, IconExternal } from "@/components/ui/icons";
 
 const POLL_MS = 2000;
 
@@ -101,6 +102,7 @@ export default function BulkList({
               onClick={() => setFilter(f)}
               className={`btn btn-sm ${filter === f ? "btn-primary" : "btn-ghost"}`}
             >
+              <IconArrowRight />
               {f}
             </button>
           ))}
@@ -123,6 +125,7 @@ export default function BulkList({
             </span>
           )}
           <button type="button" className="btn btn-ghost btn-sm" onClick={refresh}>
+            <IconRefresh />
             Refresh
           </button>
         </div>
@@ -213,6 +216,7 @@ export default function BulkList({
                       href={`/admin/bulk/${j.id}`}
                       className="btn btn-ghost btn-sm"
                     >
+                      <IconExternal />
                       Open
                     </Link>
                   </td>

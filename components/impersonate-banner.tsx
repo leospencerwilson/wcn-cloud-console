@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { IconX } from "@/components/ui/icons";
 
 function ageLabel(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
@@ -73,7 +74,8 @@ export default function ImpersonateBanner({
           disabled={exiting}
           style={{ color: "var(--color-navy)" }}
         >
-          {exiting ? "Exiting…" : "Exit impersonation →"}
+          <IconX />
+          {exiting ? "Exiting…" : "Exit impersonation"}
         </button>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { IconTerminal } from "@/components/ui/icons";
 import LogStream, { type LogEvent } from "@/components/log-stream";
 
 const HISTORY_KEY_PREFIX = "wcn:exec-history:";
@@ -134,6 +135,7 @@ export default function ExecConsole({
                 spellCheck={false}
               />
               <button type="submit" className="btn btn-primary" disabled={!command.trim()}>
+                <IconTerminal />
                 Run
               </button>
             </div>

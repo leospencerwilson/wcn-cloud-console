@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { IconArrowRight, IconTrash, IconRefresh } from "@/components/ui/icons";
 import {
   archiveCustomerAction,
   unarchiveCustomerAction,
@@ -40,6 +41,7 @@ export default function DangerZone({
               variant="ghost"
               onClick={() => setShow(true)}
             >
+              <IconArrowRight />
               Show danger zone
             </Button>
           </div>
@@ -59,6 +61,7 @@ export default function DangerZone({
             size="sm"
             onClick={() => setShow(false)}
           >
+            <IconArrowRight />
             Hide
           </Button>
         </div>
@@ -220,6 +223,7 @@ function DangerSubmit({
       variant="danger"
       disabled={disabled || pending}
     >
+      <IconTrash />
       {pending ? "Working…" : label}
     </Button>
   );
@@ -229,6 +233,7 @@ function UnarchiveSubmit() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
+      <IconRefresh />
       {pending ? "Restoring…" : "Restore customer"}
     </Button>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { IconStop } from "@/components/ui/icons";
 
 export type LogEvent =
   | { type: "log"; line: string }
@@ -223,6 +224,7 @@ export default function LogStream({
             </label>
             {status === "streaming" && (
               <button type="button" className="btn btn-ghost btn-sm" onClick={stop}>
+                <IconStop />
                 Stop
               </button>
             )}

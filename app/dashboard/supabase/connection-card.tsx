@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { IconCopy, IconExternal, IconEye, IconEyeOff } from "@/components/ui/icons";
 import type { SupabaseConnection } from "@/lib/provisioner/types";
 
 type PoolerMode = "transaction" | "session" | "direct";
@@ -44,6 +45,7 @@ function CopyBtn({ value }: { value: string }) {
         setTimeout(() => setCopied(false), 1200);
       }}
     >
+      <IconCopy />
       {copied ? "Copied" : "Copy"}
     </button>
   );
@@ -108,7 +110,8 @@ function Row({
               textDecoration: "none",
             }}
           >
-            Open ↗
+            <IconExternal />
+            Open
           </a>
         )}
         <CopyBtn value={value} />
@@ -291,6 +294,7 @@ export default function ConnectionCard({ slug }: { slug: string }) {
             style={{ padding: "4px 10px", fontSize: 11 }}
             onClick={() => setShowPw((s) => !s)}
           >
+            {showPw ? <IconEyeOff /> : <IconEye />}
             {showPw ? "Hide" : "Show"}
           </button>
         )}

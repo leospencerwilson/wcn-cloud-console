@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { IconEdit, IconEye, IconEyeOff } from "@/components/ui/icons";
 import type { App, EnvVar } from "@/lib/provisioner/types";
 
 type Row = {
@@ -254,7 +255,8 @@ export default function EnvironmentOverview({ slug }: { slug: string }) {
               href={`/dashboard/apps/${app.id}/env`}
               className="btn btn-ghost btn-sm"
             >
-              Edit →
+              <IconEdit />
+              Edit
             </Link>
           </header>
           <div>
@@ -321,6 +323,7 @@ export default function EnvironmentOverview({ slug }: { slug: string }) {
                     onClick={() => toggleReveal(id)}
                     style={{ justifySelf: "end" }}
                   >
+                    {isRevealed ? <IconEyeOff /> : <IconEye />}
                     {isRevealed ? "Hide" : "Reveal"}
                   </button>
                 </div>

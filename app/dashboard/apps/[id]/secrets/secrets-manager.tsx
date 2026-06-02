@@ -2,6 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import {
+  IconSave,
+  IconRefresh,
+  IconEye,
+  IconTrash,
+  IconX,
+  IconKey,
+} from "@/components/ui/icons";
 import type { Secret } from "@/lib/provisioner/types";
 
 const KEY_RE = /^[A-Z][A-Z0-9_]{0,63}$/;
@@ -206,6 +214,7 @@ export default function SecretsManager({
           </label>
           <div className="md:col-span-3">
             <button type="submit" className="btn btn-primary" disabled={saving}>
+              <IconSave />
               {saving ? "Saving…" : "Save secret"}
             </button>
           </div>
@@ -256,6 +265,7 @@ export default function SecretsManager({
         >
           <span className="type-eyebrow">§ STORED SECRETS</span>
           <button type="button" className="btn btn-ghost btn-sm" onClick={fetchSecrets}>
+            <IconRefresh />
             {loading ? "Refreshing…" : "Refresh"}
           </button>
         </div>
@@ -313,6 +323,7 @@ export default function SecretsManager({
                         setRevealError(null);
                       }}
                     >
+                      <IconEye />
                       Reveal
                     </button>
                     <button
@@ -322,6 +333,7 @@ export default function SecretsManager({
                       onClick={() => onDelete(s.key)}
                       style={{ color: "var(--color-danger, #b03020)" }}
                     >
+                      <IconTrash />
                       {deleting === s.key ? "Deleting…" : "Delete"}
                     </button>
                   </td>
@@ -379,9 +391,11 @@ export default function SecretsManager({
                   onClick={() => setRevealKey(null)}
                   disabled={revealing}
                 >
+                  <IconX />
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary" disabled={revealing || !password}>
+                  <IconKey />
                   {revealing ? "Verifying…" : "Reveal"}
                 </button>
               </div>

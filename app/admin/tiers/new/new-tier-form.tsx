@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { IconPlus } from "@/components/ui/icons";
 import { createTierAction, type CreateTierState } from "./actions";
 
 const slugRegex = /^[a-z0-9-]{2,40}$/;
@@ -13,6 +14,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
+      <IconPlus />
       {pending ? "Creating…" : "Create tier"}
     </Button>
   );

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import type { BulkJob, BulkRun, BulkRunStatus } from "@/lib/provisioner/types";
+import { IconRefresh, IconStop } from "@/components/ui/icons";
 
 const POLL_MS = 2000;
 
@@ -161,6 +162,7 @@ export default function BulkDetail({
               </span>
             )}
             <button type="button" className="btn btn-ghost btn-sm" onClick={refresh}>
+              <IconRefresh />
               Refresh
             </button>
             {live && !job.abort_requested && (
@@ -170,6 +172,7 @@ export default function BulkDetail({
                 onClick={abort}
                 disabled={aborting}
               >
+                <IconStop />
                 {aborting ? "Aborting…" : "Abort"}
               </button>
             )}

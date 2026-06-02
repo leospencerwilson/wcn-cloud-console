@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { IconDownload, IconPlay, IconRefresh, IconX } from "@/components/ui/icons";
 import { statusPill } from "@/lib/utils";
 import type { VmBackup } from "@/lib/provisioner/vms-client";
 import LogStream from "@/components/log-stream";
@@ -106,6 +107,7 @@ export default function BackupsTable({
           <span className="type-eyebrow">§ VM BACKUPS</span>
           <div className="flex items-center gap-2">
             <button type="button" className="btn btn-ghost btn-sm" onClick={fetchRows}>
+              <IconRefresh />
               {loading ? "Refreshing…" : "Refresh"}
             </button>
             {canTrigger && (
@@ -115,6 +117,7 @@ export default function BackupsTable({
                 onClick={onTrigger}
                 disabled={triggering}
               >
+                <IconPlay />
                 {triggering ? "Queuing…" : "Run backup now"}
               </button>
             )}
@@ -186,6 +189,7 @@ export default function BackupsTable({
                             onClick={() => setDownloadTarget(b)}
                             disabled={!ready}
                           >
+                            <IconDownload />
                             Download
                           </button>
                         )}
@@ -196,6 +200,7 @@ export default function BackupsTable({
                             onClick={() => setRestoreTarget(b)}
                             disabled={!ready}
                           >
+                            <IconRefresh />
                             Restore
                           </button>
                         )}
@@ -243,6 +248,7 @@ function ModalShell({
         <div className="modal-header justify-between">
           <span className="type-eyebrow">§ {title}</span>
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+            <IconX />
             Close
           </button>
         </div>
@@ -340,6 +346,7 @@ function DownloadModal({
         )}
         <div className="flex justify-end gap-2">
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+            <IconX />
             Cancel
           </button>
           <button
@@ -347,6 +354,7 @@ function DownloadModal({
             className="btn btn-primary btn-sm"
             disabled={busy || passphrase.length < 8}
           >
+            <IconDownload />
             {busy ? "Preparing…" : "Download"}
           </button>
         </div>
@@ -422,6 +430,7 @@ function RestoreModal({
           />
           <div className="flex justify-end">
             <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+              <IconX />
               Close
             </button>
           </div>
@@ -471,6 +480,7 @@ function RestoreModal({
           )}
           <div className="flex justify-end gap-2">
             <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+              <IconX />
               Cancel
             </button>
             <button
@@ -478,6 +488,7 @@ function RestoreModal({
               className="btn btn-primary btn-sm"
               disabled={busy || confirm !== slug}
             >
+              <IconRefresh />
               {busy ? "Starting…" : "Restore"}
             </button>
           </div>

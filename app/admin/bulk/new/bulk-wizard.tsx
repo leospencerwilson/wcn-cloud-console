@@ -8,6 +8,7 @@ import type {
   BulkOperation,
   BulkTargetFilter,
 } from "@/lib/provisioner/types";
+import { IconChevronRight, IconChevronLeft, IconPlay } from "@/components/ui/icons";
 
 const OPS: { value: BulkOperation; label: string; description: string }[] = [
   {
@@ -317,7 +318,8 @@ export default function BulkWizard() {
               disabled={!filterHasAny || previewLoading}
               onClick={runDryRun}
             >
-              {previewLoading ? "Resolving…" : "Preview targets →"}
+              <IconChevronRight />
+              {previewLoading ? "Resolving…" : "Preview targets"}
             </button>
           </div>
         </Card>
@@ -392,7 +394,8 @@ export default function BulkWizard() {
                 setStep(1);
               }}
             >
-              ← Back
+              <IconChevronLeft />
+              Back
             </button>
             <button
               type="button"
@@ -400,7 +403,8 @@ export default function BulkWizard() {
               disabled={preview.target_count === 0}
               onClick={() => setStep(3)}
             >
-              Continue →
+              <IconChevronRight />
+              Continue
             </button>
           </div>
         </Card>
@@ -465,7 +469,8 @@ export default function BulkWizard() {
               className="btn btn-ghost btn-sm"
               onClick={() => setStep(2)}
             >
-              ← Back
+              <IconChevronLeft />
+              Back
             </button>
             <button
               type="button"
@@ -473,6 +478,7 @@ export default function BulkWizard() {
               disabled={confirmText !== "RUN" || submitting}
               onClick={submit}
             >
+              <IconPlay />
               {submitting ? "Submitting…" : `Run on ${preview.target_count} VMs`}
             </button>
           </div>

@@ -5,6 +5,7 @@ import { provisionerBulk } from "@/lib/provisioner/bulk-client";
 import { ProvisionerHttpError } from "@/lib/provisioner/apps-client";
 import type { BulkJob } from "@/lib/provisioner/types";
 import BulkList from "./bulk-list";
+import { IconPlus } from "@/components/ui/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export default async function AdminBulkPage() {
         subtitle="Run actions across multiple customer VMs at once."
         actions={
           <Link href="/admin/bulk/new" className="btn btn-primary btn-sm">
+            <IconPlus />
             New operation
           </Link>
         }

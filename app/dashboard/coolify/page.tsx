@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import { getCustomer } from "@/lib/db/customers";
 import { PageHeader } from "@/components/page-header";
+import { IconExternal } from "@/components/ui/icons";
 import ServerCard from "./server-card";
 import WebhookOverview from "./webhook-overview";
 import EnvOverview from "./env-overview";
@@ -36,7 +37,8 @@ export default async function DashboardCoolifyPage() {
               textDecoration: "none",
             }}
           >
-            Open Coolify ↗
+            <IconExternal />
+            Open Coolify
           </a>
         }
       />

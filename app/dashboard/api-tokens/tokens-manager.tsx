@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { IconRefresh, IconKey, IconTrash, IconX, IconCopy, IconCheck } from "@/components/ui/icons";
 import type { ApiToken, ApiTokenCreated } from "@/lib/provisioner/types";
 
 const RESOURCES = ["vms", "apps", "backups", "domains", "secrets", "audit", "metrics"] as const;
@@ -96,6 +97,7 @@ export default function TokensManager({
           <span className="type-eyebrow">§ ACTIVE TOKENS</span>
           <div className="flex items-center gap-2">
             <button type="button" className="btn btn-ghost btn-sm" onClick={load}>
+              <IconRefresh />
               {loading ? "Refreshing…" : "Refresh"}
             </button>
             <button
@@ -106,6 +108,7 @@ export default function TokensManager({
                 setCreateOpen(true);
               }}
             >
+              <IconKey />
               New token
             </button>
           </div>
@@ -190,6 +193,7 @@ export default function TokensManager({
                           className="btn btn-ghost btn-sm"
                           onClick={() => revoke(t)}
                         >
+                          <IconTrash />
                           Revoke
                         </button>
                       )}
@@ -286,6 +290,7 @@ function CreateModal({
             § {issued ? "TOKEN ISSUED — COPY NOW" : "NEW API TOKEN"}
           </span>
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+            <IconX />
             Close
           </button>
         </div>
@@ -324,9 +329,11 @@ function CreateModal({
               </p>
               <div className="flex justify-end gap-2">
                 <button type="button" className="btn btn-primary btn-sm" onClick={copy}>
+                  <IconCopy />
                   {copied ? "Copied!" : "Copy token"}
                 </button>
                 <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+                  <IconCheck />
                   Done
                 </button>
               </div>
@@ -409,6 +416,7 @@ function CreateModal({
 
               <div className="flex justify-end gap-2">
                 <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+                  <IconX />
                   Cancel
                 </button>
                 <button
@@ -416,6 +424,7 @@ function CreateModal({
                   className="btn btn-primary btn-sm"
                   disabled={busy || !name.trim() || scopes.size === 0}
                 >
+                  <IconKey />
                   {busy ? "Creating…" : "Create token"}
                 </button>
               </div>

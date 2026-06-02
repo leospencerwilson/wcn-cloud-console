@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { Card } from "@/components/ui/card";
+import { IconRefresh, IconDatabase, IconClock } from "@/components/ui/icons";
 import type {
   DbColumn,
   DbMutationResult,
@@ -285,7 +286,7 @@ export default function DatabaseExplorer({ slug }: { slug: string }) {
             style={{ height: 22, padding: "0 6px" }}
             title="Refresh"
           >
-            ↻
+            <IconRefresh />
           </button>
         </div>
         <div className="px-2 py-2" style={{ maxHeight: 460, overflowY: "auto" }}>
@@ -405,6 +406,7 @@ export default function DatabaseExplorer({ slug }: { slug: string }) {
                                   onClick={() => insertSelect(t)}
                                   style={{ height: 22 }}
                                 >
+                                  <IconDatabase />
                                   SELECT *
                                 </button>
                               </div>
@@ -481,6 +483,7 @@ export default function DatabaseExplorer({ slug }: { slug: string }) {
                   onClick={() => setRecentOpen((v) => !v)}
                   style={{ height: 22 }}
                 >
+                  <IconClock />
                   Recent ({recent.length}) {recentOpen ? "▴" : "▾"}
                 </button>
                 {recentOpen && (
@@ -535,6 +538,7 @@ export default function DatabaseExplorer({ slug }: { slug: string }) {
               onClick={runQuery}
               disabled={running || !sql.trim()}
             >
+              <IconDatabase />
               {running ? "Running…" : "Run"}
             </button>
           </div>

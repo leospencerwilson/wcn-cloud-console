@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { IconPlus, IconX } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { App, AppCreateInput } from "@/lib/provisioner/types";
@@ -225,9 +226,11 @@ export default function NewAppForm({ slug }: { slug: string }) {
               disabled={submitting}
               className="btn btn-primary"
             >
+              <IconPlus />
               {submitting ? "Creating…" : "Create application"}
             </button>
             <Link href="/dashboard/apps" className="btn btn-ghost">
+              <IconX />
               Cancel
             </Link>
           </div>

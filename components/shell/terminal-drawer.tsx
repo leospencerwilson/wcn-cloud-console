@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { IconX } from "@/components/ui/icons";
 
 type Line = { kind: "out" | "in" | "ok" | "err" | "dim"; text: string };
 
@@ -163,7 +164,7 @@ export default function TerminalDrawer() {
           onClick={() => setOpen(false)}
           style={{ height: 22, padding: "0 6px" }}
         >
-          ×
+          <IconX />
         </button>
       </div>
       <div

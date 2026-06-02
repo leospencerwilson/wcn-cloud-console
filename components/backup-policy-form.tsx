@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { IconSave } from "@/components/ui/icons";
 import type {
   BackupFrequency,
   BackupPolicy,
@@ -351,6 +352,7 @@ export default function BackupPolicyForm({ slug }: { slug: string }) {
               className="btn btn-primary btn-sm"
               disabled={saving}
             >
+              <IconSave />
               {saving ? "Saving…" : "Save changes"}
             </button>
           </div>

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { statusPill } from "@/lib/utils";
+import { IconPlus, IconRefresh, IconTrash } from "@/components/ui/icons";
 import type { CronTask } from "@/lib/provisioner/types";
 
 export default function CronManager({
@@ -170,6 +171,7 @@ export default function CronManager({
           </label>
           <div className="flex items-end">
             <button type="submit" className="btn btn-primary" disabled={creating}>
+              <IconPlus />
               {creating ? "Adding…" : "Add task"}
             </button>
           </div>
@@ -183,6 +185,7 @@ export default function CronManager({
         >
           <span className="type-eyebrow">§ SCHEDULED TASKS</span>
           <button type="button" className="btn btn-ghost btn-sm" onClick={fetchTasks}>
+            <IconRefresh />
             {loading ? "Refreshing…" : "Refresh"}
           </button>
         </div>
@@ -251,6 +254,7 @@ export default function CronManager({
                       onClick={() => onDelete(t.task_uuid)}
                       style={{ color: "var(--color-danger, #b03020)" }}
                     >
+                      <IconTrash />
                       {deletingUuid === t.task_uuid ? "Deleting…" : "Delete"}
                     </button>
                   </td>

@@ -5,6 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { statusPill } from "@/lib/utils";
+import {
+  IconRocket,
+  IconRefresh,
+  IconRestart,
+  IconStop,
+  IconPlay,
+  IconTrash,
+  IconX,
+  IconCheck,
+} from "@/components/ui/icons";
 import type { App, DeployStatus } from "@/lib/provisioner/types";
 
 type Tab = "logs" | "deployments";
@@ -173,6 +183,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
           disabled={deploying}
           onClick={() => onDeploy(false)}
         >
+          <IconRocket />
           {deploying ? "Triggering…" : "Deploy"}
         </button>
         <button
@@ -182,6 +193,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
           onClick={() => onDeploy(true)}
           title="Rebuild without cache"
         >
+          <IconRocket />
           Force rebuild
         </button>
         <span
@@ -195,6 +207,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
           disabled={lifecycleBusy !== null || app.status !== "running"}
           onClick={() => onLifecycle("restart")}
         >
+          <IconRestart />
           {lifecycleBusy === "restart" ? "Restarting…" : "Restart"}
         </button>
         <button
@@ -203,6 +216,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
           disabled={lifecycleBusy !== null || app.status === "stopped"}
           onClick={() => onLifecycle("stop")}
         >
+          <IconStop />
           {lifecycleBusy === "stop" ? "Stopping…" : "Stop"}
         </button>
         <button
@@ -211,6 +225,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
           disabled={lifecycleBusy !== null || app.status === "running"}
           onClick={() => onLifecycle("start")}
         >
+          <IconPlay />
           {lifecycleBusy === "start" ? "Starting…" : "Start"}
         </button>
         <div className="flex-1" />
@@ -221,6 +236,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
             onClick={() => setDeleteConfirming(true)}
             style={{ color: "var(--color-danger, #b03020)" }}
           >
+            <IconTrash />
             Delete app
           </button>
         ) : (
@@ -229,6 +245,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
               Sure?
             </span>
             <button type="button" className="btn btn-ghost" onClick={() => setDeleteConfirming(false)}>
+              <IconX />
               Cancel
             </button>
             <button
@@ -237,6 +254,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
               onClick={onDelete}
               style={{ background: "var(--color-danger, #b03020)" }}
             >
+              <IconCheck />
               Confirm delete
             </button>
           </div>
@@ -280,6 +298,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
               <div className="flex items-center justify-between px-6 py-3">
                 <span className="type-eyebrow">§ CONTAINER LOGS</span>
                 <button type="button" className="btn btn-ghost btn-sm" onClick={fetchLogs}>
+                  <IconRefresh />
                   {logsLoading ? "Refreshing…" : "Refresh"}
                 </button>
               </div>
@@ -304,6 +323,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
                   className="btn btn-ghost btn-sm"
                   onClick={fetchDeployments}
                 >
+                  <IconRefresh />
                   {deploymentsLoading ? "Refreshing…" : "Refresh"}
                 </button>
               </div>
@@ -370,6 +390,7 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
                               onClick={() => onRollback(d.deployment_uuid)}
                               title="Redeploy this build"
                             >
+                              <IconRocket />
                               {rollingBack === d.deployment_uuid ? "Rolling back…" : "Rollback"}
                             </button>
                           )}

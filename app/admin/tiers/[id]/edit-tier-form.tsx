@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { Tier } from "@/lib/db/tiers";
+import { IconSave } from "@/components/ui/icons";
 import { updateTierAction, type UpdateTierState } from "./actions";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
+      <IconSave />
       {pending ? "Saving…" : "Save changes"}
     </Button>
   );

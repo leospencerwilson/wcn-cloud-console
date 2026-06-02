@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { statusPill } from "@/lib/utils";
 import { RelativeTime, formatRelative } from "@/components/relative-time";
 import { TierBadge } from "@/components/tier-badge";
+import { IconChevronLeft, IconChevronRight, IconX, IconRefresh, IconCamera, IconList } from "@/components/ui/icons";
 import type { CustomerListRow } from "@/lib/db/customers";
 
 type HeartbeatState = "online" | "offline" | "rebooting" | "unknown";
@@ -451,6 +452,7 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
         </select>
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters}>
+            <IconX />
             Clear filters
           </Button>
         )}
@@ -629,6 +631,7 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
               >
+                <IconChevronLeft />
                 Prev
               </Button>
               <Button
@@ -637,6 +640,7 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
               >
+                <IconChevronRight />
                 Next
               </Button>
             </div>
@@ -684,6 +688,7 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
             disabled={bulkBusy}
             onClick={runReboot}
           >
+            <IconRefresh />
             Reboot
           </Button>
           <Button
@@ -692,6 +697,7 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
             disabled={bulkBusy}
             onClick={runSnapshot}
           >
+            <IconCamera />
             Snapshot
           </Button>
           <Button
@@ -700,6 +706,7 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
             disabled={bulkBusy}
             onClick={openInBulk}
           >
+            <IconList />
             Open in bulk
           </Button>
           <Button
@@ -708,6 +715,7 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
             disabled={bulkBusy}
             onClick={clearSelection}
           >
+            <IconX />
             Cancel
           </Button>
         </div>

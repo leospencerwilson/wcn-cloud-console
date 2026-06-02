@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { VmActionGroup } from "@/components/vm-action-group";
+import { IconX, IconCheck } from "@/components/ui/icons";
 import ImpersonateButton from "./impersonate-button";
 import type { VmAction, VmPower } from "@/lib/provisioner/vms-client";
 
@@ -144,6 +145,7 @@ function ConfirmDialog({
             </p>
             <div className="flex items-center justify-end gap-3 pt-2">
               <button type="button" className="btn btn-ghost" onClick={onCancel}>
+                <IconX />
                 Cancel
               </button>
               <button
@@ -156,6 +158,7 @@ function ConfirmDialog({
                     : undefined
                 }
               >
+                <IconCheck />
                 Yes, {action} VM
               </button>
             </div>

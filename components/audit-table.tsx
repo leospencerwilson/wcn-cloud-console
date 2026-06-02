@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
+import { IconChevronLeft, IconChevronRight, IconX } from "@/components/ui/icons";
 import { RelativeTime } from "@/components/relative-time";
 
 interface AuditRow {
@@ -214,6 +215,7 @@ export default function AuditTable({ slug }: { slug?: string }) {
           </label>
           <div className="flex-1" />
           <button type="button" className="btn btn-ghost btn-sm" onClick={clearFilters}>
+            <IconX />
             Clear filters
           </button>
         </div>
@@ -238,6 +240,7 @@ export default function AuditTable({ slug }: { slug?: string }) {
                 className="btn btn-ghost btn-sm"
                 onClick={clearFilters}
               >
+                <IconX />
                 Clear filters
               </button>
             </div>
@@ -296,6 +299,7 @@ export default function AuditTable({ slug }: { slug?: string }) {
                 disabled={page <= 1 || loading}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
+                <IconChevronLeft />
                 Prev
               </button>
               <button
@@ -304,6 +308,7 @@ export default function AuditTable({ slug }: { slug?: string }) {
                 disabled={page >= pages || loading}
                 onClick={() => setPage((p) => Math.min(pages, p + 1))}
               >
+                <IconChevronRight />
                 Next
               </button>
             </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { IconX, IconTrash } from "@/components/ui/icons";
 import { statusPill } from "@/lib/utils";
 import type { App } from "@/lib/provisioner/types";
 
@@ -228,6 +229,7 @@ export default function AppsTable({
                 onClick={closeDelete}
                 disabled={deleting}
               >
+                <IconX />
                 Cancel
               </button>
               <button
@@ -243,6 +245,7 @@ export default function AppsTable({
                   gap: 8,
                 }}
               >
+                <IconTrash />
                 <span>{deleting ? "Deleting…" : "Delete app"}</span>
                 {!deleting && (
                   <kbd

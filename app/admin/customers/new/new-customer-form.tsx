@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { TierSelect } from "@/components/tier-select";
+import { IconUserPlus } from "@/components/ui/icons";
 import { createCustomerAction, type CreateCustomerState } from "./actions";
 
 const slugRegex = /^[a-z0-9-]{2,40}$/;
@@ -30,6 +31,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
+      <IconUserPlus />
       {pending ? "Creating…" : "Create customer"}
     </Button>
   );

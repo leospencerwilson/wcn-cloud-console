@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { statusPill } from "@/lib/utils";
+import { IconX, IconCheck } from "@/components/ui/icons";
 import { VmActionGroup } from "@/components/vm-action-group";
 import type { VmAction, VmPower } from "@/lib/provisioner/vms-client";
 import type { App, AppDomain } from "@/lib/provisioner/types";
@@ -540,6 +541,7 @@ function ConfirmDialog({
         </div>
         <div className="modal-footer">
           <button type="button" className="btn btn-ghost" onClick={onCancel}>
+            <IconX />
             Cancel
           </button>
           <button
@@ -550,6 +552,7 @@ function ConfirmDialog({
               action === "stop" ? { background: "var(--crit)" } : undefined
             }
           >
+            <IconCheck />
             Yes, {action} VM
           </button>
         </div>

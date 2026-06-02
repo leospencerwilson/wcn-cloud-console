@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import { getCustomer } from "@/lib/db/customers";
 import { PageHeader } from "@/components/page-header";
+import { IconExternal } from "@/components/ui/icons";
 import ConnectionCard from "./connection-card";
 import SchemaBrowser from "./schema-browser";
 
@@ -72,7 +73,8 @@ export default async function DashboardSupabasePage() {
               textDecoration: "none",
             }}
           >
-            Open Studio ↗
+            <IconExternal />
+            Open Studio
           </a>
           <div
             className="type-mono"

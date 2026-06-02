@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import CircuitField from "@/components/circuit-field";
+import { IconLogIn } from "@/components/ui/icons";
 
 export default function LandingPage() {
   return (
@@ -17,7 +18,7 @@ export default function LandingPage() {
         </p>
         <div className="flex items-center gap-3">
           <Link href="/login">
-            <Button size="lg">Sign in</Button>
+            <Button size="lg"><IconLogIn />Sign in</Button>
           </Link>
         </div>
         <div

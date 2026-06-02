@@ -7,6 +7,7 @@ import type {
   CapacityProjectionTier,
   CapacityReport,
 } from "@/lib/provisioner/types";
+import { IconRefresh } from "@/components/ui/icons";
 
 const REFRESH_MS = 5 * 60 * 1000;
 
@@ -245,6 +246,7 @@ export default function CapacityView({
         </p>
         <div className="px-6 pb-4">
           <button type="button" className="btn btn-ghost btn-sm" onClick={refresh}>
+            <IconRefresh />
             Retry
           </button>
         </div>
@@ -275,6 +277,7 @@ export default function CapacityView({
           )}
         </div>
         <button type="button" className="btn btn-ghost btn-sm" onClick={refresh}>
+          <IconRefresh />
           {loading ? "Refreshing…" : "Refresh"}
         </button>
       </div>

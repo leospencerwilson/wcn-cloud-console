@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { IconRestart, IconSave, IconX, IconCheck } from "@/components/ui/icons";
 import type { VmPower } from "@/lib/provisioner/vms-client";
 
 const LIMITS = {
@@ -214,6 +215,7 @@ export default function ResizeCard({ slug }: { slug: string }) {
                 onClick={onRestart}
                 disabled={restarting}
               >
+                <IconRestart />
                 {restarting ? "Restarting…" : "Restart now"}
               </button>
             )}
@@ -227,6 +229,7 @@ export default function ResizeCard({ slug }: { slug: string }) {
             disabled={!changed || diskShrink}
             onClick={() => setConfirmOpen(true)}
           >
+            <IconSave />
             Resize
           </button>
         </div>
@@ -276,6 +279,7 @@ export default function ResizeCard({ slug }: { slug: string }) {
                   onClick={() => setConfirmOpen(false)}
                   disabled={submitting}
                 >
+                  <IconX />
                   Cancel
                 </button>
                 <button
@@ -284,6 +288,7 @@ export default function ResizeCard({ slug }: { slug: string }) {
                   onClick={onSubmit}
                   disabled={submitting}
                 >
+                  <IconCheck />
                   {submitting ? "Resizing…" : "Confirm"}
                 </button>
               </div>

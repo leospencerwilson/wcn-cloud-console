@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { IconRefresh, IconChevronLeft } from "@/components/ui/icons";
 
 export default function AppSegmentError({
   error,
@@ -39,9 +40,11 @@ export default function AppSegmentError({
       </p>
       <div style={{ display: "flex", gap: 8 }}>
         <button type="button" className="btn btn-primary btn-sm" onClick={reset}>
+          <IconRefresh />
           Retry
         </button>
         <Link href="/dashboard/apps" className="btn btn-ghost btn-sm">
+          <IconChevronLeft />
           Back to apps
         </Link>
       </div>
