@@ -23,6 +23,44 @@ async function customerCountsByTier(): Promise<Record<string, number>> {
   return out;
 }
 
+function PlusIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+    </svg>
+  );
+}
+
 function fmtGbp(pence: number): string {
   return `£${pence}`;
 }
@@ -44,24 +82,20 @@ export default async function TiersPage() {
 
   return (
     <div className="space-y-14">
-      <header className="flex items-end justify-between gap-6">
-        <div>
-          <p className="type-eyebrow mb-5">§ TIERS</p>
-          <p
-            className="text-[15px] leading-[1.55] max-w-xl"
-            style={{ color: "var(--color-muted)" }}
-          >
-            Customer plan tiers. Resources and pricing live here; the
-            provisioner consumes the tier ID at deploy time.
-          </p>
-        </div>
-        <Link href="/admin/tiers/new">
-          <Button>New tier</Button>
-        </Link>
+      <header>
+        <p className="type-eyebrow">§ TIERS</p>
       </header>
 
       <Card>
         <div className="px-8 py-6">
+          <div className="flex justify-end mb-6">
+            <Link href="/admin/tiers/new">
+              <Button>
+                <PlusIcon />
+                New tier
+              </Button>
+            </Link>
+          </div>
           {tiers.length === 0 ? (
             <p className="type-meta py-8">No tiers defined yet.</p>
           ) : (
@@ -107,6 +141,7 @@ export default async function TiersPage() {
                       <td>
                         <Link href={`/admin/tiers/${encodeURIComponent(t.id)}`}>
                           <Button variant="secondary" size="sm">
+                            <EditIcon />
                             Edit
                           </Button>
                         </Link>

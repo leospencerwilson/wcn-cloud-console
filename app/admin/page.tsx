@@ -1,10 +1,9 @@
 import { Card } from "@/components/ui/card";
-import { listCustomers, recentAudit } from "@/lib/db/customers";
+import { listCustomers } from "@/lib/db/customers";
 import { countAppUsers } from "@/lib/db/users";
 import { countPendingInvites } from "@/lib/db/invites";
 import { provisionerAlerts } from "@/lib/provisioner/alerts-client";
 import { getCapacity } from "@/lib/provisioner/capacity-client";
-import { RelativeTime } from "@/components/relative-time";
 import type { AlertFiring, CapacityReport } from "@/lib/provisioner/types";
 
 async function safeFiringAlertsCount(): Promise<number | null> {
@@ -37,12 +36,11 @@ async function safeCapacityHeadroom(): Promise<number | null> {
 }
 
 export default async function AdminHome() {
-  const [customers, userCount, pendingInvites, audit, firingAlerts, headroom] =
+  const [customers, userCount, pendingInvites, firingAlerts, headroom] =
     await Promise.all([
       listCustomers(),
       countAppUsers(),
       countPendingInvites(),
-      recentAudit(15),
       safeFiringAlertsCount(),
       safeCapacityHeadroom(),
     ]);
@@ -82,43 +80,6 @@ export default async function AdminHome() {
               : "Min free across CPU and disk"
           }
         />
-      </section>
-
-      <section>
-        <div className="flex items-baseline justify-between mb-5">
-          <h2 className="type-h2">— AUDIT TRAIL</h2>
-          <span className="type-meta">Most recent 15 events</span>
-        </div>
-        <Card>
-          <div className="px-8 py-6">
-            {audit.length === 0 ? (
-              <p className="type-meta">No events recorded yet.</p>
-            ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>When</th>
-                    <th>Actor</th>
-                    <th>Action</th>
-                    <th>Slug</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {audit.map((row) => (
-                    <tr key={row.id}>
-                      <td className="type-mono" style={{ color: "var(--color-muted)" }}>
-                        <RelativeTime iso={row.ts} />
-                      </td>
-                      <td>{row.actor}</td>
-                      <td className="type-mono">{row.action}</td>
-                      <td className="type-mono">{row.slug ?? "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </Card>
       </section>
     </div>
   );

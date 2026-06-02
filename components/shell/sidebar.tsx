@@ -137,6 +137,21 @@ const I = {
       <path d="M12 12l5-3" />
     </Svg>
   ),
+  tiers: (
+    <Svg>
+      <rect x="3" y="14" width="5" height="7" rx="1" />
+      <rect x="9.5" y="9" width="5" height="12" rx="1" />
+      <rect x="16" y="4" width="5" height="17" rx="1" />
+    </Svg>
+  ),
+  auditAdmin: (
+    <Svg>
+      <path d="M3 5h18" />
+      <path d="M3 12h12" />
+      <path d="M3 19h18" />
+      <circle cx="19" cy="12" r="2" />
+    </Svg>
+  ),
   bulk: (
     <Svg>
       <rect x="3" y="3" width="7" height="7" rx="1.5" />
@@ -171,7 +186,7 @@ const ADMIN_SECTIONS: NavSection[] = [
     items: [
       { label: "Overview", href: "/admin", icon: I.overview, match: (p) => p === "/admin" },
       { label: "Customers", href: "/admin/customers", icon: I.customers },
-      { label: "Tiers", href: "/admin/tiers", icon: I.capacity },
+      { label: "Tiers", href: "/admin/tiers", icon: I.tiers },
       { label: "Capacity", href: "/admin/capacity", icon: I.capacity },
     ],
   },
@@ -181,6 +196,7 @@ const ADMIN_SECTIONS: NavSection[] = [
       { label: "Bulk ops", href: "/admin/bulk", icon: I.bulk },
       { label: "Alerts", href: "/admin/alerts", icon: I.alerts },
       { label: "Invites", href: "/admin/invites", icon: I.invites },
+      { label: "Audit", href: "/admin/audit", icon: I.auditAdmin },
     ],
   },
 ];
@@ -245,6 +261,8 @@ export default function Sidebar({
   const pathname = usePathname() ?? "";
   const sections = variant === "admin" ? ADMIN_SECTIONS : CUSTOMER_SECTIONS;
   const avatarInitial = (user.name || user.email).charAt(0).toUpperCase();
+  const tone = switcher.tone === "accent" ? "var(--accent)" : "var(--brand)";
+  const envLabel = variant === "admin" ? "ops" : "console";
 
   return (
     <aside
@@ -259,94 +277,128 @@ export default function Sidebar({
         top: 0,
       }}
     >
-      <div
-        className="flex items-center gap-2.5"
-        style={{
-          padding: "16px 16px 14px",
-          borderBottom: "1px solid var(--line)",
-        }}
-      >
-        <span
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 6,
-            background: "linear-gradient(135deg, var(--brand), var(--brand-2))",
-            display: "grid",
-            placeItems: "center",
-            fontFamily: "var(--font-display)",
-            fontWeight: 800,
-            fontSize: 12,
-            letterSpacing: "-0.02em",
-            color: "var(--brand-ink)",
-            boxShadow:
-              "0 0 0 1px color-mix(in oklch, var(--brand) 60%, transparent), 0 4px 12px -4px color-mix(in oklch, var(--brand) 40%, transparent)",
-          }}
+      <div style={{ padding: 12, borderBottom: "1px solid var(--line)" }}>
+        {/* Brand */}
+        <div
+          className="flex items-center gap-2.5"
+          style={{ padding: "2px 2px 12px" }}
         >
-          W
-        </span>
-        <div className="leading-tight">
+          <span
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 7,
+              background:
+                "linear-gradient(135deg, var(--brand), var(--brand-2))",
+              display: "grid",
+              placeItems: "center",
+              fontFamily: "var(--font-display)",
+              fontWeight: 800,
+              fontSize: 13,
+              letterSpacing: "-0.02em",
+              color: "var(--brand-ink)",
+              boxShadow:
+                "0 0 0 1px color-mix(in oklch, var(--brand) 55%, transparent), 0 6px 16px -6px color-mix(in oklch, var(--brand) 55%, transparent)",
+              flexShrink: 0,
+            }}
+          >
+            W
+          </span>
           <div
-            style={{ fontWeight: 600, fontSize: 13.5, letterSpacing: "-0.01em" }}
+            className="flex-1 min-w-0"
+            style={{
+              fontWeight: 650,
+              fontSize: 14,
+              letterSpacing: "-0.01em",
+              color: "var(--text)",
+              whiteSpace: "nowrap",
+            }}
           >
             WCN Cloud
           </div>
-          <div
+          <span
             className="type-mono"
-            style={{ fontSize: 11, color: "var(--text-3)" }}
-          >
-            {variant === "admin" ? "ops" : "console"}
-          </div>
-        </div>
-      </div>
-
-      <div
-        className="flex items-center gap-2.5"
-        style={{
-          margin: "12px",
-          padding: "8px 10px",
-          border: "1px solid var(--line)",
-          borderRadius: "var(--r-2)",
-          background: "var(--surface)",
-        }}
-      >
-        <span
-          style={{
-            width: 22,
-            height: 22,
-            borderRadius: 5,
-            background:
-              switcher.tone === "accent"
-                ? "color-mix(in oklch, var(--accent) 30%, var(--surface-2))"
-                : "color-mix(in oklch, var(--brand) 30%, var(--surface-2))",
-            display: "grid",
-            placeItems: "center",
-            fontSize: 10,
-            fontWeight: 700,
-            fontFamily: "var(--font-mono)",
-            color:
-              switcher.tone === "accent" ? "var(--accent)" : "var(--brand)",
-          }}
-        >
-          {switcher.shortLabel}
-        </span>
-        <div className="flex-1 min-w-0">
-          <div
             style={{
-              fontSize: 12.5,
-              fontWeight: 500,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              padding: "3px 6px",
+              borderRadius: 5,
+              color: tone,
+              background: `color-mix(in oklch, ${tone} 12%, var(--surface))`,
+              border: `1px solid color-mix(in oklch, ${tone} 32%, var(--line))`,
             }}
           >
-            {switcher.primary}
-          </div>
-          <div
-            className="type-mono"
-            style={{ fontSize: 10.5, color: "var(--text-3)" }}
+            {envLabel}
+          </span>
+        </div>
+
+        {/* Current scope */}
+        <div
+          className="flex items-center gap-2.5"
+          style={{
+            padding: "8px 10px 8px 12px",
+            border: "1px solid var(--line)",
+            borderRadius: "var(--r-2)",
+            background: "var(--surface)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 2.5,
+              background: tone,
+            }}
+          />
+          <span
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: 6,
+              background: `color-mix(in oklch, ${tone} 22%, var(--surface-2))`,
+              display: "grid",
+              placeItems: "center",
+              fontSize: 10,
+              fontWeight: 700,
+              fontFamily: "var(--font-mono)",
+              color: tone,
+              flexShrink: 0,
+            }}
           >
-            {switcher.secondary}
+            {switcher.shortLabel}
+          </span>
+          <div className="flex-1 min-w-0">
+            <div
+              style={{
+                fontSize: 12.5,
+                fontWeight: 550,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                color: "var(--text)",
+              }}
+            >
+              {switcher.primary}
+            </div>
+            <div
+              className="type-mono"
+              style={{
+                fontSize: 10.5,
+                color: "var(--text-3)",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {switcher.secondary}
+            </div>
           </div>
         </div>
       </div>

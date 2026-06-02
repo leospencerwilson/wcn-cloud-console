@@ -23,6 +23,53 @@ type SortDir = "asc" | "desc";
 
 const PAGE_SIZE = 25;
 
+const LIVE_OPTIONS: { value: HeartbeatState; label: string }[] = [
+  { value: "online", label: "Online" },
+  { value: "rebooting", label: "Rebooting" },
+  { value: "offline", label: "Offline" },
+  { value: "unknown", label: "Unknown" },
+];
+
+function SearchIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  );
+}
+
+function UserPlusIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="9" cy="8" r="3.4" />
+      <path d="M3 20a6 6 0 0 1 12 0" />
+      <path d="M19 8v6" />
+      <path d="M16 11h6" />
+    </svg>
+  );
+}
+
 function dotMeta(state: HeartbeatState) {
   if (state === "online") return { cls: "dot dot-online", label: "Online" };
   if (state === "rebooting")
@@ -39,6 +86,7 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
   const [search, setSearch] = useState("");
   const [tier, setTier] = useState("");
   const [status, setStatus] = useState("");
+  const [live, setLive] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("created");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(1);
@@ -93,14 +141,16 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
     return customers.filter((c) => {
       if (tier && c.tier !== tier) return false;
       if (status && c.status !== status) return false;
+      if (live && (hb[c.slug]?.state ?? "unknown") !== live) return false;
       if (!q) return true;
       return (
         c.slug.toLowerCase().includes(q) ||
         c.name.toLowerCase().includes(q) ||
-        c.contact_email.toLowerCase().includes(q)
+        c.contact_email.toLowerCase().includes(q) ||
+        (c.proxmox_node ?? "").toLowerCase().includes(q)
       );
     });
-  }, [customers, search, tier, status]);
+  }, [customers, search, tier, status, live, hb]);
 
   const sorted = useMemo(() => {
     const rows = [...filtered];
@@ -123,7 +173,15 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
 
   useEffect(() => {
     setPage(1);
-  }, [search, tier, status, sortKey, sortDir]);
+  }, [search, tier, status, live, sortKey, sortDir]);
+
+  const hasFilters = Boolean(search || tier || status || live);
+  const clearFilters = () => {
+    setSearch("");
+    setTier("");
+    setStatus("");
+    setLive("");
+  };
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const pageRows = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -296,17 +354,65 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
         )}
       </p>
 
-      <div className="flex flex-wrap gap-3">
-        <Input
-          placeholder="Search slug, name, email…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ maxWidth: 280 }}
-        />
+      <div className="flex flex-wrap items-center gap-3">
+        <div
+          style={{ position: "relative", flex: "1 1 240px", maxWidth: 320 }}
+        >
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              left: 10,
+              top: "50%",
+              transform: "translateY(-50%)",
+              display: "inline-flex",
+              color: "var(--text-3)",
+              pointerEvents: "none",
+            }}
+          >
+            <SearchIcon />
+          </span>
+          <Input
+            placeholder="Search slug, name, email, host…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search customers"
+            style={{ paddingLeft: 30, paddingRight: search ? 28 : 10 }}
+          />
+          {search && (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => setSearch("")}
+              style={{
+                position: "absolute",
+                right: 6,
+                top: "50%",
+                transform: "translateY(-50%)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 18,
+                height: 18,
+                border: 0,
+                borderRadius: 999,
+                background: "transparent",
+                color: "var(--text-3)",
+                cursor: "pointer",
+                fontSize: 14,
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+          )}
+        </div>
         <select
-          className="field-input"
+          className="field-select"
           value={tier}
           onChange={(e) => setTier(e.target.value)}
+          aria-label="Filter by tier"
+          style={{ width: "auto", paddingRight: 28 }}
         >
           <option value="">All tiers</option>
           {tiers.map((t) => (
@@ -316,9 +422,11 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
           ))}
         </select>
         <select
-          className="field-input"
+          className="field-select"
           value={status}
           onChange={(e) => setStatus(e.target.value)}
+          aria-label="Filter by status"
+          style={{ width: "auto", paddingRight: 28 }}
         >
           <option value="">All statuses</option>
           {statuses.map((s) => (
@@ -327,6 +435,32 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
             </option>
           ))}
         </select>
+        <select
+          className="field-select"
+          value={live}
+          onChange={(e) => setLive(e.target.value)}
+          aria-label="Filter by live state"
+          style={{ width: "auto", paddingRight: 28 }}
+        >
+          <option value="">Any live state</option>
+          {LIVE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        {hasFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
+            Clear filters
+          </Button>
+        )}
+        <Button
+          onClick={() => router.push("/admin/customers/new")}
+          style={{ marginLeft: "auto" }}
+        >
+          <UserPlusIcon />
+          Create customer
+        </Button>
       </div>
 
       {sorted.length === 0 ? (
@@ -339,6 +473,7 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
                 <th style={{ width: 32 }}>
                   <input
                     type="checkbox"
+                    className="chk-round"
                     aria-label="Select all on page"
                     checked={allOnPageSelected}
                     ref={(el) => {
@@ -417,6 +552,7 @@ export function CustomersTable({ customers }: { customers: CustomerListRow[] }) 
                     >
                       <input
                         type="checkbox"
+                        className="chk-round"
                         aria-label={`Select ${c.slug}`}
                         checked={selected.has(c.slug)}
                         onChange={() => toggleSelect(c.slug)}

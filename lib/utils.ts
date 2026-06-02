@@ -25,7 +25,7 @@ export function randomToken(byteLen = 32): string {
 export function statusPill(status: string | null | undefined): string {
   const key = (status ?? "").toLowerCase();
   if (key === "active" || key === "running" || key === "online") {
-    return "pill pill-active";
+    return "pill pill-dot pill-active";
   }
   if (
     key === "provisioning" ||
@@ -33,15 +33,15 @@ export function statusPill(status: string | null | undefined): string {
     key === "pending" ||
     key === "starting"
   ) {
-    return "pill pill-provisioning";
+    return "pill pill-dot pill-provisioning";
   }
   if (key === "failed" || key === "error" || key === "offline") {
-    return "pill pill-failed";
+    return "pill pill-dot pill-failed";
   }
   if (key === "deleted" || key === "destroyed" || key === "expired") {
-    return "pill pill-deleted";
+    return "pill pill-dot pill-deleted";
   }
-  return "pill pill-used";
+  return "pill pill-dot pill-used";
 }
 
 export function roleLabel(role: string | null | undefined): string {

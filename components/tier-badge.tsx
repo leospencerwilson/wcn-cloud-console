@@ -77,12 +77,36 @@ export function TierBadge({ tierId }: { tierId: string }) {
   }
 
   const summary = `${tier.vcpu} vCPU · ${fmtRam(tier.ram_mb)} · ${tier.disk_gb} GB disk · £${tier.price_gbp_monthly}/mo`;
-  const cls = tier.archived ? "pill pill-deleted" : "pill pill-active";
+  const cls = tier.archived ? "pill pill-deleted" : "pill pill-tier";
 
   return (
-    <span className={cls} title={summary}>
+    <span
+      className={cls}
+      title={tier.archived ? `Archived · ${summary}` : summary}
+    >
+      <TierGlyph />
       {tier.display_name}
     </span>
+  );
+}
+
+function TierGlyph() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="3" y="14" width="5" height="7" rx="1" />
+      <rect x="9.5" y="9" width="5" height="12" rx="1" />
+      <rect x="16" y="4" width="5" height="17" rx="1" />
+    </svg>
   );
 }
 

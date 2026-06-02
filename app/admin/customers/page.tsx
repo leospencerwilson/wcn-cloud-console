@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { listCustomersWithVm } from "@/lib/db/customers";
 import { CustomersTable } from "./customers-table";
@@ -9,13 +7,8 @@ export default async function CustomersPage() {
 
   return (
     <div className="space-y-14">
-      <header className="flex items-end justify-between gap-6">
-        <div>
-          <p className="type-eyebrow mb-5">§ CUSTOMERS</p>
-        </div>
-        <Link href="/admin/customers/new">
-          <Button>Create customer</Button>
-        </Link>
+      <header>
+        <p className="type-eyebrow">§ CUSTOMERS</p>
       </header>
 
       <Card>

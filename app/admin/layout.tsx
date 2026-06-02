@@ -15,9 +15,9 @@ export default async function AdminLayout({
         <Sidebar
           variant="admin"
           switcher={{
-            shortLabel: "OPS",
-            primary: "WCN Cloud · admin",
-            secondary: "fleet operations",
+            shortLabel: "WC",
+            primary: "Administrator",
+            secondary: "Fleet-wide access",
             tone: "brand",
           }}
           user={{ email: session.appUser.email }}
