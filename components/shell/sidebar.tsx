@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import ThemeToggle from "./theme-toggle";
 
 type NavItem = {
   label: string;
@@ -579,6 +580,7 @@ export default function Sidebar({
             {user.email}
           </div>
         </div>
+        <ThemeToggle />
         <form action="/api/auth/logout" method="post">
           <button
             type="submit"

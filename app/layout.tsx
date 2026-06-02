@@ -29,7 +29,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en-GB" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="en-GB"
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          // Set the theme before first paint to avoid a flash of the wrong palette.
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("wcn-theme");if(t!=="light"&&t!=="dark"){t="dark";}document.documentElement.setAttribute("data-theme",t);}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();`,
+          }}
+        />
+      </head>
       <body>
         <ImpersonateBannerServer />
         {children}
