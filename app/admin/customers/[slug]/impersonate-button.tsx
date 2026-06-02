@@ -2,12 +2,24 @@
 
 import { useState } from "react";
 
+function EyeIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
 export default function ImpersonateButton({
   slug,
   customerName,
+  inGroup = false,
 }: {
   slug: string;
   customerName: string;
+  /** When true, render only the trigger as a `.vm-action` to sit inside a VmActionGroup. */
+  inGroup?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
@@ -36,16 +48,27 @@ export default function ImpersonateButton({
     }
   }
 
+  const trigger = (
+    <button
+      type="button"
+      className="vm-action vm-action--view"
+      onClick={() => setOpen(true)}
+      title="View as customer"
+    >
+      <EyeIcon />
+      <span>View as</span>
+    </button>
+  );
+
   return (
     <>
-      <button
-        type="button"
-        className="btn btn-ghost btn-sm"
-        onClick={() => setOpen(true)}
-        style={{ color: "var(--color-navy)" }}
-      >
-        View as customer →
-      </button>
+      {inGroup ? (
+        trigger
+      ) : (
+        <div className="vm-action-group" role="group" aria-label="View as customer">
+          {trigger}
+        </div>
+      )}
       {open && (
         <div
           role="dialog"

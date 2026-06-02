@@ -28,8 +28,17 @@ export default async function CustomerLayout({ children, params }: Props) {
         <div className="flex items-start justify-between gap-6 flex-wrap mb-3">
           <h1 className="type-h1">{customer.name}</h1>
           <div className="flex items-center gap-3 flex-wrap">
-            {vm && <VmActionButtons slug={customer.slug} />}
-            <ImpersonateButton slug={customer.slug} customerName={customer.name} />
+            {vm ? (
+              <VmActionButtons
+                slug={customer.slug}
+                customerName={customer.name}
+              />
+            ) : (
+              <ImpersonateButton
+                slug={customer.slug}
+                customerName={customer.name}
+              />
+            )}
           </div>
         </div>
         <p

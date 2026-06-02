@@ -955,6 +955,7 @@ samp {
   .vm-action--restart { --tone: var(--brand); }
   .vm-action--stop { --tone: var(--crit); }
   .vm-action--start { --tone: var(--ok); }
+  .vm-action--view { --tone: var(--accent); }
 
   .heartbeat-dot {
     --hb: var(--ok);

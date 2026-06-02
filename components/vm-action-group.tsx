@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { VmAction, VmPower } from "@/lib/provisioner/vms-client";
 
 function RestartIcon() {
@@ -37,10 +38,13 @@ export function VmActionGroup({
   power,
   busy,
   onAction,
+  trailing,
 }: {
   power: VmPower | null;
   busy: VmAction | null;
   onAction: (action: VmAction) => void;
+  /** Extra `.vm-action` button(s) appended to the same segmented group. */
+  trailing?: ReactNode;
 }) {
   return (
     <div className="vm-action-group" role="group" aria-label="VM power">
@@ -74,6 +78,7 @@ export function VmActionGroup({
         <StartIcon />
         <span>{busy === "start" ? "Starting…" : "Start"}</span>
       </button>
+      {trailing}
     </div>
   );
 }

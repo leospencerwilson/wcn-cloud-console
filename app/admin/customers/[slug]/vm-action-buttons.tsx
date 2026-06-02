@@ -3,12 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { VmActionGroup } from "@/components/vm-action-group";
+import ImpersonateButton from "./impersonate-button";
 import type { VmAction, VmPower } from "@/lib/provisioner/vms-client";
 
 const POLL_INTERVAL_MS = 5000;
 const ACTION_TIMEOUT_MS = 60000;
 
-export default function VmActionButtons({ slug }: { slug: string }) {
+export default function VmActionButtons({
+  slug,
+  customerName,
+}: {
+  slug: string;
+  customerName: string;
+}) {
   const [power, setPower] = useState<VmPower | null>(null);
   const [busy, setBusy] = useState<VmAction | null>(null);
   const [confirm, setConfirm] = useState<VmAction | null>(null);
@@ -71,7 +78,14 @@ export default function VmActionButtons({ slug }: { slug: string }) {
 
   return (
     <>
-      <VmActionGroup power={power} busy={busy} onAction={setConfirm} />
+      <VmActionGroup
+        power={power}
+        busy={busy}
+        onAction={setConfirm}
+        trailing={
+          <ImpersonateButton slug={slug} customerName={customerName} inGroup />
+        }
+      />
       {error && (
         <span
           className="type-mono text-[11px]"
