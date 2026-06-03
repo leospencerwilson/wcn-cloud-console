@@ -17,6 +17,7 @@ import {
   IconTrash,
   IconX,
   IconCheck,
+  IconEdit,
   IconDatabase,
 } from "@/components/ui/icons";
 import type {
@@ -327,6 +328,8 @@ function TableDetail({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnSizing, setColumnSizing] = useState<Record<string, number>>({});
+  const [focusedCell, setFocusedCell] = useState<{ row: number; col: number } | null>(null);
+  const [pastePreview, setPastePreview] = useState<{ rows: string[][]; columns: string[] } | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -494,14 +497,15 @@ function TableDetail({
             <IconPlus />
             <span>Insert row</span>
           </button>
-          <button type="button" className="vm-action" onClick={() => setAddColumnOpen(true)}>
+          <button type="button" className="vm-action vm-action--view" onClick={() => setAddColumnOpen(true)}>
             <IconPlus />
             <span>Add column</span>
           </button>
-          <button type="button" className="vm-action" onClick={() => setRenameOpen(true)}>
+          <button type="button" className="vm-action vm-action--restart" onClick={() => setRenameOpen(true)}>
+            <IconEdit />
             <span>Rename</span>
           </button>
-          <button type="button" className="vm-action vm-action--end" onClick={onDropTable} style={{ color: "var(--crit)" }}>
+          <button type="button" className="vm-action vm-action--stop" onClick={onDropTable}>
             <IconTrash />
             <span>Drop</span>
           </button>
@@ -601,7 +605,46 @@ function TableDetail({
           (no rows — Insert row to add the first one)
         </div>
       ) : (
-        <div style={{ overflow: "auto", maxHeight: 480 }}>
+        <div
+          style={{ overflow: "auto", maxHeight: 480, outline: "none" }}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            const rows = tanstackTable.getRowModel().rows;
+            const colCount = info.columns.length;
+            const cur = focusedCell ?? { row: 0, col: 0 };
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              setFocusedCell({ row: Math.min(rows.length - 1, cur.row + 1), col: cur.col });
+            } else if (e.key === "ArrowUp") {
+              e.preventDefault();
+              setFocusedCell({ row: Math.max(0, cur.row - 1), col: cur.col });
+            } else if (e.key === "ArrowRight") {
+              e.preventDefault();
+              setFocusedCell({ row: cur.row, col: Math.min(colCount - 1, cur.col + 1) });
+            } else if (e.key === "ArrowLeft") {
+              e.preventDefault();
+              setFocusedCell({ row: cur.row, col: Math.max(0, cur.col - 1) });
+            } else if (e.key === "Enter") {
+              e.preventDefault();
+              const targetRow = rows[cur.row]?.original;
+              if (targetRow) setEditingRow(targetRow);
+            } else if (e.key === "Escape") {
+              setFocusedCell(null);
+            }
+          }}
+          onPaste={(e) => {
+            const text = e.clipboardData.getData("text/plain");
+            if (!text) return;
+            const lines = text.replace(/\r\n/g, "\n").split("\n").filter((l) => l.length > 0);
+            if (lines.length === 0) return;
+            const parsed = lines.map((l) => l.split("\t"));
+            // Map to non-identity columns of this table by position.
+            const targetCols = info.columns.filter((c) => !c.identity).map((c) => c.name);
+            if (targetCols.length === 0) return;
+            e.preventDefault();
+            setPastePreview({ rows: parsed, columns: targetCols });
+          }}
+        >
           <table
             style={{
               width: tanstackTable.getTotalSize(),
@@ -657,25 +700,36 @@ function TableDetail({
               ))}
             </thead>
             <tbody>
-              {tanstackTable.getRowModel().rows.map((trow) => (
+              {tanstackTable.getRowModel().rows.map((trow, rowIdx) => (
                 <tr
                   key={trow.id}
                   style={{ borderBottom: "1px solid var(--line)", cursor: "pointer" }}
                   onClick={() => setEditingRow(trow.original)}
                 >
-                  {trow.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      style={{
-                        ...tdStyle,
-                        width: cell.column.getSize(),
-                        maxWidth: cell.column.getSize(),
-                        borderBottom: "1px solid var(--line)",
-                      }}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
+                  {trow.getVisibleCells().map((cell, colIdx) => {
+                    const isFocused =
+                      focusedCell?.row === rowIdx && focusedCell?.col === colIdx;
+                    return (
+                      <td
+                        key={cell.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFocusedCell({ row: rowIdx, col: colIdx });
+                        }}
+                        style={{
+                          ...tdStyle,
+                          width: cell.column.getSize(),
+                          maxWidth: cell.column.getSize(),
+                          borderBottom: "1px solid var(--line)",
+                          outline: isFocused ? "2px solid var(--accent)" : "none",
+                          outlineOffset: "-2px",
+                          background: isFocused ? "color-mix(in oklch, var(--accent) 10%, transparent)" : undefined,
+                        }}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
@@ -751,6 +805,17 @@ function TableDetail({
           table={table}
           onClose={() => setRenameOpen(false)}
           onDone={(newName) => { setRenameOpen(false); onRenamed(newName); }}
+        />
+      )}
+
+      {pastePreview && info && (
+        <PastePreviewModal
+          slug={slug}
+          table={table}
+          info={info}
+          preview={pastePreview}
+          onClose={() => setPastePreview(null)}
+          onDone={() => { setPastePreview(null); setRefreshTick((n) => n + 1); }}
         />
       )}
     </>
@@ -1175,6 +1240,146 @@ function RenameTableModal({
           </button>
         </div>
       </form>
+    </Modal>
+  );
+}
+
+function PastePreviewModal({
+  slug,
+  table,
+  info,
+  preview,
+  onClose,
+  onDone,
+}: {
+  slug: string;
+  table: string;
+  info: TableInfo;
+  preview: { rows: string[][]; columns: string[] };
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const editableCols = useMemo(() => info.columns.filter((c) => !c.identity), [info.columns]);
+  const [mappings, setMappings] = useState<string[]>(() =>
+    preview.rows[0].map((_, i) => editableCols[i]?.name ?? ""),
+  );
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+
+  async function commit() {
+    setErr(null);
+    setSaving(true);
+    setProgress({ done: 0, total: preview.rows.length });
+    let inserted = 0;
+    try {
+      for (let i = 0; i < preview.rows.length; i++) {
+        const raw = preview.rows[i];
+        const values: Record<string, unknown> = {};
+        for (let j = 0; j < raw.length; j++) {
+          const colName = mappings[j];
+          if (!colName) continue;
+          const col = info.columns.find((c) => c.name === colName);
+          if (!col) continue;
+          const cell = raw[j];
+          if (cell === "" || cell === "NULL") {
+            if (col.nullable) values[colName] = null;
+            continue;
+          }
+          try { values[colName] = parseInput(cell, col.udt_name); }
+          catch (e) { throw new Error(`row ${i + 1}, ${colName}: ${e instanceof Error ? e.message : "invalid"}`); }
+        }
+        const r = await fetch(`/api/customers/${slug}/db/tables/${encodeURIComponent(table)}/rows`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ values }),
+        });
+        if (!r.ok) {
+          const e = (await r.json().catch(() => ({}))) as { error?: string };
+          throw new Error(`row ${i + 1}: ${e.error || `HTTP ${r.status}`}`);
+        }
+        inserted++;
+        setProgress({ done: inserted, total: preview.rows.length });
+      }
+      onDone();
+    } catch (e) {
+      setErr(`${e instanceof Error ? e.message : "insert failed"} (${inserted} rows inserted before failure)`);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal title={`Paste ${preview.rows.length} rows`} onClose={saving ? () => {} : onClose} wide>
+      <div className="space-y-3">
+        <p className="type-mono text-[12px]" style={{ color: "var(--text-3)" }}>
+          Map each pasted column to a table column. Empty cells become NULL (when the column is nullable) or are skipped.
+        </p>
+
+        <div style={{ overflowX: "auto", border: "1px solid var(--line)", borderRadius: 3 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                {mappings.map((m, i) => (
+                  <th key={i} style={{ padding: "6px 8px", borderBottom: "1px solid var(--line)", textAlign: "left" }}>
+                    <select
+                      className="type-mono"
+                      style={{ ...inputStyle, width: "100%" }}
+                      value={m}
+                      onChange={(e) => {
+                        const next = [...mappings];
+                        next[i] = e.target.value;
+                        setMappings(next);
+                      }}
+                    >
+                      <option value="">(skip)</option>
+                      {editableCols.map((c) => (
+                        <option key={c.name} value={c.name}>
+                          {c.name} — {c.udt_name}
+                        </option>
+                      ))}
+                    </select>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {preview.rows.slice(0, 10).map((row, i) => (
+                <tr key={i} style={{ borderBottom: "1px solid var(--line)" }}>
+                  {row.map((c, j) => (
+                    <td key={j} className="type-mono" style={{ padding: "5px 8px", fontSize: 12, color: "var(--text-2)" }}>
+                      {c || <em style={{ color: "var(--text-4)" }}>(empty)</em>}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {preview.rows.length > 10 && (
+          <p className="type-mono text-[11px]" style={{ color: "var(--text-4)" }}>
+            …showing first 10 of {preview.rows.length} rows.
+          </p>
+        )}
+
+        {progress && (
+          <p className="type-mono text-[12px]" style={{ color: "var(--text-2)" }}>
+            Inserting: {progress.done} / {progress.total}
+          </p>
+        )}
+        {err && <p className="type-mono text-[12px]" style={{ color: "var(--crit)" }}>{err}</p>}
+
+        <div className="flex justify-end gap-3 pt-2">
+          <button type="button" className="btn btn-ghost" onClick={onClose} disabled={saving}>
+            <IconX />
+            Cancel
+          </button>
+          <button type="button" className="btn btn-primary" onClick={commit} disabled={saving}>
+            <IconCheck />
+            {saving ? `Inserting… ${progress?.done ?? 0}/${preview.rows.length}` : `Insert ${preview.rows.length} rows`}
+          </button>
+        </div>
+      </div>
     </Modal>
   );
 }
