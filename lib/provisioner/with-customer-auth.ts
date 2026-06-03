@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth/session";
 import { ProvisionerHttpError } from "./apps-client";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
-const TOKEN_PREFIX = "wcn_sk_";
+const TOKEN_PREFIX = "wcn_";
 
 // Authorization model: a console session (wcn_admin or customer_admin) drives
 // the dashboard UI. For headless / CI traffic we also accept a customer API

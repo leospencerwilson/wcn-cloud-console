@@ -47,7 +47,7 @@ export type Section = {
 // `your-slug` so people can see-and-replace.
 const SLUG = "your-slug";
 const BASE = "https://console.western-communication.com/api/customers";
-const TOKEN = "wcn_sk_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+const TOKEN = "wcn_<prefix>_<random>";
 
 /* ─────────────────────────────────────────────────────────────────────
  * Small builders to keep example consistency across endpoints.
