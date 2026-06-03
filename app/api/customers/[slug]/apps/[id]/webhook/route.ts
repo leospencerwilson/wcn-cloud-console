@@ -7,25 +7,26 @@ export const runtime = "nodejs";
 
 type Params = { slug: string; id: string };
 
-export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
-  const cfg = await provisionerWebhooks.get(params.id);
+export const GET = withCustomerAuth<Params>(async (_req, { slug, params }) => {
+  const cfg = await provisionerWebhooks.get(params.id, slug);
   return NextResponse.json(cfg);
 }, { scope: "apps:write" });
 
 export const POST = withCustomerAuth<Params>(
-  async (req, { params, userEmail }) => {
+  async (req, { slug, params, userEmail }) => {
     const body = (await req.json().catch(() => ({}))) as { branch?: unknown };
     const branch = typeof body.branch === "string" ? body.branch : undefined;
     const created = await provisionerWebhooks.create(
       params.id,
       branch,
       userEmail,
+      slug,
     );
     return NextResponse.json(created, { status: 201 });
   }, { scope: "apps:write" });
 
 export const PATCH = withCustomerAuth<Params>(
-  async (req, { params, userEmail }) => {
+  async (req, { slug, params, userEmail }) => {
     const body = (await req.json().catch(() => ({}))) as {
       branch?: unknown;
       enabled?: unknown;
@@ -33,12 +34,12 @@ export const PATCH = withCustomerAuth<Params>(
     const patch: { branch?: string; enabled?: boolean } = {};
     if (typeof body.branch === "string") patch.branch = body.branch;
     if (typeof body.enabled === "boolean") patch.enabled = body.enabled;
-    const cfg = await provisionerWebhooks.patch(params.id, patch, userEmail);
+    const cfg = await provisionerWebhooks.patch(params.id, patch, userEmail, slug);
     return NextResponse.json(cfg);
   }, { scope: "apps:write" });
 
 export const DELETE = withCustomerAuth<Params>(
-  async (_req, { params, userEmail }) => {
-    const r = await provisionerWebhooks.remove(params.id, userEmail);
+  async (_req, { slug, params, userEmail }) => {
+    const r = await provisionerWebhooks.remove(params.id, userEmail, slug);
     return NextResponse.json(r);
   }, { scope: "apps:write" });

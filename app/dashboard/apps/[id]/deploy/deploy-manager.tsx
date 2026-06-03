@@ -128,6 +128,42 @@ export default function DeployManager({
     }
   }
 
+  async function installOnGithub() {
+    setBusy(true);
+    setErr(null);
+    try {
+      const r = await fetch(`${apiPath}/install-github`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ branch }),
+      });
+      const data = (await r.json().catch(() => ({}))) as {
+        ok?: boolean;
+        webhook_url?: string;
+        github_hook_id?: number;
+        github_owner?: string;
+        github_repo?: string;
+        error?: string;
+      };
+      if (!r.ok || !data.ok) {
+        throw new Error(data.error || `${r.status}`);
+      }
+      // After auto-install the webhook is configured AND the github hook
+      // is live. Reload the config from the provisioner so the UI shows
+      // the live state with the installed hook id surfaced.
+      const cfgRes = await fetch(apiPath, { cache: "no-store" });
+      const cfg = (await cfgRes.json()) as AppWebhookConfig;
+      setConfig(cfg);
+      setErr(
+        `✓ Installed as hook #${data.github_hook_id} on ${data.github_owner}/${data.github_repo}. Push events will now trigger deploys.`,
+      );
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function patch(p: { branch?: string; enabled?: boolean }) {
     setBusy(true);
     setErr(null);
@@ -207,11 +243,22 @@ export default function DeployManager({
             <button
               type="button"
               className="vm-action vm-action--start"
-              onClick={create}
+              onClick={installOnGithub}
               disabled={busy || !branch.trim()}
+              title="Use the connected GitHub OAuth token to register this webhook on github.com automatically. No copy-paste."
             >
               <IconPlus />
-              <span>{busy ? "Generating…" : "Generate webhook"}</span>
+              <span>{busy ? "Installing…" : "Install on GitHub automatically"}</span>
+            </button>
+            <button
+              type="button"
+              className="vm-action vm-action--view"
+              onClick={create}
+              disabled={busy || !branch.trim()}
+              title="Generate the URL + secret yourself and paste into the repo's Settings → Webhooks page."
+            >
+              <IconPlus />
+              <span>{busy ? "Generating…" : "Generate manually"}</span>
             </button>
           </div>
         </div>

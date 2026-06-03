@@ -18,7 +18,7 @@ export default async function DashboardAppDeployPage({
   let initial: AppWebhookConfig = { configured: false };
   let loadError: string | null = null;
   try {
-    initial = await provisionerWebhooks.get(id);
+    initial = await provisionerWebhooks.get(id, slug);
   } catch (err) {
     if (err instanceof ProvisionerHttpError) {
       loadError = `${err.status} ${err.message}`;

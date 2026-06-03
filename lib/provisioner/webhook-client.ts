@@ -20,15 +20,16 @@ function token(): string {
 
 async function call<T>(
   path: string,
-  init: RequestInit & { actor?: string } = {},
+  init: RequestInit & { actor?: string; slug?: string } = {},
 ): Promise<T> {
-  const { actor, headers, ...rest } = init;
+  const { actor, slug, headers, ...rest } = init;
   const res = await fetch(`${baseUrl()}${path}`, {
     ...rest,
     headers: {
       authorization: `Bearer ${token()}`,
       ...(rest.body ? { "content-type": "application/json" } : {}),
       ...(actor ? { "x-wcn-actor": actor } : {}),
+      ...(slug ? { "x-wcn-slug": slug } : {}),
       ...(headers || {}),
     },
     cache: "no-store",
@@ -60,25 +61,33 @@ async function call<T>(
   }
 }
 
+// All /apps/{id}/webhook calls must carry the customer slug — the
+// provisioner uses it for the access check + audit. The console caller
+// must pass it from session.appUser.customer_slug; if it isn't passed,
+// the provisioner returns 400 missing_slug (which was the bug
+// surfaced by Push to deploy).
 export const provisionerWebhooks = {
-  get: (appId: string) =>
-    call<AppWebhookConfig>(`/apps/${appId}/webhook`),
-  create: (appId: string, branch: string | undefined, actor: string) =>
+  get: (appId: string, slug: string) =>
+    call<AppWebhookConfig>(`/apps/${appId}/webhook`, { slug }),
+  create: (appId: string, branch: string | undefined, actor: string, slug: string) =>
     call<AppWebhookCreated>(`/apps/${appId}/webhook`, {
       method: "POST",
       body: JSON.stringify(branch ? { branch } : {}),
       actor,
+      slug,
     }),
-  patch: (appId: string, patch: AppWebhookPatch, actor: string) =>
+  patch: (appId: string, patch: AppWebhookPatch, actor: string, slug: string) =>
     call<AppWebhookConfig>(`/apps/${appId}/webhook`, {
       method: "PATCH",
       body: JSON.stringify(patch),
       actor,
+      slug,
     }),
-  remove: (appId: string, actor: string) =>
+  remove: (appId: string, actor: string, slug: string) =>
     call<{ ok: true }>(`/apps/${appId}/webhook`, {
       method: "DELETE",
       actor,
+      slug,
     }),
   lookup: (webhook_id: string) =>
     call<AppWebhookLookup>(`/webhooks/github/lookup`, {
