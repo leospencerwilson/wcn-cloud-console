@@ -270,6 +270,9 @@ export type TeamMember = {
   accepted_at: string | null;
   revoked_at: string | null;
   pending_invite: boolean;
+  // "primary" = founding admin from app_users (no invite). Cannot be
+  // role-changed or revoked from this UI — synthesized row.
+  source?: "team" | "primary";
 };
 
 export type TeamInviteCreated = {

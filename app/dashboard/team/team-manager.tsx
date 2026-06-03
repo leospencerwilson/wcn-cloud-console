@@ -161,6 +161,7 @@ export default function TeamManager({
               {members.map((m) => {
                 const s = memberStatus(m);
                 const isSelf = m.user_email === currentEmail;
+                const isPrimary = m.source === "primary";
                 return (
                   <tr
                     key={m.id}
@@ -177,17 +178,39 @@ export default function TeamManager({
                           (you)
                         </span>
                       )}
+                      {isPrimary && (
+                        <span
+                          className="ml-2 type-mono text-[10px]"
+                          title="Founding admin — created during onboarding. Managed by WCN, not invite-revocable."
+                          style={{
+                            padding: "1px 6px",
+                            borderRadius: 3,
+                            background: "color-mix(in oklch, var(--brand) 18%, transparent)",
+                            border:
+                              "1px solid color-mix(in oklch, var(--brand) 40%, var(--line))",
+                            color: "var(--brand)",
+                          }}
+                        >
+                          primary
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-3">
                       <select
                         value={m.role}
                         onChange={(e) => changeRole(m, e.target.value as TeamRole)}
-                        disabled={s === "revoked" || isSelf}
+                        disabled={s === "revoked" || isSelf || isPrimary}
+                        title={
+                          isPrimary
+                            ? "Primary admin role is managed by WCN — contact support to change."
+                            : undefined
+                        }
                         className="type-mono text-[12px] px-2 py-1"
                         style={{
                           background: "transparent",
                           border: "1px solid var(--color-hairline)",
                           borderRadius: 2,
+                          cursor: isPrimary ? "not-allowed" : undefined,
                         }}
                       >
                         {ROLES.map((r) => (
@@ -207,7 +230,7 @@ export default function TeamManager({
                       {relTime(m.invited_at)}
                     </td>
                     <td className="px-6 py-3 text-right">
-                      {s !== "revoked" && !isSelf && (
+                      {s !== "revoked" && !isSelf && !isPrimary && (
                         <div className="vm-action-group" role="group" aria-label="Revoke">
                           <button
                             type="button"
