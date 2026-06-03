@@ -60,26 +60,20 @@ export const POST = withCustomerAuth<Params>(async (req, { slug, params, userEma
     );
   }
 
-  // 3. ensure WCN webhook exists
-  let existing = await provisionerWebhooks.get(params.id, slug).catch(() => null);
-  let secret: string | undefined;
-  let webhookUrl: string | undefined;
-  if (!existing || !existing.configured) {
-    const created = await provisionerWebhooks.create(params.id, branch, userEmail, slug);
-    secret = created.secret;
-    webhookUrl = created.webhook_url;
-    existing = await provisionerWebhooks.get(params.id, slug);
-  } else {
-    webhookUrl = existing.webhook_url;
-    // We can't read back the secret once created — for an existing config
-    // the user already has it; the GitHub install needs a secret, so we
-    // rotate by deleting + recreating to get a fresh one.
-    await provisionerWebhooks.remove(params.id, userEmail, slug);
-    const created = await provisionerWebhooks.create(params.id, branch, userEmail, slug);
-    secret = created.secret;
-    webhookUrl = created.webhook_url;
-    existing = await provisionerWebhooks.get(params.id, slug);
+  // 3. ensure a WCN webhook config exists with a fresh secret. Always
+  //    rotate when installing on GitHub so the secret we just minted is
+  //    the one GitHub will use to sign deliveries.
+  const existingPre = await provisionerWebhooks.get(params.id, slug).catch(() => null);
+  if (existingPre && existingPre.configured) {
+    await provisionerWebhooks.remove(params.id, userEmail, slug).catch(() => {});
   }
+  const created = await provisionerWebhooks.create(params.id, branch, userEmail, slug);
+  const secret = created.secret;
+  const webhookId = created.webhook_id;
+  // AppWebhookCreated only carries the webhook id — build the public URL
+  // ourselves, mirroring where /api/webhooks/github/{id} is mounted.
+  const rootDomain = process.env.ROOT_DOMAIN ?? "western-communication.com";
+  const webhookUrl = `https://console.${rootDomain}/api/webhooks/github/${webhookId}`;
   if (!secret || !webhookUrl) {
     return NextResponse.json({ error: "webhook_setup_failed", code: "webhook_setup_failed" }, { status: 502 });
   }
