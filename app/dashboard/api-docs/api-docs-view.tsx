@@ -262,9 +262,49 @@ function CodeBlock({
 export default function ApiDocsView() {
   const [lang, setLang] = useState<Lang>("curl");
   const [activeId, setActiveId] = useState<string>(SECTIONS[0]?.id ?? "");
+  const [q, setQ] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const anchors = useMemo(() => buildAnchors(), []);
+
+  // Press "/" to focus search (skip if user is typing in another input).
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "/") return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement | null)?.isContentEditable) return;
+      e.preventDefault();
+      searchRef.current?.focus();
+      searchRef.current?.select();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Filter sections + endpoints by query. Matches across section title,
+  // endpoint title, method, path, scope, description — same coverage as the
+  // command palette so users can find the same thing either way.
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return SECTIONS;
+    const hit = (s: string | undefined) => !!s && s.toLowerCase().includes(needle);
+    return SECTIONS.map((s) => {
+      const sectionMatch = hit(s.title) || hit(s.intro);
+      const matchedEndpoints = (s.endpoints ?? []).filter((e) =>
+        sectionMatch ||
+        hit(e.title) ||
+        hit(e.path) ||
+        hit(e.method) ||
+        hit(e.scope) ||
+        hit(e.description),
+      );
+      if (sectionMatch || matchedEndpoints.length > 0) {
+        return { ...s, endpoints: sectionMatch ? s.endpoints : matchedEndpoints };
+      }
+      return null;
+    }).filter((s): s is Section => s !== null);
+  }, [q]);
 
   // Scroll-spy: pick the active anchor as the one closest to the top of the
   // viewport that's already past the threshold.
@@ -307,36 +347,114 @@ export default function ApiDocsView() {
       {/* ── LEFT NAV ────────────────────────────────────────────────── */}
       <nav className="api-docs-nav" aria-label="API sections">
         <AiCopyButton />
-        <p className="type-eyebrow" style={{ marginBottom: 10, marginTop: 14 }}>
+
+        <div style={{ position: "relative", marginTop: 12, marginBottom: 14 }}>
+          <input
+            ref={searchRef}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search endpoints…"
+            spellCheck={false}
+            className="type-mono"
+            style={{
+              width: "100%",
+              padding: "8px 30px 8px 11px",
+              fontSize: 12.5,
+              background: "var(--surface)",
+              border: "1px solid var(--line)",
+              borderRadius: 3,
+              color: "var(--text)",
+            }}
+          />
+          {q ? (
+            <button
+              type="button"
+              onClick={() => { setQ(""); searchRef.current?.focus(); }}
+              title="Clear"
+              aria-label="Clear search"
+              style={{
+                position: "absolute",
+                right: 6,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "transparent",
+                border: 0,
+                color: "var(--text-4)",
+                cursor: "pointer",
+                fontSize: 14,
+                padding: "2px 6px",
+                lineHeight: 1,
+              }}
+            >
+              ✕
+            </button>
+          ) : (
+            <span
+              aria-hidden
+              className="type-mono"
+              style={{
+                position: "absolute",
+                right: 8,
+                top: "50%",
+                transform: "translateY(-50%)",
+                fontSize: 10,
+                color: "var(--text-4)",
+                border: "1px solid var(--line)",
+                borderRadius: 3,
+                padding: "1px 5px",
+                pointerEvents: "none",
+              }}
+            >
+              /
+            </span>
+          )}
+        </div>
+
+        <p className="type-eyebrow" style={{ marginBottom: 10 }}>
           § REFERENCE
+          {q && (
+            <span style={{ marginLeft: 8, color: "var(--text-4)" }}>
+              {filtered.reduce((n, s) => n + (s.endpoints?.length ?? 0), 0)} match
+            </span>
+          )}
         </p>
-        <ul>
-          {SECTIONS.map((s) => (
-            <li key={s.id}>
-              <a
-                href={`#${s.id}`}
-                className={`api-docs-nav-section${activeSectionId === s.id ? " is-active" : ""}`}
-              >
-                {s.title}
-              </a>
-              {s.endpoints && (
-                <ul>
-                  {s.endpoints.map((e) => (
-                    <li key={e.id}>
-                      <a
-                        href={`#${s.id}--${e.id}`}
-                        className={`api-docs-nav-endpoint${activeId === `${s.id}--${e.id}` ? " is-active" : ""}`}
-                      >
-                        <MethodBadge method={e.method} />
-                        <span>{e.title}</span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
+
+        {filtered.length === 0 ? (
+          <p
+            className="type-mono"
+            style={{ fontSize: 12, color: "var(--text-3)", padding: "12px 4px" }}
+          >
+            No endpoint matches <code>{q}</code>.
+          </p>
+        ) : (
+          <ul>
+            {filtered.map((s) => (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  className={`api-docs-nav-section${activeSectionId === s.id ? " is-active" : ""}`}
+                >
+                  {s.title}
+                </a>
+                {s.endpoints && (
+                  <ul>
+                    {s.endpoints.map((e) => (
+                      <li key={e.id}>
+                        <a
+                          href={`#${s.id}--${e.id}`}
+                          className={`api-docs-nav-endpoint${activeId === `${s.id}--${e.id}` ? " is-active" : ""}`}
+                        >
+                          <MethodBadge method={e.method} />
+                          <span>{e.title}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
       </nav>
 
       {/* ── MIDDLE: PROSE + ENDPOINT DETAILS ────────────────────────── */}
@@ -410,16 +528,42 @@ function SectionBlock({ section }: { section: Section }) {
 }
 
 function EndpointBlock({ section, endpoint }: { section: Section; endpoint: Endpoint }) {
+  const [copied, setCopied] = useState(false);
+  const anchor = `${section.id}--${endpoint.id}`;
   return (
     <article
-      id={`${section.id}--${endpoint.id}`}
+      id={anchor}
       className="api-doc-endpoint"
       style={{ scrollMarginTop: 24 }}
     >
-      <h3 className="api-doc-endpoint-title">
+      <h3 className="api-doc-endpoint-title" style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <MethodBadge method={endpoint.method} />
         <code className="api-doc-endpoint-path">{endpoint.path}</code>
-        <span className="api-doc-endpoint-name">{endpoint.title}</span>
+        <span className="api-doc-endpoint-name" style={{ flex: 1 }}>{endpoint.title}</span>
+        <button
+          type="button"
+          title="Copy link to this endpoint"
+          aria-label="Copy link to this endpoint"
+          onClick={async () => {
+            const url = `${window.location.origin}${window.location.pathname}#${anchor}`;
+            await navigator.clipboard.writeText(url);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+          }}
+          style={{
+            background: "transparent",
+            border: "1px solid var(--line)",
+            borderRadius: 3,
+            color: copied ? "var(--ok)" : "var(--text-3)",
+            fontSize: 11,
+            padding: "3px 8px",
+            cursor: "pointer",
+            fontFamily: "var(--font-mono)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {copied ? "✓ copied" : "#  link"}
+        </button>
       </h3>
       <div className="api-doc-prose">{renderProse(endpoint.description)}</div>
       {endpoint.scope && (
