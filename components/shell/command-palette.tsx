@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { SECTIONS as API_SECTIONS } from "@/app/dashboard/api-docs/spec";
 
 type Cmd = {
   id: string;
@@ -11,6 +12,19 @@ type Cmd = {
   hint?: string;
   action?: () => void;
 };
+
+// Flatten the API docs spec into command palette entries. Label includes
+// method + path + title so users can search by any of them ("POST /db/tables",
+// "create table", "/supabase/auth/users", etc).
+const API_DOC_CMDS: Cmd[] = API_SECTIONS.flatMap((s) =>
+  (s.endpoints ?? []).map((e) => ({
+    id: `apidoc-${s.id}-${e.id}`,
+    label: `${e.method}  ${e.path}  — ${e.title}`,
+    group: "API docs",
+    href: `/dashboard/api-docs#${s.id}--${e.id}`,
+    hint: e.scope,
+  })),
+);
 
 const ADMIN_CMDS: Cmd[] = [
   { id: "a-ov", label: "Overview", group: "Admin", href: "/admin" },
@@ -71,7 +85,7 @@ export default function CommandPalette({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const all = useMemo(
-    () => (variant === "admin" ? ADMIN_CMDS : CUSTOMER_CMDS),
+    () => (variant === "admin" ? ADMIN_CMDS : [...CUSTOMER_CMDS, ...API_DOC_CMDS]),
     [variant],
   );
   const filtered = useMemo(() => {
@@ -114,7 +128,16 @@ export default function CommandPalette({
   const run = (c: Cmd) => {
     setOpen(false);
     if (c.action) c.action();
-    if (c.href) router.push(c.href);
+    if (c.href) {
+      // Hash-only nav to the same path doesn't trigger scroll via
+      // router.push — use a real navigation so anchor-jumps to API
+      // docs sections work even when the user is already on the page.
+      if (c.href.includes("#")) {
+        window.location.assign(c.href);
+      } else {
+        router.push(c.href);
+      }
+    }
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
