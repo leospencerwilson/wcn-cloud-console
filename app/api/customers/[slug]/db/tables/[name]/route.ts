@@ -9,8 +9,8 @@ export const runtime = "nodejs";
 export const PATCH = withCustomerAuth<{ slug: string; name: string }>(async (req, { slug, params }) => {
   const body = (await req.json().catch(() => ({}))) as AlterTableInput;
   return NextResponse.json(await provisionerSupabase.alterTable(slug, params.name, body));
-});
+}, { scope: "vms:write" });
 
 export const DELETE = withCustomerAuth<{ slug: string; name: string }>(async (_req, { slug, params }) => {
   return NextResponse.json(await provisionerSupabase.dropTable(slug, params.name));
-});
+}, { scope: "vms:write" });

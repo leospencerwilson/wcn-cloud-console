@@ -9,4 +9,4 @@ export const runtime = "nodejs";
 export const POST = withCustomerAuth<{ slug: string; name: string }>(async (req, { slug, params }) => {
   const body = (await req.json().catch(() => ({}))) as ColumnInput;
   return NextResponse.json(await provisionerSupabase.addColumn(slug, params.name, body), { status: 201 });
-});
+}, { scope: "vms:write" });

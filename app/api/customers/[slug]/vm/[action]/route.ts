@@ -18,4 +18,4 @@ export const POST = withCustomerAuth<Params>(async (_req, { slug, params, userEm
   }
   const result = await provisionerVms.action(slug, params.action as VmAction, userEmail);
   return NextResponse.json(result, { status: 202 });
-});
+}, { scope: "vms:write" });

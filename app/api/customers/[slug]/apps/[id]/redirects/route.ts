@@ -11,7 +11,7 @@ type Params = { slug: string; id: string };
 export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
   const rules = await provisionerApps.redirects.list(params.id, slug);
   return NextResponse.json(rules);
-});
+}, { scope: "apps:read" });
 
 export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail, slug }) => {
   const body = (await req.json().catch(() => ({}))) as Partial<RedirectRuleInput>;
@@ -40,4 +40,4 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, 
     slug,
   );
   return NextResponse.json(result, { status: 201 });
-});
+}, { scope: "apps:write" });

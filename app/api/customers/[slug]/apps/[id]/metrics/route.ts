@@ -21,4 +21,4 @@ export const GET = withCustomerAuth<Params>(async (req: NextRequest, { params, s
     "cpu,ram,net";
   const data = await provisionerApps.apps.metrics(params.id, window, seriesParam, slug);
   return NextResponse.json(data);
-});
+}, { scope: "metrics:read" });

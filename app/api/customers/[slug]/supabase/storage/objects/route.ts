@@ -13,7 +13,7 @@ export const GET = withCustomerAuth<{ slug: string }>(async (req, { slug }) => {
   const limit = Math.min(parseInt(req.nextUrl.searchParams.get("limit") || "100", 10) || 100, 1000);
   const offset = Math.max(parseInt(req.nextUrl.searchParams.get("offset") || "0", 10) || 0, 0);
   return NextResponse.json(await provisionerSupabase.storageObjects(slug, bucket, limit, offset));
-});
+}, { scope: "vms:read" });
 
 export const DELETE = withCustomerAuth<{ slug: string }>(async (req, { slug }) => {
   const bucket = req.nextUrl.searchParams.get("bucket") || "";
@@ -22,4 +22,4 @@ export const DELETE = withCustomerAuth<{ slug: string }>(async (req, { slug }) =
     return NextResponse.json({ error: "bucket and name required", code: "missing_params" }, { status: 400 });
   }
   return NextResponse.json(await provisionerSupabase.storageDeleteObject(slug, bucket, name));
-});
+}, { scope: "vms:write" });

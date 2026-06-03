@@ -46,4 +46,4 @@ export const GET = withCustomerAuth<{ slug: string }>(async (_req, { slug }) => 
     clearTimeout(t);
   }
   return NextResponse.json(result);
-});
+}, { scope: "vms:read" });

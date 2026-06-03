@@ -10,4 +10,4 @@ type Params = { slug: string };
 export const GET = withCustomerAuth<Params>(async (_req, { slug }) => {
   const members = await provisionerTeam.list(slug);
   return NextResponse.json(members);
-});
+}, { scope: "audit:read" });

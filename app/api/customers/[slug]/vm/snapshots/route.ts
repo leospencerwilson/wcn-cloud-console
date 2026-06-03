@@ -12,7 +12,7 @@ type Params = { slug: string };
 export const GET = withCustomerAuth<Params>(async (_req, { slug }) => {
   const snaps = await provisionerVms.snapshots.list(slug);
   return NextResponse.json(snaps);
-});
+}, { scope: "backups:read" });
 
 export const POST = withCustomerAuth<Params>(async (req: NextRequest, { slug, userEmail }) => {
   const body = (await req.json().catch(() => ({}))) as {
@@ -34,4 +34,4 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { slug, us
     userEmail,
   );
   return NextResponse.json(result, { status: 202 });
-});
+}, { scope: "backups:write" });

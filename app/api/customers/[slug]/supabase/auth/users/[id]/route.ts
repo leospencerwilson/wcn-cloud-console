@@ -12,8 +12,8 @@ export const PATCH = withCustomerAuth<P>(async (req, { slug, params }) => {
   const body = (await req.json().catch(() => ({}))) as AuthUserUpdateInput;
   const user = await provisionerSupabase.authUpdateUser(slug, params.id, body);
   return NextResponse.json(user);
-});
+}, { scope: "vms:write" });
 
 export const DELETE = withCustomerAuth<P>(async (_req, { slug, params }) => {
   return NextResponse.json(await provisionerSupabase.authDeleteUser(slug, params.id));
-});
+}, { scope: "vms:write" });

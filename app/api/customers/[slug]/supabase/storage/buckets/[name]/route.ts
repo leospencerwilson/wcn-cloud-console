@@ -9,4 +9,4 @@ type P = { slug: string; name: string };
 
 export const DELETE = withCustomerAuth<P>(async (_req, { slug, params }) => {
   return NextResponse.json(await provisionerSupabase.storageDeleteBucket(slug, params.name));
-});
+}, { scope: "vms:write" });

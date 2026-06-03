@@ -195,6 +195,7 @@ export default function ConnectionCard({ slug }: { slug: string }) {
         )}
       </div>
 
+      <Row label="Studio" value={data.studio_url} openable />
       <Row label="REST" value={data.rest_url} />
       <Row label="Realtime" value={data.realtime_url} />
       <Row label="Storage" value={data.storage_url} />

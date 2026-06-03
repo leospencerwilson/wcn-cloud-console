@@ -15,4 +15,4 @@ export const GET = withCustomerAuth<Params>(async (_req, { slug }) => {
   }
   const role = await getCustomerRole(session, slug);
   return NextResponse.json({ role });
-});
+}, { scope: "audit:read" });

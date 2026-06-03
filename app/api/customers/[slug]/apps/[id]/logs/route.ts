@@ -23,4 +23,4 @@ export const GET = withCustomerAuth<Params>(async (req: NextRequest, { params, s
   const tail = Math.min(Math.max(Number(tailParam) || 200, 1), 5000);
   const logs = await provisionerApps.apps.logs(params.id, tail, slug);
   return NextResponse.json(logs);
-});
+}, { scope: "apps:read" });

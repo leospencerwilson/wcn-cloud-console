@@ -47,5 +47,4 @@ export const POST = withCustomerAuth<{ slug: string }>(
       }
       throw err;
     }
-  },
-);
+  }, { scope: "vms:write" });

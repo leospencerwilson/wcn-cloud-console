@@ -18,4 +18,4 @@ export const GET = withCustomerAuth<{ slug: string }>(async (req, { slug }) => {
   }
   const cols = await provisionerDb.columns(slug, schema, table);
   return NextResponse.json(cols);
-});
+}, { scope: "vms:read" });

@@ -12,4 +12,4 @@ export const GET = withCustomerAuth<Params>(async (req, { params, slug }) => {
     slug,
     signal: req.signal,
   });
-});
+}, { scope: "apps:read" });

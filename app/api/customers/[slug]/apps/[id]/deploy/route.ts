@@ -11,4 +11,4 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, 
   const body = (await req.json().catch(() => ({}))) as { force?: boolean };
   const status = await provisionerApps.apps.deploy(params.id, body.force ?? false, slug);
   return NextResponse.json(status, { status: 202 });
-});
+}, { scope: "apps:write" });

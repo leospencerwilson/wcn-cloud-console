@@ -17,5 +17,4 @@ export const GET = withCustomerAuth<{ slug: string }>(
       });
     }
     return NextResponse.json(data);
-  },
-);
+  }, { scope: "vms:read" });

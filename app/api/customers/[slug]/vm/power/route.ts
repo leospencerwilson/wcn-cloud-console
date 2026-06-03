@@ -8,4 +8,4 @@ export const runtime = "nodejs";
 export const GET = withCustomerAuth<{ slug: string }>(async (_req, { slug }) => {
   const power = await provisionerVms.power(slug);
   return NextResponse.json(power);
-});
+}, { scope: "vms:write" });

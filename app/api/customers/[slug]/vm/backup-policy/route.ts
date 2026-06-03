@@ -17,7 +17,7 @@ const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 export const GET = withCustomerAuth<Params>(async (_req, { slug }) => {
   const policy = await provisionerVms.backupPolicy.get(slug);
   return NextResponse.json(policy);
-});
+}, { scope: "backups:read" });
 
 export const PUT = withCustomerAuth<Params>(async (req: NextRequest, { slug, userEmail }) => {
   const body = (await req.json().catch(() => ({}))) as BackupPolicyInput;
@@ -45,4 +45,4 @@ export const PUT = withCustomerAuth<Params>(async (req: NextRequest, { slug, use
   }
   const result = await provisionerVms.backupPolicy.put(slug, body, userEmail);
   return NextResponse.json(result);
-});
+}, { scope: "backups:write" });

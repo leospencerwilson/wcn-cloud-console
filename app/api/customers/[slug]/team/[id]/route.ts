@@ -28,7 +28,7 @@ export const PATCH = withCustomerAuth<Params>(async (req: NextRequest, { params,
   }
   const updated = await provisionerTeam.patchRole(slug, id, role, userEmail);
   return NextResponse.json(updated);
-});
+}, { scope: "audit:admin" });
 
 export const DELETE = withCustomerAuth<Params>(async (_req, { params, slug, userEmail }) => {
   const id = Number(params.id);
@@ -40,4 +40,4 @@ export const DELETE = withCustomerAuth<Params>(async (_req, { params, slug, user
   }
   const result = await provisionerTeam.revoke(slug, id, userEmail);
   return NextResponse.json(result);
-});
+}, { scope: "audit:admin" });

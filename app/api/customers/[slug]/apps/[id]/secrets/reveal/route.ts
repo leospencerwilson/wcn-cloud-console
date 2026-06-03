@@ -41,4 +41,4 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, 
 
   const result = await provisionerApps.secrets.reveal(params.id, body.key, userEmail, slug);
   return NextResponse.json(result);
-});
+}, { scope: "secrets:admin" });

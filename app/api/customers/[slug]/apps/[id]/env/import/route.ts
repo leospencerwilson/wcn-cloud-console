@@ -17,4 +17,4 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, 
   const body = (await req.json()) as Body;
   const result = await provisionerApps.env.importText(params.id, body, slug);
   return NextResponse.json(result);
-});
+}, { scope: "apps:write" });

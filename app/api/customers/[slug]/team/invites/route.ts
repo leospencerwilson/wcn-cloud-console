@@ -29,4 +29,4 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { slug, us
   }
   const created = await provisionerTeam.invite(slug, email, role, userEmail);
   return NextResponse.json(created, { status: 201 });
-});
+}, { scope: "audit:admin" });

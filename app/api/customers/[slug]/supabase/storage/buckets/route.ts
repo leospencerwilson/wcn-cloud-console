@@ -8,10 +8,10 @@ export const runtime = "nodejs";
 
 export const GET = withCustomerAuth<{ slug: string }>(async (_req, { slug }) => {
   return NextResponse.json(await provisionerSupabase.storageBuckets(slug));
-});
+}, { scope: "vms:read" });
 
 export const POST = withCustomerAuth<{ slug: string }>(async (req, { slug }) => {
   const body = (await req.json().catch(() => ({}))) as BucketCreateInput;
   const bucket = await provisionerSupabase.storageCreateBucket(slug, body);
   return NextResponse.json(bucket, { status: 201 });
-});
+}, { scope: "vms:write" });

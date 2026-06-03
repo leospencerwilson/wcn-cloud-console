@@ -7,4 +7,4 @@ export const runtime = "nodejs";
 
 export const GET = withCustomerAuth<{ slug: string; name: string }>(async (_req, { slug, params }) => {
   return NextResponse.json(await provisionerSupabase.tableInfo(slug, params.name));
-});
+}, { scope: "vms:read" });

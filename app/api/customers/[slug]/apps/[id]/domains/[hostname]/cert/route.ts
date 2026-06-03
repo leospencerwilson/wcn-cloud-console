@@ -15,7 +15,7 @@ const KEY_BLOCK = /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]+?-----END [A-Z ]*PRI
 export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
   const meta = await provisionerApps.certs.get(params.id, params.hostname, slug);
   return NextResponse.json(meta);
-});
+}, { scope: "domains:read" });
 
 export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail, slug }) => {
   const body = (await req.json().catch(() => ({}))) as DomainCertInput;
@@ -45,9 +45,9 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, 
     slug,
   );
   return NextResponse.json(meta, { status: 201 });
-});
+}, { scope: "domains:write" });
 
 export const DELETE = withCustomerAuth<Params>(async (_req, { params, userEmail, slug }) => {
   const result = await provisionerApps.certs.remove(params.id, params.hostname, userEmail, slug);
   return NextResponse.json(result);
-});
+}, { scope: "domains:write" });

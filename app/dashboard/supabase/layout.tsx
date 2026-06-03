@@ -3,6 +3,7 @@ import { requireCustomerAdmin } from "@/lib/auth/session";
 import { getCustomer } from "@/lib/db/customers";
 import TabStrip from "@/components/tab-strip";
 import { PageHeader } from "@/components/page-header";
+import { IconExternal } from "@/components/ui/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -35,13 +36,29 @@ export default async function DashboardSupabaseLayout({
     );
   }
 
+  const rootDomain = process.env.ROOT_DOMAIN ?? "western-communication.com";
+  const studioUrl = `https://db-${slug}.${rootDomain}`;
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Supabase"
-        title="Supabase"
-        subtitle="Tables, auth, storage, realtime, functions, RLS policies, and connection details for your managed Supabase instance."
-      />
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <PageHeader
+          eyebrow="Supabase"
+          title="Supabase"
+          subtitle="Tables, auth, storage, realtime, functions, RLS policies, and connection details for your managed Supabase instance."
+        />
+        <a
+          href={studioUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-primary"
+          title="Open the upstream Supabase Studio for this project in a new tab"
+          style={{ marginTop: 6 }}
+        >
+          <IconExternal />
+          Open in Studio
+        </a>
+      </div>
       <TabStrip
         tabs={[
           { label: "Tables", href: "/dashboard/supabase", exact: true },

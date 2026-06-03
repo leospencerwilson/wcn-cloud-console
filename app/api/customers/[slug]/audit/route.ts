@@ -21,4 +21,4 @@ export const GET = withCustomerAuth<Params>(async (req: NextRequest, { slug }) =
     limit,
   });
   return NextResponse.json(events);
-});
+}, { scope: "audit:read" });

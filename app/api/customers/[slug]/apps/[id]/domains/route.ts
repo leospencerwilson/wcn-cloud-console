@@ -10,7 +10,7 @@ type Params = { slug: string; id: string };
 export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
   const domains = await provisionerApps.domains.list(params.id, slug);
   return NextResponse.json(domains);
-});
+}, { scope: "domains:read" });
 
 export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, userEmail, slug }) => {
   const { hostname } = (await req.json()) as { hostname: string };
@@ -22,4 +22,4 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, 
   }
   const domain = await provisionerApps.domains.add(params.id, hostname, userEmail, slug);
   return NextResponse.json(domain, { status: 202 });
-});
+}, { scope: "domains:write" });

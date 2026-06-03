@@ -10,7 +10,7 @@ type Params = { slug: string; id: string };
 export const GET = withCustomerAuth<Params>(async (_req, { params }) => {
   const cfg = await provisionerWebhooks.get(params.id);
   return NextResponse.json(cfg);
-});
+}, { scope: "apps:write" });
 
 export const POST = withCustomerAuth<Params>(
   async (req, { params, userEmail }) => {
@@ -22,8 +22,7 @@ export const POST = withCustomerAuth<Params>(
       userEmail,
     );
     return NextResponse.json(created, { status: 201 });
-  },
-);
+  }, { scope: "apps:write" });
 
 export const PATCH = withCustomerAuth<Params>(
   async (req, { params, userEmail }) => {
@@ -36,12 +35,10 @@ export const PATCH = withCustomerAuth<Params>(
     if (typeof body.enabled === "boolean") patch.enabled = body.enabled;
     const cfg = await provisionerWebhooks.patch(params.id, patch, userEmail);
     return NextResponse.json(cfg);
-  },
-);
+  }, { scope: "apps:write" });
 
 export const DELETE = withCustomerAuth<Params>(
   async (_req, { params, userEmail }) => {
     const r = await provisionerWebhooks.remove(params.id, userEmail);
     return NextResponse.json(r);
-  },
-);
+  }, { scope: "apps:write" });

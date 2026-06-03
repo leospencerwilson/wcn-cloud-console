@@ -21,5 +21,4 @@ export const POST = withCustomerAuth<Params>(
       actor: userEmail,
       signal: req.signal,
     });
-  },
-);
+  }, { scope: "apps:write" });

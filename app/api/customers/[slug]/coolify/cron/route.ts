@@ -8,4 +8,4 @@ export const runtime = "nodejs";
 export const GET = withCustomerAuth<{ slug: string }>(async (_req, { slug }) => {
   const data = await provisionerCoolify.cron(slug);
   return NextResponse.json(data);
-});
+}, { scope: "apps:read" });

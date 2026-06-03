@@ -11,7 +11,7 @@ type Params = { slug: string; id: string };
 export const GET = withCustomerAuth<Params>(async (_req, { params, slug }) => {
   const tasks = await provisionerApps.cron.list(params.id, slug);
   return NextResponse.json(tasks);
-});
+}, { scope: "apps:read" });
 
 export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, slug }) => {
   const body = (await req.json().catch(() => ({}))) as Partial<CronTaskInput>;
@@ -28,4 +28,4 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { params, 
     container: body.container,
   }, slug);
   return NextResponse.json(task, { status: 201 });
-});
+}, { scope: "apps:write" });

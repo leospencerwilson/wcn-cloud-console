@@ -8,13 +8,13 @@ export const runtime = "nodejs";
 
 export const GET = withCustomerAuth<{ slug: string }>(async (_req, { slug }) => {
   return NextResponse.json(await provisionerSupabase.policies(slug));
-});
+}, { scope: "vms:read" });
 
 export const POST = withCustomerAuth<{ slug: string }>(async (req, { slug }) => {
   const body = (await req.json().catch(() => ({}))) as PolicyCreateInput;
   const result = await provisionerSupabase.policyCreate(slug, body);
   return NextResponse.json(result, { status: 201 });
-});
+}, { scope: "vms:write" });
 
 export const DELETE = withCustomerAuth<{ slug: string }>(async (req, { slug }) => {
   const table = req.nextUrl.searchParams.get("table") || "";
@@ -23,4 +23,4 @@ export const DELETE = withCustomerAuth<{ slug: string }>(async (req, { slug }) =
     return NextResponse.json({ error: "table, name required", code: "missing_params" }, { status: 400 });
   }
   return NextResponse.json(await provisionerSupabase.policyDelete(slug, table, name));
-});
+}, { scope: "vms:write" });

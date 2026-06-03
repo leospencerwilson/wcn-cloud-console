@@ -17,4 +17,4 @@ export const DELETE = withCustomerAuth<Params>(async (_req, { params, slug, user
   }
   const result = await provisionerTokens.revoke(slug, id, userEmail);
   return NextResponse.json(result);
-});
+}, { scope: "audit:admin" });

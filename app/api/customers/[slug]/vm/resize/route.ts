@@ -49,4 +49,4 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { slug, us
   }
   const result = await provisionerVms.resize(slug, input, userEmail);
   return NextResponse.json(result, { status: 202 });
-});
+}, { scope: "vms:write" });

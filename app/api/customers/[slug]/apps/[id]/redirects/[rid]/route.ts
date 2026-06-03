@@ -17,4 +17,4 @@ export const DELETE = withCustomerAuth<Params>(async (_req, { params, userEmail,
   }
   const result = await provisionerApps.redirects.remove(params.id, rid, userEmail, slug);
   return NextResponse.json(result);
-});
+}, { scope: "apps:write" });

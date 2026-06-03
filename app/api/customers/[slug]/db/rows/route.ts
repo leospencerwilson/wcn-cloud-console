@@ -17,4 +17,4 @@ export const GET = withCustomerAuth<{ slug: string }>(async (req, { slug }) => {
   const offset = Math.max(parseInt(req.nextUrl.searchParams.get("offset") || "0", 10) || 0, 0);
   const data = await provisionerDb.rows(slug, schema, table, limit, offset);
   return NextResponse.json(data);
-});
+}, { scope: "vms:read" });

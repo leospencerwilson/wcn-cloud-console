@@ -19,4 +19,4 @@ export const POST = withCustomerAuth<Params>(async (_req, { params, slug }) => {
   const action = params.action as "restart" | "stop" | "start";
   const result = await provisionerApps.apps[action](params.id, slug);
   return NextResponse.json(result);
-});
+}, { scope: "apps:write" });

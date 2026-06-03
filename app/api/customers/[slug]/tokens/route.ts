@@ -14,7 +14,7 @@ const SCOPE_RE = new RegExp(`^(${RESOURCES.join("|")}):(${LEVELS.join("|")})$`);
 export const GET = withCustomerAuth<Params>(async (_req, { slug }) => {
   const tokens = await provisionerTokens.list(slug);
   return NextResponse.json(tokens);
-});
+}, { scope: "audit:admin" });
 
 export const POST = withCustomerAuth<Params>(async (req: NextRequest, { slug, userEmail }) => {
   const body = (await req.json().catch(() => ({}))) as {
@@ -61,4 +61,4 @@ export const POST = withCustomerAuth<Params>(async (req: NextRequest, { slug, us
     userEmail,
   );
   return NextResponse.json(created, { status: 201 });
-});
+}, { scope: "audit:admin" });
