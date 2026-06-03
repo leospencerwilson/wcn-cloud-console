@@ -116,21 +116,19 @@ export default function TeamManager({
           style={{ borderColor: "var(--color-hairline)" }}
         >
           <span className="type-eyebrow">§ TEAM MEMBERS</span>
-          <div className="flex items-center gap-3">
-            <button type="button" className="btn btn-ghost btn-sm" onClick={load}>
+          <div className="vm-action-group" role="group" aria-label="Team actions">
+            <button type="button" className="vm-action vm-action--view" onClick={load}>
               <IconRefresh />
-              {loading ? "Refreshing…" : "Refresh"}
+              <span>{loading ? "Refreshing…" : "Refresh"}</span>
             </button>
-            <div className="vm-action-group" role="group" aria-label="Team actions">
-              <button
-                type="button"
-                className="vm-action vm-action--start"
-                onClick={() => setInviteOpen(true)}
-              >
-                <IconUserPlus />
-                <span>Invite user</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              className="vm-action vm-action--start"
+              onClick={() => setInviteOpen(true)}
+            >
+              <IconUserPlus />
+              <span>Invite user</span>
+            </button>
           </div>
         </div>
         {error && (
@@ -210,14 +208,16 @@ export default function TeamManager({
                     </td>
                     <td className="px-6 py-3 text-right">
                       {s !== "revoked" && !isSelf && (
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-sm"
-                          onClick={() => revoke(m)}
-                        >
-                          <IconTrash />
-                          Revoke
-                        </button>
+                        <div className="vm-action-group" role="group" aria-label="Revoke">
+                          <button
+                            type="button"
+                            className="vm-action vm-action--stop"
+                            onClick={() => revoke(m)}
+                          >
+                            <IconTrash />
+                            <span>Revoke</span>
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>

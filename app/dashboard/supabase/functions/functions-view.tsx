@@ -85,21 +85,19 @@ export default function FunctionsView({ slug }: { slug: string }) {
           § EDGE FUNCTIONS
           {items && <span style={{ color: "var(--text-3)", marginLeft: 10 }}>{items.length} deployed</span>}
         </span>
-        <div className="flex items-center gap-3">
-          <button type="button" className="btn btn-ghost btn-sm" onClick={refresh} disabled={loading}>
+        <div className="vm-action-group" role="group" aria-label="Functions actions">
+          <button type="button" className="vm-action vm-action--view" onClick={refresh} disabled={loading}>
             <IconRefresh />
-            {loading ? "Refreshing…" : "Refresh"}
+            <span>{loading ? "Refreshing…" : "Refresh"}</span>
           </button>
-          <div className="vm-action-group" role="group" aria-label="Deploy function">
-            <button
-              type="button"
-              className="vm-action vm-action--start"
-              onClick={() => setEditing({ name: "", code: DEFAULT_CODE, mode: "new" })}
-            >
-              <IconPlus />
-              <span>New function</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            className="vm-action vm-action--start"
+            onClick={() => setEditing({ name: "", code: DEFAULT_CODE, mode: "new" })}
+          >
+            <IconPlus />
+            <span>New function</span>
+          </button>
         </div>
       </div>
 

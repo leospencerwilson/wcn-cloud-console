@@ -19,6 +19,50 @@ const METHOD_TONE: Record<Method, string> = {
   DELETE: "var(--crit)",
 };
 
+// Build a single markdown blob covering the whole API surface. Designed to
+// paste straight into an AI coding assistant (Claude / Cursor / etc.) as
+// context for an agent that needs to drive the WCN Cloud Customer API.
+function buildAiSpec(): string {
+  const lines: string[] = [];
+  lines.push("# WCN Cloud — Customer API reference");
+  lines.push("");
+  lines.push("Base URL: `https://console.western-communication.com/api/customers/{slug}`");
+  lines.push("Auth: `Authorization: Bearer wcn_<prefix>_<random>` — token must carry the `scope` the route declares (resource:level, where write implies read and admin implies write).");
+  lines.push("Replace `{slug}` with the customer slug (visible in the console URL).");
+  lines.push("");
+  for (const s of SECTIONS) {
+    lines.push(`## ${s.title}`);
+    if (s.intro) {
+      // Strip wrapping whitespace; keep markdown.
+      lines.push(s.intro.trim());
+    }
+    lines.push("");
+    for (const e of s.endpoints ?? []) {
+      lines.push(`### ${e.method} ${e.path}`);
+      if (e.scope) lines.push(`Scope: \`${e.scope}\``);
+      lines.push(e.description);
+      if (e.params?.length) {
+        lines.push("");
+        lines.push("Parameters:");
+        for (const p of e.params) {
+          const req = p.required ? "**required**" : "optional";
+          lines.push(`- \`${p.name}\` (${p.in}, ${p.type}, ${req}) — ${p.description}`);
+        }
+      }
+      if (e.examples.response) {
+        lines.push("");
+        lines.push("Example response:");
+        lines.push("```json");
+        lines.push(e.examples.response);
+        lines.push("```");
+      }
+      lines.push("");
+    }
+    lines.push("");
+  }
+  return lines.join("\n");
+}
+
 /* Flat list of [section.id, endpoint?.id] for the scroll-spy. */
 type AnchorRef = { id: string; sectionId: string; endpointId?: string };
 
@@ -146,6 +190,27 @@ function renderInline(text: string): React.ReactNode {
   return out;
 }
 
+function AiCopyButton() {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="vm-action-group" role="group" aria-label="AI" style={{ marginBottom: 10 }}>
+      <button
+        type="button"
+        className="vm-action vm-action--restart"
+        title="Copy a markdown spec of every endpoint — paste into Claude / Cursor / ChatGPT as context for an MCP-style agent that drives the WCN Cloud Customer API."
+        onClick={async () => {
+          await navigator.clipboard.writeText(buildAiSpec());
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        }}
+      >
+        <span aria-hidden style={{ marginRight: 4 }}>🤖</span>
+        <span>{copied ? "Copied!" : "Copy spec for AI"}</span>
+      </button>
+    </div>
+  );
+}
+
 function MethodBadge({ method }: { method: Method }) {
   return (
     <span
@@ -241,7 +306,8 @@ export default function ApiDocsView() {
     <div className="api-docs-layout">
       {/* ── LEFT NAV ────────────────────────────────────────────────── */}
       <nav className="api-docs-nav" aria-label="API sections">
-        <p className="type-eyebrow" style={{ marginBottom: 10 }}>
+        <AiCopyButton />
+        <p className="type-eyebrow" style={{ marginBottom: 10, marginTop: 14 }}>
           § REFERENCE
         </p>
         <ul>

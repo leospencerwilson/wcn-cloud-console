@@ -37,7 +37,7 @@ function CopyBtn({ value }: { value: string }) {
   return (
     <button
       type="button"
-      className="btn-ghost"
+      className="vm-action vm-action--view"
       style={{ padding: "4px 10px", fontSize: 11 }}
       onClick={async () => {
         await navigator.clipboard.writeText(value);
@@ -46,7 +46,7 @@ function CopyBtn({ value }: { value: string }) {
       }}
     >
       <IconCopy />
-      {copied ? "Copied" : "Copy"}
+      <span>{copied ? "Copied" : "Copy"}</span>
     </button>
   );
 }
@@ -97,21 +97,17 @@ function Row({
       >
         {value}
       </code>
-      <div className="flex items-center gap-1.5">
+      <div className="vm-action-group" role="group" aria-label={`${label} actions`}>
         {openable && (
           <a
             href={value}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-ghost"
-            style={{
-              padding: "4px 10px",
-              fontSize: 11,
-              textDecoration: "none",
-            }}
+            className="vm-action vm-action--restart"
+            style={{ padding: "4px 10px", fontSize: 11, textDecoration: "none" }}
           >
             <IconExternal />
-            Open
+            <span>Open</span>
           </a>
         )}
         <CopyBtn value={value} />
@@ -287,18 +283,20 @@ export default function ConnectionCard({ slug }: { slug: string }) {
         >
           {data.password_known ? displayConn : rawConn.replace(/:[^@]+@/, ":[your-password]@")}
         </code>
-        {data.password_known && (
-          <button
-            type="button"
-            className="btn-ghost"
-            style={{ padding: "4px 10px", fontSize: 11 }}
-            onClick={() => setShowPw((s) => !s)}
-          >
-            {showPw ? <IconEyeOff /> : <IconEye />}
-            {showPw ? "Hide" : "Show"}
-          </button>
-        )}
-        <CopyBtn value={rawConn} />
+        <div className="vm-action-group" role="group" aria-label="Connection actions">
+          {data.password_known && (
+            <button
+              type="button"
+              className="vm-action vm-action--view"
+              style={{ padding: "4px 10px", fontSize: 11 }}
+              onClick={() => setShowPw((s) => !s)}
+            >
+              {showPw ? <IconEyeOff /> : <IconEye />}
+              <span>{showPw ? "Hide" : "Show"}</span>
+            </button>
+          )}
+          <CopyBtn value={rawConn} />
+        </div>
       </div>
 
       {!data.password_known && (

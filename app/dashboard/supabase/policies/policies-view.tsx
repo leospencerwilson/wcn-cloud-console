@@ -88,11 +88,11 @@ export default function PoliciesView({ slug }: { slug: string }) {
               width: 180,
             }}
           />
-          <button type="button" className="btn btn-ghost btn-sm" onClick={refresh} disabled={loading}>
-            <IconRefresh />
-            {loading ? "Refreshing…" : "Refresh"}
-          </button>
-          <div className="vm-action-group" role="group" aria-label="New policy">
+          <div className="vm-action-group" role="group" aria-label="Policies actions">
+            <button type="button" className="vm-action vm-action--view" onClick={refresh} disabled={loading}>
+              <IconRefresh />
+              <span>{loading ? "Refreshing…" : "Refresh"}</span>
+            </button>
             <button
               type="button"
               className="vm-action vm-action--start"

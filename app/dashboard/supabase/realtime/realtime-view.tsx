@@ -38,15 +38,17 @@ export default function RealtimeView({ slug }: { slug: string }) {
           style={{ borderColor: "var(--color-hairline)" }}
         >
           <span className="type-eyebrow">§ PUBLICATIONS</span>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={refresh}
-            disabled={loading}
-          >
-            <IconRefresh />
-            {loading ? "Refreshing…" : "Refresh"}
-          </button>
+          <div className="vm-action-group" role="group" aria-label="Realtime actions">
+            <button
+              type="button"
+              className="vm-action vm-action--view"
+              onClick={refresh}
+              disabled={loading}
+            >
+              <IconRefresh />
+              <span>{loading ? "Refreshing…" : "Refresh"}</span>
+            </button>
+          </div>
         </div>
         {error ? (
           <div className="px-6 py-6 type-mono text-[12px]" style={{ color: "var(--crit)" }}>{error}</div>

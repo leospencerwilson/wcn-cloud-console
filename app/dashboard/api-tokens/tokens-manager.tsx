@@ -95,24 +95,22 @@ export default function TokensManager({
           style={{ borderColor: "var(--color-hairline)" }}
         >
           <span className="type-eyebrow">§ ACTIVE TOKENS</span>
-          <div className="flex items-center gap-3">
-            <button type="button" className="btn btn-ghost btn-sm" onClick={load}>
+          <div className="vm-action-group" role="group" aria-label="Token actions">
+            <button type="button" className="vm-action vm-action--view" onClick={load}>
               <IconRefresh />
-              {loading ? "Refreshing…" : "Refresh"}
+              <span>{loading ? "Refreshing…" : "Refresh"}</span>
             </button>
-            <div className="vm-action-group" role="group" aria-label="Token actions">
-              <button
-                type="button"
-                className="vm-action vm-action--start"
-                onClick={() => {
-                  setIssued(null);
-                  setCreateOpen(true);
-                }}
-              >
-                <IconKey />
-                <span>New token</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              className="vm-action vm-action--start"
+              onClick={() => {
+                setIssued(null);
+                setCreateOpen(true);
+              }}
+            >
+              <IconKey />
+              <span>New token</span>
+            </button>
           </div>
         </div>
         {error && (
@@ -190,14 +188,16 @@ export default function TokensManager({
                           revoked
                         </span>
                       ) : (
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-sm"
-                          onClick={() => revoke(t)}
-                        >
-                          <IconTrash />
-                          Revoke
-                        </button>
+                        <div className="vm-action-group" role="group" aria-label="Revoke token">
+                          <button
+                            type="button"
+                            className="vm-action vm-action--stop"
+                            onClick={() => revoke(t)}
+                          >
+                            <IconTrash />
+                            <span>Revoke</span>
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>

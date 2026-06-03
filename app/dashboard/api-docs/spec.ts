@@ -627,12 +627,16 @@ Common \`code\` values: \`not_found\`, \`invalid_token\`, \`forbidden\`, \`missi
   },
   {
     id: "database",
-    title: "Database",
-    intro: `Postgres CRUD against the **public schema** of your managed Supabase database.
+    title: "Database & Supabase",
+    intro: `Everything that touches your managed Supabase instance — Postgres CRUD on the public schema, plus admin operations on the auxiliary schemas (\`auth.users\`, \`storage.buckets\`, RLS policies, realtime publications, edge functions).
 
-The \`auth.*\`, \`storage.*\`, \`realtime.*\` and \`_supabase\` schemas are intentionally not reachable through this section — manage them via the **Supabase** section instead (auth users, storage buckets, RLS policies, realtime publications). Trying to pass \`?schema=auth\` is coerced to \`public\` server-side.
+**Public schema CRUD** lives under \`/db/...\`. The \`auth.*\`, \`storage.*\`, \`realtime.*\` and \`_supabase\` schemas are intentionally **not** reachable through \`/db/...\` — use the \`/supabase/...\` admin endpoints below instead. Trying to pass \`?schema=auth\` is coerced to \`public\` server-side.
 
-Values for INSERT and UPDATE are decoded via Postgres's own \`jsonb_populate_record\` — send a typed JSON object and the database does the casting. Identity / DEFAULT columns the request omits fire normally.`,
+Values for INSERT and UPDATE are decoded via Postgres's own \`jsonb_populate_record\` — send a typed JSON object and the database does the casting. Identity / DEFAULT columns the request omits fire normally.
+
+**Supabase admin** endpoints (\`/supabase/...\`) wrap your project's Kong proxy at \`https://api-{slug}.western-communication.com\` and operate on auth, storage, RLS policies, realtime, and edge functions.
+
+Same scope rules across the whole section: \`vms:read\` for GETs, \`vms:write\` for mutations.`,
     endpoints: [
       { id: "db-tables", method: "GET", path: "/db/tables", title: "List tables", description: "All public-schema tables with size and estimated row count.", scope: "vms:read",
         examples: { curl: curlGet("/db/tables"), js: jsGet("/db/tables"),
@@ -700,16 +704,7 @@ Values for INSERT and UPDATE are decoded via Postgres's own \`jsonb_populate_rec
         examples: { curl: curlGet("/db/sizes"), js: jsGet("/db/sizes") } },
       { id: "db-query", method: "POST", path: "/db/query", title: "Run a query", description: "Execute arbitrary SQL via the customer-scoped role. Use this as the escape hatch when the CRUD endpoints above don't cover what you need.", scope: "vms:write",
         examples: { curl: curlBody("POST", "/db/query", { sql: "SELECT count(*) FROM orders" }), js: jsBody("POST", "/db/query", { sql: "SELECT count(*) FROM orders" }) } },
-    ],
-  },
 
-  {
-    id: "supabase",
-    title: "Supabase",
-    intro: `Admin operations on the auxiliary Supabase schemas: \`auth.users\`, \`storage.buckets\`, RLS policies on the public schema, the \`realtime\` publication, and edge functions. These wrap your project's Kong proxy at \`https://api-{slug}.western-communication.com\`.
-
-The same scope rules apply: \`vms:read\` for GETs, \`vms:write\` for mutations. The Tables / Rows endpoints in the **Database** section above are the right tool for anything in the public schema; this section is for everything else.`,
-    endpoints: [
       { id: "sb-connection", method: "GET", path: "/supabase/connection", title: "Connection details", description: "REST / Realtime / Storage / Auth URLs + the anon key. Use these to point a Supabase JS client (or the CLI) at your project.", scope: "vms:read",
         examples: { curl: curlGet("/supabase/connection"), js: jsGet("/supabase/connection") } },
 
