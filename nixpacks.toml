@@ -1,0 +1,10 @@
+# Pin Nixpacks to the Node provider explicitly. Without this, Nixpacks's
+# auto-detect greps for `deno.land` URLs in source files and mis-classifies
+# the repo as a Deno project (we ship a Deno code template inside an
+# Edge Functions editor — the literal lives inside a template string in
+# functions-view.tsx but the detector doesn't know that). The Deno provider
+# produces an image with no CMD, which then restart-loops in the runner.
+providers = ["node"]
+
+[start]
+cmd = "npm run start"
