@@ -4,7 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   SECTIONS,
+  API_BASE_URL,
+  PLACEHOLDER_SLUG,
   type Endpoint,
+  type ErrorEntry,
   type Method,
   type Section,
 } from "./spec";
@@ -190,6 +193,154 @@ function renderInline(text: string): React.ReactNode {
   return out;
 }
 
+// Build a minimal-but-valid OpenAPI 3.1 document from SECTIONS. Imports
+// cleanly into Postman / Insomnia / openapi-generator.
+function buildOpenApi(): unknown {
+  const paths: Record<string, Record<string, unknown>> = {};
+  for (const s of SECTIONS) {
+    for (const e of s.endpoints ?? []) {
+      // OpenAPI uses {param} placeholders too — our paths already match.
+      const path = e.path;
+      const op: Record<string, unknown> = {
+        operationId: `${s.id}-${e.id}`,
+        summary: e.title,
+        description: e.description,
+        tags: [s.title],
+      };
+      if (e.scope) op["x-scope"] = e.scope;
+      if (e.since) op["x-since"] = e.since;
+      const parameters: unknown[] = [];
+      const pathParams = (path.match(/\{([^}]+)\}/g) ?? []).map((m) => m.slice(1, -1));
+      for (const p of pathParams) {
+        parameters.push({
+          name: p,
+          in: "path",
+          required: true,
+          schema: { type: "string" },
+        });
+      }
+      for (const p of e.params ?? []) {
+        if (p.in === "path" || p.in === "query" || p.in === "header") {
+          if (p.in === "path" && pathParams.includes(p.name)) continue;
+          parameters.push({
+            name: p.name,
+            in: p.in,
+            required: p.required ?? false,
+            description: p.description,
+            schema: { type: jsonTypeFor(p.type) },
+          });
+        }
+      }
+      if (parameters.length > 0) op.parameters = parameters;
+
+      const bodyParams = (e.params ?? []).filter((p) => p.in === "body");
+      if (bodyParams.length > 0 || (e.method !== "GET" && e.method !== "DELETE" && e.tryBody)) {
+        const properties: Record<string, unknown> = {};
+        const required: string[] = [];
+        for (const p of bodyParams) {
+          properties[p.name] = { type: jsonTypeFor(p.type), description: p.description };
+          if (p.required) required.push(p.name);
+        }
+        op.requestBody = {
+          required: required.length > 0,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                ...(Object.keys(properties).length > 0 ? { properties } : {}),
+                ...(required.length > 0 ? { required } : {}),
+              },
+              ...(e.tryBody ? { example: e.tryBody } : {}),
+            },
+          },
+        };
+      }
+
+      const responses: Record<string, unknown> = {
+        "200": { description: "OK" },
+      };
+      if (e.examples.response) {
+        try {
+          responses["200"] = {
+            description: "OK",
+            content: { "application/json": { example: JSON.parse(e.examples.response) } },
+          };
+        } catch {
+          responses["200"] = { description: "OK" };
+        }
+      }
+      op.responses = responses;
+
+      const slot = (paths[path] ||= {});
+      slot[e.method.toLowerCase()] = op;
+    }
+  }
+  return {
+    openapi: "3.1.0",
+    info: {
+      title: "WCN Cloud Customer API",
+      description: "Generated from the live console docs.",
+      version: new Date().toISOString().slice(0, 10),
+    },
+    servers: [
+      {
+        url: `${API_BASE_URL}/{slug}`,
+        description: "WCN Cloud",
+        variables: { slug: { default: PLACEHOLDER_SLUG, description: "Your customer slug" } },
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "wcn_<prefix>_<random>" },
+      },
+    },
+    security: [{ bearerAuth: [] }],
+    paths,
+  };
+}
+
+function jsonTypeFor(t: string): string {
+  const s = (t || "").toLowerCase();
+  if (s.includes("number") || s.includes("int")) return "integer";
+  if (s.includes("bool")) return "boolean";
+  if (s.includes("array") || s.endsWith("[]")) return "array";
+  if (s.includes("object")) return "object";
+  return "string";
+}
+
+function OpenApiDownloadButton() {
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="vm-action-group" role="group" aria-label="OpenAPI" style={{ marginBottom: 8 }}>
+      <button
+        type="button"
+        className="vm-action vm-action--view"
+        title="Download an OpenAPI 3.1 spec — import into Postman, Insomnia, or openapi-generator to get a typed SDK in 20+ languages."
+        onClick={() => {
+          setBusy(true);
+          try {
+            const spec = buildOpenApi();
+            const blob = new Blob([JSON.stringify(spec, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "wcn-cloud-openapi.json";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+          } finally {
+            setTimeout(() => setBusy(false), 600);
+          }
+        }}
+      >
+        <span aria-hidden style={{ marginRight: 4 }}>↓</span>
+        <span>{busy ? "Generating…" : "Download OpenAPI 3.1"}</span>
+      </button>
+    </div>
+  );
+}
+
 function AiCopyButton() {
   const [copied, setCopied] = useState(false);
   return (
@@ -259,7 +410,7 @@ function CodeBlock({
   );
 }
 
-export default function ApiDocsView() {
+export default function ApiDocsView({ slug }: { slug: string }) {
   const [lang, setLang] = useState<Lang>("curl");
   const [activeId, setActiveId] = useState<string>(SECTIONS[0]?.id ?? "");
   const [q, setQ] = useState("");
@@ -289,8 +440,13 @@ export default function ApiDocsView() {
     const needle = q.trim().toLowerCase();
     if (!needle) return SECTIONS;
     const hit = (s: string | undefined) => !!s && s.toLowerCase().includes(needle);
-    return SECTIONS.map((s) => {
+    return SECTIONS.map((s): Section | null => {
       const sectionMatch = hit(s.title) || hit(s.intro);
+      // Also match against the section's error codes / when text so users
+      // can search for e.g. "missing_scope" and land on the Errors section.
+      const errorMatch =
+        !!s.errors &&
+        s.errors.some((er) => hit(er.code) || hit(er.when) || hit(String(er.http)));
       const matchedEndpoints = (s.endpoints ?? []).filter((e) =>
         sectionMatch ||
         hit(e.title) ||
@@ -299,7 +455,7 @@ export default function ApiDocsView() {
         hit(e.scope) ||
         hit(e.description),
       );
-      if (sectionMatch || matchedEndpoints.length > 0) {
+      if (sectionMatch || errorMatch || matchedEndpoints.length > 0) {
         return { ...s, endpoints: sectionMatch ? s.endpoints : matchedEndpoints };
       }
       return null;
@@ -347,6 +503,7 @@ export default function ApiDocsView() {
       {/* ── LEFT NAV ────────────────────────────────────────────────── */}
       <nav className="api-docs-nav" aria-label="API sections">
         <AiCopyButton />
+        <OpenApiDownloadButton />
 
         <div style={{ position: "relative", marginTop: 12, marginBottom: 14 }}>
           <input
@@ -460,7 +617,7 @@ export default function ApiDocsView() {
       {/* ── MIDDLE: PROSE + ENDPOINT DETAILS ────────────────────────── */}
       <div className="api-docs-main" ref={containerRef}>
         {SECTIONS.map((s) => (
-          <SectionBlock key={s.id} section={s} />
+          <SectionBlock key={s.id} section={s} slug={slug} />
         ))}
       </div>
 
@@ -508,7 +665,7 @@ export default function ApiDocsView() {
   );
 }
 
-function SectionBlock({ section }: { section: Section }) {
+function SectionBlock({ section, slug }: { section: Section; slug: string }) {
   return (
     <section
       id={section.id}
@@ -519,27 +676,187 @@ function SectionBlock({ section }: { section: Section }) {
       {section.intro && (
         <div className="api-doc-prose">{renderProse(section.intro)}</div>
       )}
+      {section.errors && section.errors.length > 0 && (
+        <ErrorsTable errors={section.errors} />
+      )}
       {section.endpoints &&
         section.endpoints.map((e) => (
-          <EndpointBlock key={e.id} section={section} endpoint={e} />
+          <EndpointBlock key={e.id} section={section} endpoint={e} slug={slug} />
         ))}
     </section>
   );
 }
 
-function EndpointBlock({ section, endpoint }: { section: Section; endpoint: Endpoint }) {
+// Sortable + filterable error reference. Lives inside the `errors` section
+// (or any section that adds an `errors:` field). Sort by code/http/when.
+function ErrorsTable({ errors }: { errors: ErrorEntry[] }) {
+  type Col = "code" | "http" | "when";
+  const [sort, setSort] = useState<{ col: Col; dir: 1 | -1 }>({ col: "code", dir: 1 });
+  const [filter, setFilter] = useState("");
+  const rows = useMemo(() => {
+    const needle = filter.trim().toLowerCase();
+    const filtered = needle
+      ? errors.filter(
+          (e) =>
+            e.code.toLowerCase().includes(needle) ||
+            e.when.toLowerCase().includes(needle) ||
+            String(e.http).includes(needle),
+        )
+      : errors;
+    const out = [...filtered].sort((a, b) => {
+      const ka = sort.col === "http" ? a.http : (a[sort.col] as string).toLowerCase();
+      const kb = sort.col === "http" ? b.http : (b[sort.col] as string).toLowerCase();
+      if (ka < kb) return -1 * sort.dir;
+      if (ka > kb) return 1 * sort.dir;
+      return 0;
+    });
+    return out;
+  }, [errors, filter, sort]);
+
+  function toggle(col: Col) {
+    setSort((s) => (s.col === col ? { col, dir: (s.dir * -1) as 1 | -1 } : { col, dir: 1 }));
+  }
+  function caret(col: Col) {
+    if (sort.col !== col) return "";
+    return sort.dir === 1 ? " ▲" : " ▼";
+  }
+
+  return (
+    <div className="api-doc-params" style={{ marginTop: 14 }}>
+      <div className="flex items-center justify-between" style={{ marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
+        <p className="type-eyebrow" style={{ margin: 0 }}>
+          § ERROR CATALOGUE ({errors.length})
+        </p>
+        <input
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          placeholder="filter errors…"
+          spellCheck={false}
+          className="type-mono"
+          style={{
+            padding: "5px 10px",
+            fontSize: 11.5,
+            background: "var(--surface)",
+            border: "1px solid var(--line)",
+            borderRadius: 3,
+            color: "var(--text)",
+            minWidth: 200,
+          }}
+        />
+      </div>
+      <table className="api-doc-table">
+        <thead>
+          <tr>
+            <th
+              onClick={() => toggle("code")}
+              style={{ cursor: "pointer", userSelect: "none" }}
+            >
+              code{caret("code")}
+            </th>
+            <th
+              onClick={() => toggle("http")}
+              style={{ cursor: "pointer", userSelect: "none", width: 70 }}
+            >
+              http{caret("http")}
+            </th>
+            <th
+              onClick={() => toggle("when")}
+              style={{ cursor: "pointer", userSelect: "none" }}
+            >
+              when{caret("when")}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((e) => (
+            <tr key={e.code}>
+              <td>
+                <code className="api-doc-inline-code">{e.code}</code>
+              </td>
+              <td>
+                <span
+                  className="type-mono"
+                  style={{
+                    fontSize: 11,
+                    padding: "1px 6px",
+                    borderRadius: 3,
+                    border: "1px solid var(--line)",
+                    color:
+                      e.http >= 500 ? "var(--crit)" : e.http >= 400 ? "var(--warn)" : "var(--ok)",
+                  }}
+                >
+                  {e.http}
+                </span>
+              </td>
+              <td>{renderInline(e.when)}</td>
+            </tr>
+          ))}
+          {rows.length === 0 && (
+            <tr>
+              <td colSpan={3} style={{ color: "var(--text-3)", padding: "10px 4px" }}>
+                No errors match <code>{filter}</code>.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function EndpointBlock({
+  section,
+  endpoint,
+  slug,
+}: {
+  section: Section;
+  endpoint: Endpoint;
+  slug: string;
+}) {
   const [copied, setCopied] = useState(false);
   const anchor = `${section.id}--${endpoint.id}`;
+  const recentlyUpdated = isRecentlyUpdated(endpoint);
   return (
     <article
       id={anchor}
       className="api-doc-endpoint"
       style={{ scrollMarginTop: 24 }}
     >
-      <h3 className="api-doc-endpoint-title" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <h3 className="api-doc-endpoint-title" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
         <MethodBadge method={endpoint.method} />
         <code className="api-doc-endpoint-path">{endpoint.path}</code>
         <span className="api-doc-endpoint-name" style={{ flex: 1 }}>{endpoint.title}</span>
+        {endpoint.since && (
+          <span
+            className="type-mono"
+            title={`Available since ${endpoint.since}`}
+            style={{
+              fontSize: 10,
+              padding: "2px 6px",
+              borderRadius: 3,
+              border: "1px solid var(--line)",
+              color: "var(--text-3)",
+            }}
+          >
+            since {endpoint.since}
+          </span>
+        )}
+        {recentlyUpdated && (
+          <span
+            className="type-mono"
+            title={recentlyUpdated.note}
+            style={{
+              fontSize: 10,
+              padding: "2px 6px",
+              borderRadius: 3,
+              background: "color-mix(in oklch, var(--brand) 18%, transparent)",
+              border: "1px solid color-mix(in oklch, var(--brand) 40%, var(--line))",
+              color: "var(--brand)",
+            }}
+          >
+            updated {recentlyUpdated.date}
+          </span>
+        )}
         <button
           type="button"
           title="Copy link to this endpoint"
@@ -571,6 +888,38 @@ function EndpointBlock({ section, endpoint }: { section: Section; endpoint: Endp
           Required scope: <code>{endpoint.scope}</code>
         </p>
       )}
+      {endpoint.changed && endpoint.changed.length > 0 && (
+        <details
+          className="api-doc-prose"
+          style={{
+            marginTop: 6,
+            padding: "8px 12px",
+            border: "1px solid var(--line)",
+            borderRadius: 3,
+            background: "var(--bg-2)",
+          }}
+        >
+          <summary
+            className="type-eyebrow"
+            style={{ cursor: "pointer", listStyle: "revert", color: "var(--text-3)" }}
+          >
+            § CHANGELOG ({endpoint.changed.length})
+          </summary>
+          <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+            {endpoint.changed.map((c, i) => (
+              <li key={`${c.date}-${i}`} style={{ fontSize: 12.5, lineHeight: 1.5 }}>
+                <code
+                  className="api-doc-inline-code"
+                  style={{ marginRight: 8, fontSize: 11 }}
+                >
+                  {c.date}
+                </code>
+                <span style={{ color: "var(--text-2)" }}>{renderInline(c.note)}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
       {endpoint.params && endpoint.params.length > 0 && (
         <div className="api-doc-params">
           <p className="type-eyebrow" style={{ marginBottom: 8 }}>
@@ -601,6 +950,288 @@ function EndpointBlock({ section, endpoint }: { section: Section; endpoint: Endp
           </table>
         </div>
       )}
+      <TryItPanel endpoint={endpoint} slug={slug} />
     </article>
+  );
+}
+
+// "Recent" = within the last 30 days. Pick the most recent changelog entry.
+function isRecentlyUpdated(endpoint: Endpoint): { date: string; note: string } | null {
+  if (!endpoint.changed || endpoint.changed.length === 0) return null;
+  const latest = [...endpoint.changed].sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+  if (!latest) return null;
+  const today = new Date();
+  const ld = new Date(latest.date + "T00:00:00Z");
+  if (Number.isNaN(ld.getTime())) return null;
+  const ageDays = (today.getTime() - ld.getTime()) / 86400000;
+  if (ageDays > 30 || ageDays < -1) return null;
+  return latest;
+}
+
+// Try-it: hits the endpoint as the current logged-in user via cookie auth.
+// Path params get text inputs (pre-filled with the user's own slug for
+// {slug}); non-GET methods get a JSON body textarea seeded from tryBody.
+function TryItPanel({ endpoint, slug }: { endpoint: Endpoint; slug: string }) {
+  const pathParamNames = useMemo(
+    () => (endpoint.path.match(/\{([^}]+)\}/g) ?? []).map((m) => m.slice(1, -1)),
+    [endpoint.path],
+  );
+  const [pathParams, setPathParams] = useState<Record<string, string>>(() => {
+    const seed: Record<string, string> = {};
+    for (const p of pathParamNames) {
+      seed[p] = p === "slug" ? slug : "";
+    }
+    return seed;
+  });
+  const [queryStr, setQueryStr] = useState("");
+  const [body, setBody] = useState<string>(() => {
+    if (endpoint.tryBody !== undefined) {
+      try {
+        return JSON.stringify(endpoint.tryBody, null, 2);
+      } catch {
+        return "";
+      }
+    }
+    return "";
+  });
+  const [resp, setResp] = useState<{
+    status: number;
+    ok: boolean;
+    body: string;
+    ms: number;
+  } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const hasBody = endpoint.method !== "GET" && endpoint.method !== "DELETE";
+
+  function resolvedPath(): string {
+    let p = endpoint.path;
+    for (const name of pathParamNames) {
+      p = p.replaceAll(`{${name}}`, encodeURIComponent(pathParams[name] ?? ""));
+    }
+    return p + (queryStr ? (queryStr.startsWith("?") ? queryStr : `?${queryStr}`) : "");
+  }
+
+  async function run() {
+    setBusy(true);
+    setErr(null);
+    setResp(null);
+    const start = performance.now();
+    try {
+      const url = `${API_BASE_URL}${resolvedPath()}`;
+      const init: RequestInit = {
+        method: endpoint.method,
+        credentials: "include",
+        headers: hasBody ? { "Content-Type": "application/json" } : {},
+      };
+      if (hasBody && body.trim()) {
+        try {
+          JSON.parse(body); // validate
+        } catch (e) {
+          throw new Error(`Body is not valid JSON: ${(e as Error).message}`);
+        }
+        init.body = body;
+      }
+      const r = await fetch(url, init);
+      const text = await r.text();
+      let pretty = text;
+      try {
+        pretty = JSON.stringify(JSON.parse(text), null, 2);
+      } catch {
+        /* not JSON, keep raw */
+      }
+      setResp({
+        status: r.status,
+        ok: r.ok,
+        body: pretty,
+        ms: Math.round(performance.now() - start),
+      });
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "request failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <details
+      className="api-doc-tryit"
+      style={{
+        marginTop: 14,
+        padding: "12px 14px",
+        border: "1px solid var(--line)",
+        borderRadius: 3,
+        background: "var(--surface)",
+      }}
+    >
+      <summary
+        className="type-eyebrow"
+        style={{ cursor: "pointer", listStyle: "revert", color: "var(--text-2)" }}
+      >
+        ▸ TRY IT — run this as your user
+      </summary>
+      <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+        {pathParamNames.length > 0 && (
+          <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 6, alignItems: "center" }}>
+            {pathParamNames.map((name) => (
+              <PathParamRow
+                key={name}
+                name={name}
+                value={pathParams[name] ?? ""}
+                onChange={(v) => setPathParams((s) => ({ ...s, [name]: v }))}
+              />
+            ))}
+          </div>
+        )}
+        <label
+          className="type-mono"
+          style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 6, alignItems: "center", fontSize: 11 }}
+        >
+          <span style={{ color: "var(--text-3)" }}>query</span>
+          <input
+            value={queryStr}
+            onChange={(e) => setQueryStr(e.target.value)}
+            spellCheck={false}
+            placeholder="e.g. ?limit=10"
+            style={{
+              padding: "5px 8px",
+              fontSize: 12,
+              background: "var(--bg-2)",
+              border: "1px solid var(--line)",
+              borderRadius: 3,
+              color: "var(--text)",
+              fontFamily: "var(--font-mono)",
+            }}
+          />
+        </label>
+        {hasBody && (
+          <label className="type-mono" style={{ fontSize: 11 }}>
+            <span style={{ color: "var(--text-3)", display: "block", marginBottom: 4 }}>body (JSON)</span>
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              spellCheck={false}
+              rows={Math.min(10, Math.max(3, body.split("\n").length))}
+              style={{
+                width: "100%",
+                padding: "8px 10px",
+                fontSize: 12,
+                background: "var(--bg-2)",
+                border: "1px solid var(--line)",
+                borderRadius: 3,
+                color: "var(--text)",
+                fontFamily: "var(--font-mono)",
+                resize: "vertical",
+              }}
+            />
+          </label>
+        )}
+        <div className="flex items-center gap-3" style={{ flexWrap: "wrap" }}>
+          <div className="vm-action-group" role="group" aria-label="Try-it actions">
+            <button
+              type="button"
+              className="vm-action vm-action--start"
+              disabled={busy}
+              onClick={run}
+            >
+              {busy ? "Running…" : `Run ${endpoint.method}`}
+            </button>
+            <button
+              type="button"
+              className="vm-action vm-action--view"
+              onClick={() => {
+                setResp(null);
+                setErr(null);
+              }}
+            >
+              Clear
+            </button>
+          </div>
+          <code className="type-mono" style={{ fontSize: 11, color: "var(--text-3)" }}>
+            {endpoint.method} {API_BASE_URL}
+            {resolvedPath()}
+          </code>
+        </div>
+        {err && (
+          <p className="type-mono" style={{ fontSize: 12, color: "var(--crit)" }}>
+            {err}
+          </p>
+        )}
+        {resp && (
+          <div style={{ marginTop: 4 }}>
+            <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
+              <span
+                className="type-mono"
+                style={{
+                  fontSize: 11,
+                  padding: "2px 8px",
+                  borderRadius: 3,
+                  background: resp.ok
+                    ? "color-mix(in oklch, var(--ok) 18%, transparent)"
+                    : "color-mix(in oklch, var(--crit) 18%, transparent)",
+                  color: resp.ok ? "var(--ok)" : "var(--crit)",
+                  border: `1px solid ${resp.ok ? "var(--ok)" : "var(--crit)"}`,
+                }}
+              >
+                {resp.status} {resp.ok ? "OK" : "ERR"}
+              </span>
+              <span className="type-mono" style={{ fontSize: 11, color: "var(--text-3)" }}>
+                {resp.ms} ms
+              </span>
+            </div>
+            <pre
+              className="type-mono"
+              style={{
+                margin: 0,
+                padding: "10px 12px",
+                fontSize: 11.5,
+                background: "var(--bg-2)",
+                border: "1px solid var(--line)",
+                borderRadius: 3,
+                color: "var(--text)",
+                maxHeight: 320,
+                overflow: "auto",
+                whiteSpace: "pre",
+              }}
+            >
+              <code>{resp.body || "(empty)"}</code>
+            </pre>
+          </div>
+        )}
+      </div>
+    </details>
+  );
+}
+
+function PathParamRow({
+  name,
+  value,
+  onChange,
+}: {
+  name: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <>
+      <span className="type-mono" style={{ fontSize: 11, color: "var(--text-3)" }}>
+        {`{${name}}`}
+      </span>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        spellCheck={false}
+        style={{
+          padding: "5px 8px",
+          fontSize: 12,
+          background: "var(--bg-2)",
+          border: "1px solid var(--line)",
+          borderRadius: 3,
+          color: "var(--text)",
+          fontFamily: "var(--font-mono)",
+        }}
+      />
+    </>
   );
 }

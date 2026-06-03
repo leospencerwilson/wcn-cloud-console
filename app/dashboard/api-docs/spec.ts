@@ -21,6 +21,13 @@ export type Examples = {
   response?: string;
 };
 
+export type ChangelogEntry = {
+  /** ISO date, e.g. "2026-06-03". */
+  date: string;
+  /** What changed in human terms. */
+  note: string;
+};
+
 export type Endpoint = {
   id: string;
   method: Method;
@@ -33,6 +40,19 @@ export type Endpoint = {
   examples: Examples;
   /** When true, renders an empty stub instead of full content (placeholder). */
   stub?: boolean;
+  /** ISO date the endpoint first shipped. Renders a small `since 2026-MM-DD` badge. */
+  since?: string;
+  /** Changelog entries; latest entry inside the last 30 days adds an "Updated" ribbon. */
+  changed?: ChangelogEntry[];
+  /** Body shape suggested for the Try-it panel. Pre-filled into the editor. */
+  tryBody?: unknown;
+};
+
+export type ErrorEntry = {
+  code: string;
+  http: number;
+  /** When this error is emitted — short prose. */
+  when: string;
 };
 
 export type Section = {
@@ -40,6 +60,8 @@ export type Section = {
   title: string;
   intro?: string;
   endpoints?: Endpoint[];
+  /** Renders a sortable error-code table instead of endpoints. */
+  errors?: ErrorEntry[];
 };
 
 // `{slug}` in path examples is a literal placeholder the user replaces with
@@ -48,6 +70,11 @@ export type Section = {
 const SLUG = "your-slug";
 const BASE = "https://console.western-communication.com/api/customers";
 const TOKEN = "wcn_<prefix>_<random>";
+
+// Re-exports so other modules (api-docs-view, command palette) can build
+// the example URL from a single source of truth.
+export const API_BASE_URL = BASE;
+export const PLACEHOLDER_SLUG = SLUG;
 
 /* ─────────────────────────────────────────────────────────────────────
  * Small builders to keep example consistency across endpoints.
@@ -189,7 +216,34 @@ Every non-2xx body has the shape:
 }
 \`\`\`
 
-Common \`code\` values: \`not_found\`, \`invalid_token\`, \`forbidden\`, \`missing_slug\`, \`invalid_body\`, \`coolify_error\`, \`upstream_timeout\`.`,
+A full list of error codes is below — they're stable across releases, safe to switch on.`,
+    errors: [
+      { code: "no_session",          http: 401, when: "Unauthenticated — no console session and no bearer token in the request." },
+      { code: "invalid_token",       http: 401, when: "Bearer token doesn't validate (unknown, revoked, or expired)." },
+      { code: "expired_token",       http: 401, when: "Token's expires_at is in the past." },
+      { code: "no_membership",       http: 403, when: "Authenticated session belongs to a different customer." },
+      { code: "wrong_customer",      http: 403, when: "Bearer token was issued for a different customer slug." },
+      { code: "missing_scope",       http: 403, when: "Token doesn't carry the scope this route declares." },
+      { code: "forbidden",           http: 403, when: "Generic authorization refusal (e.g. wcn_admin action requested with a customer_admin role)." },
+      { code: "impersonate_read_only", http: 403, when: "wcn_admin impersonating a customer attempted a mutation (admin impersonation is read-only)." },
+      { code: "missing_slug",        http: 400, when: "Server-to-server call hit a route that requires the customer slug but none was supplied." },
+      { code: "missing_params",      http: 400, when: "Required query / body parameter missing — see the message for which." },
+      { code: "bad_request",         http: 400, when: "Generic validation failure." },
+      { code: "not_found",           http: 404, when: "Resource doesn't exist (or isn't visible to your slug)." },
+      { code: "not_connected",       http: 409, when: "Tried to use a per-customer integration (e.g. GitHub) that hasn't been connected yet." },
+      { code: "app_building",        http: 409, when: "Attempted a lifecycle change while a deploy is in flight." },
+      { code: "reserved_function",   http: 409, when: "Attempted to delete `main` or `_shared` edge function." },
+      { code: "sql_error",           http: 400, when: "Postgres rejected the DDL/DML in a table-editor / row CRUD endpoint. Message carries the underlying error." },
+      { code: "psql_error",          http: 500, when: "Lower-level psql exec failure (connection issue, OOM, etc)." },
+      { code: "invalid_ident",       http: 400, when: "Table or column name didn't match the `[A-Za-z_][A-Za-z0-9_]{0,62}` identifier regex." },
+      { code: "invalid_bucket",      http: 400, when: "Storage bucket name failed validation." },
+      { code: "invalid_path",        http: 400, when: "Storage object path is empty, contains `..`, or exceeds 1024 chars." },
+      { code: "too_large",           http: 413, when: "Body exceeded the route's cap (storage upload 100 MiB, edge function code 200 KB)." },
+      { code: "github_install_failed", http: 502, when: "GitHub refused to install the deploy webhook — see the embedded `github_status` field." },
+      { code: "upstream_error",      http: 502, when: "Provisioner or upstream service (Coolify, Kong, Proxmox) returned a non-2xx." },
+      { code: "upstream_timeout",    http: 504, when: "Upstream (Coolify / Proxmox / customer VM SSH) didn't respond inside the route's timeout." },
+      { code: "internal_error",      http: 500, when: "Uncaught exception. We log it; please include the request URL when reporting." },
+    ],
   },
 
   /* ────────────────── Apps ────────────────── */
@@ -643,7 +697,12 @@ Same scope rules across the whole section: \`vms:read\` for GETs, \`vms:write\` 
           response: `[
   { "schema": "public", "name": "orders", "size_bytes": 16384, "estimated_rows": 0 }
 ]` } },
-      { id: "db-table-create", method: "POST", path: "/db/tables", title: "Create a table", description: "Create a new public-schema table. `columns[]` accepts the full Supabase option set: `name`, `type`, `nullable`, `default` (SQL expression), `primary_key`, `unique`, `identity` (`\"always\"` | `\"by_default\"`), `check`, `comment`, `foreign_key` (`{ref_table, ref_column, on_delete, on_update}`).", scope: "vms:write",
+      { id: "db-table-create", method: "POST", path: "/db/tables", title: "Create a table", description: "Create a new public-schema table. `columns[]` accepts the full Supabase option set: `name`, `type`, `nullable`, `default` (SQL expression), `primary_key`, `unique`, `identity` (`\"always\"` | `\"by_default\"`), `check`, `comment`, `foreign_key` (`{ref_table, ref_column, on_delete, on_update}`).", scope: "vms:write", since: "2026-06-02",
+        tryBody: { name: "orders_test", columns: [
+          { name: "id", type: "int8", identity: "by_default", nullable: false, primary_key: true },
+          { name: "name", type: "text", nullable: false },
+          { name: "created_at", type: "timestamptz", default: "now()", nullable: false },
+        ] },
         examples: {
           curl: curlBody("POST", "/db/tables", { name: "orders", columns: [
             { name: "id", type: "int8", identity: "by_default", nullable: false, primary_key: true },
@@ -688,7 +747,8 @@ Same scope rules across the whole section: \`vms:read\` for GETs, \`vms:write\` 
         examples: { curl: curlGet("/db/rows", { table: "orders", limit: "50", offset: "0" }),
                     js: jsGet("/db/rows", { table: "orders", limit: "50" }),
                     response: `{ "rows": [ { "id": 1, "customer": "acme", "total_pence": 12000 } ], "total": 1, "limit": 50, "offset": 0 }` } },
-      { id: "db-row-insert", method: "POST", path: "/db/tables/{name}/rows", title: "Insert a row", description: "Only the columns you supply are inserted; identity / DEFAULT columns you omit fire on the DB side. Send typed values inside `values` (numbers, booleans, JSON objects, ISO timestamps).", scope: "vms:write",
+      { id: "db-row-insert", method: "POST", path: "/db/tables/{name}/rows", title: "Insert a row", description: "Only the columns you supply are inserted; identity / DEFAULT columns you omit fire on the DB side. Send typed values inside `values` (numbers, booleans, JSON objects, ISO timestamps).", scope: "vms:write", since: "2026-06-02",
+        tryBody: { values: { name: "acme", created_at: "2026-06-03T12:00:00Z" } },
         examples: { curl: curlBody("POST", "/db/tables/orders/rows", { values: { customer: "acme", total_pence: 12000 } }),
                     js: jsBody("POST", "/db/tables/orders/rows", { values: { customer: "acme", total_pence: 12000 } }) } },
       { id: "db-row-update", method: "PATCH", path: "/db/tables/{name}/rows", title: "Update a row", description: "Identify the row with `pk` (`{column: value, …}` — composite PKs supported) and patch fields under `values`. Same type-cast pipeline as insert.", scope: "vms:write",
@@ -710,7 +770,11 @@ Same scope rules across the whole section: \`vms:read\` for GETs, \`vms:write\` 
 
       { id: "sb-auth-users", method: "GET", path: "/supabase/auth/users", title: "List auth users", description: "Paginated list of accounts in `auth.users`. `limit` defaults to 50, max 500. Each row carries email/phone confirmation flags, last sign-in, role, ban state, and raw metadata.", scope: "vms:read",
         examples: { curl: curlGet("/supabase/auth/users", { limit: "50", offset: "0" }), js: jsGet("/supabase/auth/users", { limit: "50" }) } },
-      { id: "sb-auth-create", method: "POST", path: "/supabase/auth/users", title: "Invite or create user", description: "Creates a user via the GoTrue admin API. Omit `password` to send an invite-style flow; set `email_confirm: true` to skip the verification mail.", scope: "vms:write",
+      { id: "sb-auth-create", method: "POST", path: "/supabase/auth/users", title: "Invite or create user", description: "Creates a user via the GoTrue admin API. Omit `password` to send an invite-style flow; set `email_confirm: true` to skip the verification mail.", scope: "vms:write", since: "2026-06-02",
+        changed: [
+          { date: "2026-06-03", note: "Added phone_confirm + user_metadata pass-through fields." },
+        ],
+        tryBody: { email: "demo+test@example.com", email_confirm: true },
         examples: { curl: curlBody("POST", "/supabase/auth/users", { email: "user@example.com", email_confirm: true }),
                     js: jsBody("POST", "/supabase/auth/users", { email: "user@example.com", email_confirm: true }) } },
       { id: "sb-auth-update", method: "PATCH", path: "/supabase/auth/users/{id}", title: "Update / ban user", description: "Patch any GoTrue user field — email, password, metadata, role, or `ban_duration` (`\"none\"` | `\"24h\"` | `\"7d\"` | `\"permanent\"`).", scope: "vms:write",
@@ -748,7 +812,7 @@ Same scope rules across the whole section: \`vms:read\` for GETs, \`vms:write\` 
       { id: "sb-realtime", method: "GET", path: "/supabase/realtime", title: "Realtime overview", description: "Replication slots, publications, and the list of tables each publication includes. Read-only — replication control comes in a follow-up release.", scope: "vms:read",
         examples: { curl: curlGet("/supabase/realtime"), js: jsGet("/supabase/realtime") } },
 
-      { id: "sb-functions", method: "GET", path: "/supabase/functions", title: "Edge functions overview", description: "Every function registered in the `supabase_functions` schema. Deploy via the Supabase CLI pointed at your storage / project URL.", scope: "vms:read",
+      { id: "sb-functions", method: "GET", path: "/supabase/functions", title: "Edge functions overview", description: "Every function registered in the `supabase_functions` schema. Deploy via the Supabase CLI pointed at your storage / project URL.", scope: "vms:read", since: "2026-06-03",
         examples: { curl: curlGet("/supabase/functions"), js: jsGet("/supabase/functions") } },
     ],
   },

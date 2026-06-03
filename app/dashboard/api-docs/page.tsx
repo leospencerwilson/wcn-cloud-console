@@ -5,9 +5,10 @@ export const dynamic = "force-dynamic";
 
 export default async function ApiDocsPage() {
   // Session check so the docs are only visible to logged-in customer users.
-  // Content is all static; nothing per-customer is rendered here yet, but
-  // gating the page is consistent with the rest of /dashboard/*.
-  await requireCustomerAdmin();
+  // We also thread the slug through to the view so the Try-it panel can
+  // hit /api/customers/{slug}/* as the current user without manual typing.
+  const session = await requireCustomerAdmin();
+  const slug = session.appUser.customer_slug!;
   return (
     <div className="space-y-2">
       <header className="space-y-1">
@@ -23,7 +24,7 @@ export default async function ApiDocsPage() {
           <code className="api-doc-inline-code"> curl</code> and JavaScript.
         </p>
       </header>
-      <ApiDocsView />
+      <ApiDocsView slug={slug} />
     </div>
   );
 }
