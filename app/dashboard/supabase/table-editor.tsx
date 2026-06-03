@@ -1,6 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  flexRender,
+  type ColumnDef,
+  type SortingState,
+} from "@tanstack/react-table";
 import { Card } from "@/components/ui/card";
 import {
   IconPlus,
@@ -21,6 +30,8 @@ import type {
   TableRowsResp,
   TableSummary,
 } from "@/lib/provisioner/supabase-client";
+
+type Row = Record<string, unknown>;
 
 /* ── Constants ─────────────────────────────────────────────────────── */
 
@@ -313,6 +324,9 @@ function TableDetail({
   const [editingColumn, setEditingColumn] = useState<ColumnInfo | null>(null);
   const [editingRow, setEditingRow] = useState<Record<string, unknown> | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [columnSizing, setColumnSizing] = useState<Record<string, number>>({});
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -376,6 +390,89 @@ function TableDetail({
     }
     setRefreshTick((n) => n + 1);
   }
+
+  // ── TanStack column defs ───────────────────────────────────────
+  const tanstackColumns = useMemo<ColumnDef<Row>[]>(() => {
+    if (!info) return [];
+    const cols: ColumnDef<Row>[] = info.columns.map((c) => ({
+      id: c.name,
+      accessorFn: (row) => row[c.name],
+      header: () => (
+        <span>
+          {c.primary_key && <span style={{ color: "var(--accent)", marginRight: 4 }}>🔑</span>}
+          {c.name}
+          <span style={{ color: "var(--text-4)", fontWeight: 400, marginLeft: 6 }}>{c.udt_name}</span>
+        </span>
+      ),
+      cell: (ctx) => {
+        const v = ctx.getValue();
+        if (v === null || v === undefined) {
+          return <span style={{ color: "var(--text-4)", fontStyle: "italic" }}>NULL</span>;
+        }
+        const s = renderValue(v);
+        return (
+          <span
+            style={{
+              display: "inline-block",
+              maxWidth: "100%",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              verticalAlign: "middle",
+            }}
+            title={s}
+          >
+            {s}
+          </span>
+        );
+      },
+      size: 220,
+      enableSorting: true,
+    }));
+    cols.push({
+      id: "__actions__",
+      header: () => null,
+      enableSorting: false,
+      enableResizing: false,
+      size: 56,
+      cell: (ctx) => (
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeleteRow(ctx.row.original);
+          }}
+          style={{ color: "var(--crit)" }}
+          title="Delete row"
+        >
+          <IconTrash />
+        </button>
+      ),
+    });
+    return cols;
+  }, [info]);
+
+  const tanstackTable = useReactTable<Row>({
+    data: rowsData?.rows ?? [],
+    columns: tanstackColumns,
+    state: { sorting, columnSizing, globalFilter },
+    onSortingChange: setSorting,
+    onColumnSizingChange: setColumnSizing,
+    onGlobalFilterChange: setGlobalFilter,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    columnResizeMode: "onChange",
+    enableColumnResizing: true,
+    globalFilterFn: (row, _columnId, value) => {
+      if (!value) return true;
+      const needle = String(value).toLowerCase();
+      return Object.values(row.original).some((v) =>
+        v != null && String(v).toLowerCase().includes(needle),
+      );
+    },
+  });
 
   return (
     <>
@@ -461,82 +558,126 @@ function TableDetail({
         </div>
       )}
 
-      {/* Rows grid */}
+      {/* Filter bar */}
+      {info && rowsData && rowsData.rows.length > 0 && (
+        <div
+          className="flex items-center gap-3"
+          style={{ padding: "8px 18px", borderBottom: "1px solid var(--color-hairline)", background: "var(--surface-1)" }}
+        >
+          <input
+            type="text"
+            placeholder="Filter rows…"
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="type-mono"
+            style={{ ...inputStyle, maxWidth: 280 }}
+          />
+          {sorting.length > 0 && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => setSorting([])}
+              title="Clear sort"
+            >
+              Clear sort
+            </button>
+          )}
+          <span className="type-mono text-[11px]" style={{ color: "var(--text-3)", marginLeft: "auto" }}>
+            {tanstackTable.getFilteredRowModel().rows.length} of {rowsData.rows.length} rows
+            {sorting.length > 0 && (
+              <span style={{ marginLeft: 10 }}>
+                · sort: {sorting.map((s) => `${s.id}${s.desc ? " ↓" : " ↑"}`).join(", ")}
+              </span>
+            )}
+          </span>
+        </div>
+      )}
+
+      {/* Rows grid (TanStack) */}
       {loading ? (
         <div className="type-mono text-[12px]" style={{ color: "var(--text-3)", padding: 18 }}>Loading…</div>
-      ) : !info || !rowsData ? null : (
+      ) : !info || !rowsData ? null : rowsData.rows.length === 0 ? (
+        <div className="type-mono text-[12px]" style={{ padding: 18, color: "var(--text-3)", textAlign: "center" }}>
+          (no rows — Insert row to add the first one)
+        </div>
+      ) : (
         <div style={{ overflow: "auto", maxHeight: 480 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <table
+            style={{
+              width: tanstackTable.getTotalSize(),
+              minWidth: "100%",
+              borderCollapse: "separate",
+              borderSpacing: 0,
+            }}
+          >
             <thead style={{ position: "sticky", top: 0, background: "var(--surface)", zIndex: 1 }}>
-              <tr>
-                {info.columns.map((c) => (
-                  <th key={c.name} style={thStyle}>
-                    {c.primary_key && "🔑 "}
-                    {c.name}
-                    <span style={{ color: "var(--text-4)", fontWeight: 400, marginLeft: 4 }}>
-                      {c.udt_name}
-                    </span>
-                  </th>
-                ))}
-                <th style={thStyle}></th>
-              </tr>
+              {tanstackTable.getHeaderGroups().map((hg) => (
+                <tr key={hg.id}>
+                  {hg.headers.map((h) => {
+                    const canSort = h.column.getCanSort();
+                    const sortDir = h.column.getIsSorted();
+                    return (
+                      <th
+                        key={h.id}
+                        colSpan={h.colSpan}
+                        style={{
+                          ...thStyle,
+                          width: h.getSize(),
+                          position: "relative",
+                          cursor: canSort ? "pointer" : "default",
+                          userSelect: "none",
+                        }}
+                        onClick={canSort ? h.column.getToggleSortingHandler() : undefined}
+                      >
+                        {flexRender(h.column.columnDef.header, h.getContext())}
+                        {sortDir === "asc" && <span style={{ marginLeft: 4, color: "var(--accent)" }}>↑</span>}
+                        {sortDir === "desc" && <span style={{ marginLeft: 4, color: "var(--accent)" }}>↓</span>}
+                        {h.column.getCanResize() && (
+                          <div
+                            onMouseDown={h.getResizeHandler()}
+                            onTouchStart={h.getResizeHandler()}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                              position: "absolute",
+                              right: 0,
+                              top: 0,
+                              bottom: 0,
+                              width: 5,
+                              cursor: "col-resize",
+                              userSelect: "none",
+                              touchAction: "none",
+                              background: h.column.getIsResizing() ? "var(--accent)" : "transparent",
+                            }}
+                          />
+                        )}
+                      </th>
+                    );
+                  })}
+                </tr>
+              ))}
             </thead>
             <tbody>
-              {rowsData.rows.length === 0 ? (
-                <tr>
-                  <td colSpan={info.columns.length + 1} style={{ padding: 18, textAlign: "center", color: "var(--text-3)" }} className="type-mono text-[12px]">
-                    (no rows — Insert row to add the first one)
-                  </td>
-                </tr>
-              ) : (
-                rowsData.rows.map((row, idx) => (
-                  <tr
-                    key={idx}
-                    style={{ borderBottom: "1px solid var(--line)", cursor: "pointer" }}
-                    onClick={() => setEditingRow(row)}
-                  >
-                    {info.columns.map((c) => {
-                      const v = row[c.name];
-                      const isNull = v === null || v === undefined;
-                      return (
-                        <td key={c.name} style={tdStyle}>
-                          {isNull ? (
-                            <span style={{ color: "var(--text-4)", fontStyle: "italic" }}>NULL</span>
-                          ) : (
-                            <span
-                              style={{
-                                display: "inline-block",
-                                maxWidth: 320,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                                verticalAlign: "middle",
-                              }}
-                              title={renderValue(v)}
-                            >
-                              {renderValue(v)}
-                            </span>
-                          )}
-                        </td>
-                      );
-                    })}
-                    <td style={tdStyle}>
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteRow(row);
-                        }}
-                        style={{ color: "var(--crit)" }}
-                        title="Delete row"
-                      >
-                        <IconTrash />
-                      </button>
+              {tanstackTable.getRowModel().rows.map((trow) => (
+                <tr
+                  key={trow.id}
+                  style={{ borderBottom: "1px solid var(--line)", cursor: "pointer" }}
+                  onClick={() => setEditingRow(trow.original)}
+                >
+                  {trow.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      style={{
+                        ...tdStyle,
+                        width: cell.column.getSize(),
+                        maxWidth: cell.column.getSize(),
+                        borderBottom: "1px solid var(--line)",
+                      }}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
-                  </tr>
-                ))
-              )}
+                  ))}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
