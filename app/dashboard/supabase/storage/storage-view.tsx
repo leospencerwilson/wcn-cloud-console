@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { IconPlus, IconRefresh, IconTrash, IconX, IconCheck } from "@/components/ui/icons";
+import { IconPlus, IconRefresh, IconTrash, IconX, IconCheck, IconUpload } from "@/components/ui/icons";
 import type {
   StorageBucket,
   StorageObject,
@@ -219,16 +219,100 @@ function ObjectsTable({
     }
   }
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState<{ name: string; done: number; total: number } | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+
+  async function uploadFiles(files: FileList | File[]) {
+    if (!files || files.length === 0) return;
+    setError(null);
+    for (let i = 0; i < files.length; i++) {
+      const f = (files as FileList)[i] ?? (files as File[])[i];
+      setUploading({ name: f.name, done: i, total: files.length });
+      try {
+        const r = await fetch(
+          `/api/customers/${slug}/supabase/storage/objects/upload?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(f.name)}`,
+          {
+            method: "POST",
+            headers: { "content-type": f.type || "application/octet-stream" },
+            body: f,
+          },
+        );
+        if (!r.ok) {
+          const e = (await r.json().catch(() => ({}))) as { error?: string; message?: string };
+          throw new Error(e.error || e.message || `HTTP ${r.status}`);
+        }
+      } catch (e) {
+        setError(`${f.name}: ${e instanceof Error ? e.message : "upload failed"}`);
+        setUploading(null);
+        return;
+      }
+    }
+    setUploading(null);
+    refresh();
+    onChange();
+  }
+
   return (
     <Card>
       <div
-        className="px-6 py-3 flex items-center justify-between border-b"
+        className="px-6 py-3 flex items-center justify-between border-b gap-3 flex-wrap"
         style={{ borderColor: "var(--color-hairline)" }}
       >
         <span className="type-eyebrow">
           § OBJECTS IN {bucket.toUpperCase()}
           {resp && <span style={{ color: "var(--text-3)", marginLeft: 10 }}>{resp.total} total</span>}
+          {uploading && (
+            <span className="type-mono" style={{ color: "var(--accent)", marginLeft: 14, fontSize: 11 }}>
+              uploading {uploading.name} ({uploading.done + 1}/{uploading.total})…
+            </span>
+          )}
         </span>
+        <div className="vm-action-group" role="group" aria-label="Object actions">
+          <button
+            type="button"
+            className="vm-action vm-action--start"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!!uploading}
+          >
+            <IconUpload />
+            <span>Upload files</span>
+          </button>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          style={{ display: "none" }}
+          onChange={(e) => {
+            const fs = e.currentTarget.files;
+            if (fs && fs.length > 0) uploadFiles(fs);
+            e.currentTarget.value = "";
+          }}
+        />
+      </div>
+
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          const files = Array.from(e.dataTransfer.files);
+          if (files.length > 0) uploadFiles(files);
+        }}
+        style={{
+          padding: dragOver ? 18 : 6,
+          borderBottom: "1px solid var(--color-hairline)",
+          background: dragOver ? "color-mix(in oklch, var(--accent) 8%, transparent)" : undefined,
+          textAlign: "center",
+          color: dragOver ? "var(--accent)" : "var(--text-4)",
+          fontSize: dragOver ? 13 : 11,
+          fontStyle: "italic",
+          transition: "padding .12s",
+        }}
+      >
+        {dragOver ? `↓ Drop here to upload to ${bucket}` : `Drag files anywhere here to upload`}
       </div>
       {error ? (
         <div className="px-6 py-6 type-mono text-[12px]" style={{ color: "var(--crit)" }}>{error}</div>
@@ -236,7 +320,7 @@ function ObjectsTable({
         <div className="px-6 py-6 type-mono text-[12px]" style={{ color: "var(--text-3)" }}>Loading…</div>
       ) : !resp || resp.objects.length === 0 ? (
         <div className="px-6 py-6 type-mono text-[12px]" style={{ color: "var(--text-3)" }}>
-          (no objects in this bucket — upload via the Supabase CLI or storage-js for now)
+          (no objects in this bucket — click Upload files or drag-and-drop above)
         </div>
       ) : (
         <div style={{ overflowX: "auto" }}>
