@@ -208,47 +208,8 @@ export default function AppOverview({ slug, app }: { slug: string; app: App }) {
     }
   }
 
-  const rootDomain = "western-communication.com";
-  const standardUrl = `https://${app.name}.${slug}.${rootDomain}`;
-
   return (
     <div className="space-y-6">
-      {/* Standard per-app URL — always available, no custom DNS needed */}
-      <Card>
-        <div
-          className="px-6 py-4 flex items-center justify-between gap-4 flex-wrap"
-        >
-          <div className="space-y-1 min-w-0">
-            <p className="type-eyebrow" style={{ color: "var(--text-3)" }}>§ STANDARD URL</p>
-            <a
-              href={standardUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="type-mono"
-              style={{
-                color: "var(--accent)",
-                fontSize: 14,
-                textDecoration: "none",
-                wordBreak: "break-all",
-              }}
-            >
-              {standardUrl}
-            </a>
-          </div>
-          <div className="vm-action-group" role="group" aria-label="Open">
-            <a
-              href={standardUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="vm-action vm-action--view"
-            >
-              <IconExternal />
-              <span>Open</span>
-            </a>
-          </div>
-        </div>
-      </Card>
-
       <div className="flex items-center gap-3 flex-wrap">
         {/* Deploy actions — segmented group, matches admin VM-action visual */}
         <div className="vm-action-group" role="group" aria-label="Deploy">

@@ -223,10 +223,12 @@ export default function LogStream({
               autoscroll
             </label>
             {status === "streaming" && (
-              <button type="button" className="btn btn-ghost btn-sm" onClick={stop}>
-                <IconStop />
-                Stop
-              </button>
+              <div className="vm-action-group" role="group" aria-label="Stream controls">
+                <button type="button" className="vm-action vm-action--stop" onClick={stop}>
+                  <IconStop />
+                  <span>Stop</span>
+                </button>
+              </div>
             )}
           </div>
         </div>

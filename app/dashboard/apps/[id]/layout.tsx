@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import TabStrip from "@/components/tab-strip";
 import { Card } from "@/components/ui/card";
+import { IconExternal } from "@/components/ui/icons";
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import { provisionerApps, ProvisionerHttpError } from "@/lib/provisioner/apps-client";
 import { statusPill } from "@/lib/utils";
@@ -83,6 +84,46 @@ export default async function DashboardAppLayout({
           </div>
         </div>
       </div>
+
+      {/* Standard URL — visible on every app sub-tab, sits above the
+          tabstrip so customers always have the canonical link to hand */}
+      {(() => {
+        const standardUrl = `https://${app.name}.${slug}.western-communication.com`;
+        return (
+          <Card>
+            <div className="px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+              <div className="space-y-1 min-w-0">
+                <p className="type-eyebrow" style={{ color: "var(--text-3)" }}>§ STANDARD URL</p>
+                <a
+                  href={standardUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="type-mono"
+                  style={{
+                    color: "var(--accent)",
+                    fontSize: 14,
+                    textDecoration: "none",
+                    wordBreak: "break-all",
+                  }}
+                >
+                  {standardUrl}
+                </a>
+              </div>
+              <div className="vm-action-group" role="group" aria-label="Open">
+                <a
+                  href={standardUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="vm-action vm-action--view"
+                >
+                  <IconExternal />
+                  <span>Open</span>
+                </a>
+              </div>
+            </div>
+          </Card>
+        );
+      })()}
 
       <TabStrip
         tabs={[

@@ -203,15 +203,17 @@ export default function DeployManager({
           </div>
         )}
         <div style={{ marginTop: 16 }}>
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={create}
-            disabled={busy || !branch.trim()}
-          >
-            <IconPlus />
-            {busy ? "Generating…" : "Generate webhook"}
-          </button>
+          <div className="vm-action-group" role="group" aria-label="Webhook">
+            <button
+              type="button"
+              className="vm-action vm-action--start"
+              onClick={create}
+              disabled={busy || !branch.trim()}
+            >
+              <IconPlus />
+              <span>{busy ? "Generating…" : "Generate webhook"}</span>
+            </button>
+          </div>
         </div>
       </section>
     );
@@ -266,14 +268,16 @@ export default function DeployManager({
             </div>
           </div>
           <div style={{ marginTop: 14 }}>
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={() => setJustCreated(null)}
-            >
-              <IconCheck />
-              I&apos;ve saved them
-            </button>
+            <div className="vm-action-group" role="group" aria-label="Acknowledge">
+              <button
+                type="button"
+                className="vm-action vm-action--start"
+                onClick={() => setJustCreated(null)}
+              >
+                <IconCheck />
+                <span>I&apos;ve saved them</span>
+              </button>
+            </div>
           </div>
         </section>
       )}
@@ -314,15 +318,17 @@ export default function DeployManager({
                 disabled={busy}
               />
             </label>
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={() => patch({ branch })}
-              disabled={busy || !branch.trim() || !branchDirty}
-            >
-              <IconSave />
-              Save branch
-            </button>
+            <div className="vm-action-group" role="group" aria-label="Branch">
+              <button
+                type="button"
+                className="vm-action vm-action--start"
+                onClick={() => patch({ branch })}
+                disabled={busy || !branch.trim() || !branchDirty}
+              >
+                <IconSave />
+                <span>Save branch</span>
+              </button>
+            </div>
           </div>
 
           <div
@@ -343,32 +349,35 @@ export default function DeployManager({
         )}
 
         <div
-          className="flex items-center gap-2 flex-wrap"
+          className="flex items-center justify-between gap-2 flex-wrap"
           style={{
             marginTop: 16,
             paddingTop: 14,
             borderTop: "1px solid var(--line)",
           }}
         >
-          <button
-            type="button"
-            className="btn-ghost"
-            onClick={() => patch({ enabled: !config.enabled })}
-            disabled={busy}
-          >
-            {config.enabled ? <IconX /> : <IconCheck />}
-            {config.enabled ? "Disable" : "Enable"}
-          </button>
-          <button
-            type="button"
-            className="btn-danger"
-            onClick={remove}
-            disabled={busy}
-            style={{ marginLeft: "auto" }}
-          >
-            <IconTrash />
-            Delete webhook
-          </button>
+          <div className="vm-action-group" role="group" aria-label="Toggle">
+            <button
+              type="button"
+              className={`vm-action ${config.enabled ? "vm-action--stop" : "vm-action--start"}`}
+              onClick={() => patch({ enabled: !config.enabled })}
+              disabled={busy}
+            >
+              {config.enabled ? <IconX /> : <IconCheck />}
+              <span>{config.enabled ? "Disable" : "Enable"}</span>
+            </button>
+          </div>
+          <div className="vm-action-group" role="group" aria-label="Delete">
+            <button
+              type="button"
+              className="vm-action vm-action--stop"
+              onClick={remove}
+              disabled={busy}
+            >
+              <IconTrash />
+              <span>Delete webhook</span>
+            </button>
+          </div>
         </div>
       </section>
     </div>

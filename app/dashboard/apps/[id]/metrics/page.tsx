@@ -15,7 +15,8 @@ export default async function DashboardAppMetricsPage({
   const endpoint = `/api/customers/${slug}/apps/${id}/metrics`;
   return (
     <div className="space-y-12">
-      <section>
+      <section className="space-y-4">
+        <span className="type-eyebrow">§ LAST 1 HOUR</span>
         <MetricsSparklines
           endpoint={endpoint}
           cards={[

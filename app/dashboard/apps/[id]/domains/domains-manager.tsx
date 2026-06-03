@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { domainPill } from "@/lib/domain-status";
-import { IconRefresh, IconPlus, IconTrash, IconExternal } from "@/components/ui/icons";
+import Link from "next/link";
+import { IconRefresh, IconPlus, IconTrash, IconExternal, IconArrowRight } from "@/components/ui/icons";
 import type { AppDomain } from "@/lib/provisioner/types";
 
 const HOSTNAME_RE =
@@ -191,11 +192,18 @@ export default function DomainsManager({
             once propagation completes.
           </p>
         </div>
-        <div className="vm-action-group" role="group" aria-label="Domain refresh">
+        <div className="vm-action-group" role="group" aria-label="Domain actions">
           <button type="button" className="vm-action vm-action--view" onClick={refreshAll}>
             <IconRefresh />
             <span>Refresh</span>
           </button>
+          <Link
+            href={`/dashboard/apps/${appId}/domains/redirects`}
+            className="vm-action vm-action--restart"
+          >
+            <IconArrowRight />
+            <span>Manage HTTP redirects</span>
+          </Link>
         </div>
       </div>
 

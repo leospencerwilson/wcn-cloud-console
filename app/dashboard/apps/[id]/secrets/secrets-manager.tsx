@@ -266,10 +266,12 @@ export default function SecretsManager({
           style={{ borderColor: "var(--color-hairline)" }}
         >
           <span className="type-eyebrow">§ STORED SECRETS</span>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={fetchSecrets}>
-            <IconRefresh />
-            {loading ? "Refreshing…" : "Refresh"}
-          </button>
+          <div className="vm-action-group" role="group" aria-label="Secrets refresh">
+            <button type="button" className="vm-action vm-action--view" onClick={fetchSecrets}>
+              <IconRefresh />
+              <span>{loading ? "Refreshing…" : "Refresh"}</span>
+            </button>
+          </div>
         </div>
         {secrets.length === 0 && !loading ? (
           <p
