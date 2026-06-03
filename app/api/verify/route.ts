@@ -12,7 +12,7 @@ const DASH_PREFIX_RE = /^(admin|db|api)-/;
 // these — keep until none remain (rebake/destroy to drop the branch).
 const LEGACY_DOT_PREFIXES = new Set(["coolify", "studio", "api"]);
 
-const VERIFY_DEBUG = process.env.WCN_VERIFY_DEBUG === "1";
+const VERIFY_DEBUG = true;
 
 function dbg(reqId: string, label: string, fields: Record<string, unknown> = {}) {
   if (!VERIFY_DEBUG) return;
