@@ -116,19 +116,21 @@ export default function TeamManager({
           style={{ borderColor: "var(--color-hairline)" }}
         >
           <span className="type-eyebrow">§ TEAM MEMBERS</span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button type="button" className="btn btn-ghost btn-sm" onClick={load}>
               <IconRefresh />
               {loading ? "Refreshing…" : "Refresh"}
             </button>
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              onClick={() => setInviteOpen(true)}
-            >
-              <IconUserPlus />
-              Invite user
-            </button>
+            <div className="vm-action-group" role="group" aria-label="Team actions">
+              <button
+                type="button"
+                className="vm-action vm-action--start"
+                onClick={() => setInviteOpen(true)}
+              >
+                <IconUserPlus />
+                <span>Invite user</span>
+              </button>
+            </div>
           </div>
         </div>
         {error && (

@@ -170,10 +170,12 @@ export default function CronManager({
             />
           </label>
           <div className="flex items-end">
-            <button type="submit" className="btn btn-primary" disabled={creating}>
-              <IconPlus />
-              {creating ? "Adding…" : "Add task"}
-            </button>
+            <div className="vm-action-group" role="group" aria-label="Cron actions">
+              <button type="submit" className="vm-action vm-action--start" disabled={creating}>
+                <IconPlus />
+                <span>{creating ? "Adding…" : "Add task"}</span>
+              </button>
+            </div>
           </div>
         </form>
       </Card>

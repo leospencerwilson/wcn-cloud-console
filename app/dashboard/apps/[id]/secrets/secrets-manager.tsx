@@ -213,10 +213,12 @@ export default function SecretsManager({
             />
           </label>
           <div className="md:col-span-3">
-            <button type="submit" className="btn btn-primary" disabled={saving}>
-              <IconSave />
-              {saving ? "Saving…" : "Save secret"}
-            </button>
+            <div className="vm-action-group" role="group" aria-label="Secret actions">
+              <button type="submit" className="vm-action vm-action--start" disabled={saving}>
+                <IconSave />
+                <span>{saving ? "Saving…" : "Save secret"}</span>
+              </button>
+            </div>
           </div>
         </form>
       </Card>

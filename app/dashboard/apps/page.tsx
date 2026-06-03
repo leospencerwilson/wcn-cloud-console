@@ -35,10 +35,12 @@ export default async function DashboardAppsPage() {
         title="Deployed apps"
         subtitle="Applications running in your environment."
         actions={
-          <Link href="/dashboard/apps/new" className="btn btn-primary btn-sm">
-            <IconPlus />
-            New app
-          </Link>
+          <div className="vm-action-group" role="group" aria-label="App actions">
+            <Link href="/dashboard/apps/new" className="vm-action vm-action--start">
+              <IconPlus />
+              <span>New app</span>
+            </Link>
+          </div>
         }
       />
 
@@ -72,10 +74,12 @@ export default async function DashboardAppsPage() {
               Deploy your first application from a Git repository, Dockerfile,
               or container image.
             </p>
-            <Link href="/dashboard/apps/new" className="btn btn-primary">
-              <IconPlus />
-              Create your first app
-            </Link>
+            <div className="vm-action-group inline-flex" role="group" aria-label="App actions">
+              <Link href="/dashboard/apps/new" className="vm-action vm-action--start">
+                <IconPlus />
+                <span>Create your first app</span>
+              </Link>
+            </div>
           </div>
         </Card>
       )}

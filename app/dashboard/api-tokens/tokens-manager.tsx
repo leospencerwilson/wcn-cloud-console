@@ -95,22 +95,24 @@ export default function TokensManager({
           style={{ borderColor: "var(--color-hairline)" }}
         >
           <span className="type-eyebrow">§ ACTIVE TOKENS</span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button type="button" className="btn btn-ghost btn-sm" onClick={load}>
               <IconRefresh />
               {loading ? "Refreshing…" : "Refresh"}
             </button>
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              onClick={() => {
-                setIssued(null);
-                setCreateOpen(true);
-              }}
-            >
-              <IconKey />
-              New token
-            </button>
+            <div className="vm-action-group" role="group" aria-label="Token actions">
+              <button
+                type="button"
+                className="vm-action vm-action--start"
+                onClick={() => {
+                  setIssued(null);
+                  setCreateOpen(true);
+                }}
+              >
+                <IconKey />
+                <span>New token</span>
+              </button>
+            </div>
           </div>
         </div>
         {error && (

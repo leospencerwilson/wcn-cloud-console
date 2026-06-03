@@ -192,10 +192,12 @@ export default function RedirectsManager({
             </select>
           </label>
           <div className="md:col-span-3">
-            <button type="submit" className="btn btn-primary" disabled={creating}>
-              <IconLink />
-              {creating ? "Adding…" : "Add redirect"}
-            </button>
+            <div className="vm-action-group" role="group" aria-label="Redirect actions">
+              <button type="submit" className="vm-action vm-action--start" disabled={creating}>
+                <IconLink />
+                <span>{creating ? "Adding…" : "Add redirect"}</span>
+              </button>
+            </div>
           </div>
         </form>
       </Card>
