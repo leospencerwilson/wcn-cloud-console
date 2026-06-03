@@ -275,31 +275,31 @@ export default function EnvEditor({
             required for changes to take effect.
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="vm-action-group" role="group" aria-label="Environment actions">
           <button
             type="button"
-            className="btn btn-ghost btn-sm"
+            className="vm-action vm-action--start"
             onClick={addRow}
           >
             <IconPlus />
-            Add
+            <span>Add</span>
           </button>
           <button
             type="button"
-            className="btn btn-ghost btn-sm"
+            className="vm-action vm-action--view"
             onClick={() => setImportOpen(true)}
           >
             <IconUpload />
-            Import .env
+            <span>Import .env</span>
           </button>
           <button
             type="button"
-            className="btn btn-ghost btn-sm"
+            className="vm-action vm-action--restart"
             onClick={onExport}
             disabled={rows.length === 0}
           >
             <IconDownload />
-            Export .env
+            <span>Export .env</span>
           </button>
         </div>
       </div>
