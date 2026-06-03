@@ -47,17 +47,18 @@ export default async function DashboardSupabaseLayout({
           title="Supabase"
           subtitle="Tables, auth, storage, realtime, functions, RLS policies, and connection details for your managed Supabase instance."
         />
-        <a
-          href={studioUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-primary"
-          title="Open the upstream Supabase Studio for this project in a new tab"
-          style={{ marginTop: 6 }}
-        >
-          <IconExternal />
-          Open in Studio
-        </a>
+        <div className="vm-action-group" role="group" aria-label="Open Studio" style={{ marginTop: 6 }}>
+          <a
+            href={studioUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="vm-action vm-action--view"
+            title="Open the upstream Supabase Studio for this project in a new tab"
+          >
+            <IconExternal />
+            <span>Open in Studio</span>
+          </a>
+        </div>
       </div>
       <TabStrip
         tabs={[

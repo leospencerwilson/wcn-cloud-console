@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireCustomerAdmin } from "@/lib/auth/session";
 import { provisionerApps, ProvisionerHttpError } from "@/lib/provisioner/apps-client";
 import DomainsManager from "./domains-manager";
@@ -34,15 +33,6 @@ export default async function DashboardAppDomainsPage({
         initial={initial}
         loadError={loadError}
       />
-      <div>
-        <Link
-          href={`/dashboard/apps/${id}/domains/redirects`}
-          className="type-mono text-[12px]"
-          style={{ color: "var(--color-navy)" }}
-        >
-          → Manage HTTP redirects
-        </Link>
-      </div>
     </div>
   );
 }

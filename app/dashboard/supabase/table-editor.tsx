@@ -161,23 +161,25 @@ export default function TableEditor({ slug }: { slug: string }) {
             style={{ padding: "12px 14px", borderBottom: "1px solid var(--color-hairline)" }}
           >
             <span className="type-eyebrow">§ TABLES</span>
-            <div className="flex items-center gap-2">
+            <div className="vm-action-group" role="group" aria-label="Tables">
               <button
                 type="button"
-                className="btn btn-ghost btn-sm"
+                className="vm-action vm-action--view"
                 onClick={() => setRefreshTick((n) => n + 1)}
                 title="Refresh"
+                style={{ padding: "5px 10px" }}
               >
                 <IconRefresh />
               </button>
               <button
                 type="button"
-                className="btn btn-primary btn-sm"
+                className="vm-action vm-action--start"
                 onClick={() => setCreatingTable(true)}
                 title="New table"
+                style={{ padding: "5px 10px" }}
               >
                 <IconPlus />
-                New
+                <span>New</span>
               </button>
             </div>
           </div>

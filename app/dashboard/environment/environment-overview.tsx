@@ -251,13 +251,15 @@ export default function EnvironmentOverview({ slug }: { slug: string }) {
                 {appRows.length} {appRows.length === 1 ? "var" : "vars"}
               </span>
             </div>
-            <Link
-              href={`/dashboard/apps/${app.id}/env`}
-              className="btn btn-ghost btn-sm"
-            >
-              <IconEdit />
-              Edit
-            </Link>
+            <div className="vm-action-group" role="group" aria-label="Edit env vars">
+              <Link
+                href={`/dashboard/apps/${app.id}/env`}
+                className="vm-action vm-action--restart"
+              >
+                <IconEdit />
+                <span>Edit</span>
+              </Link>
+            </div>
           </header>
           <div>
             {appRows.map((r, i) => {
@@ -317,15 +319,22 @@ export default function EnvironmentOverview({ slug }: { slug: string }) {
                   >
                     {isRevealed ? r.env.value || "(empty)" : mask(r.env.value)}
                   </span>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => toggleReveal(id)}
+                  <div
+                    className="vm-action-group"
+                    role="group"
+                    aria-label="Reveal"
                     style={{ justifySelf: "end" }}
                   >
-                    {isRevealed ? <IconEyeOff /> : <IconEye />}
-                    {isRevealed ? "Hide" : "Reveal"}
-                  </button>
+                    <button
+                      type="button"
+                      className="vm-action vm-action--view"
+                      onClick={() => toggleReveal(id)}
+                      style={{ padding: "5px 10px", fontSize: 11 }}
+                    >
+                      {isRevealed ? <IconEyeOff /> : <IconEye />}
+                      <span>{isRevealed ? "Hide" : "Reveal"}</span>
+                    </button>
+                  </div>
                 </div>
               );
             })}

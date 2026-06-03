@@ -181,15 +181,16 @@ export default function DomainsOverview({ slug }: { slug: string }) {
             onChange={(e) => setQ(e.target.value)}
             style={{ marginLeft: "auto", maxWidth: 240, fontSize: 12 }}
           />
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => setShowAdd(true)}
-            style={{ padding: "6px 12px", fontSize: 12 }}
-          >
-            <IconPlus />
-            Add domain
-          </button>
+          <div className="vm-action-group" role="group" aria-label="Add domain">
+            <button
+              type="button"
+              className="vm-action vm-action--start"
+              onClick={() => setShowAdd(true)}
+            >
+              <IconPlus />
+              <span>Add domain</span>
+            </button>
+          </div>
         </div>
 
         {err && (
@@ -387,15 +388,6 @@ function AddDomainModal({
           <div className="type-h3">
             {created ? "Domain added — finish DNS" : "Add custom domain"}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="btn-ghost"
-            style={{ padding: "4px 8px", fontSize: 12 }}
-          >
-            <IconX />
-            Close
-          </button>
         </div>
 
         {!created && (
@@ -451,24 +443,16 @@ function AddDomainModal({
               )}
             </div>
             <div className="modal-footer">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn-ghost"
-                style={{ padding: "6px 12px", fontSize: 12 }}
-              >
-                <IconX />
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn-primary"
-                disabled={saving}
-                style={{ padding: "6px 14px", fontSize: 12 }}
-              >
-                <IconPlus />
-                {saving ? "Adding…" : "Add domain"}
-              </button>
+              <div className="vm-action-group" role="group" aria-label="Add domain">
+                <button type="button" onClick={onClose} className="vm-action vm-action--stop">
+                  <IconX />
+                  <span>Cancel</span>
+                </button>
+                <button type="submit" className="vm-action vm-action--start" disabled={saving}>
+                  <IconPlus />
+                  <span>{saving ? "Adding…" : "Add domain"}</span>
+                </button>
+              </div>
             </div>
           </form>
         )}

@@ -74,27 +74,25 @@ export default function AuthView({ slug }: { slug: string }) {
           § AUTH USERS
           {data && <span style={{ color: "var(--text-3)", marginLeft: 10 }}>{data.total} total</span>}
         </span>
-        <div className="flex items-center gap-3">
+        <div className="vm-action-group" role="group" aria-label="Auth actions">
           <button
             type="button"
-            className="btn btn-ghost btn-sm"
+            className="vm-action vm-action--view"
             onClick={refresh}
             disabled={loading}
           >
             <IconRefresh />
-            {loading ? "Refreshing…" : "Refresh"}
+            <span>{loading ? "Refreshing…" : "Refresh"}</span>
           </button>
-          <div className="vm-action-group" role="group" aria-label="Invite user">
-            <button
-              type="button"
-              className="vm-action vm-action--start"
-              onClick={() => setCreating(true)}
-              title="Create a new user"
-            >
-              <IconPlus />
-              <span>Invite user</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            className="vm-action vm-action--start"
+            onClick={() => setCreating(true)}
+            title="Create a new user"
+          >
+            <IconPlus />
+            <span>Invite user</span>
+          </button>
         </div>
       </div>
 
