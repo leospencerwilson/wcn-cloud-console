@@ -293,10 +293,17 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
       <p className="type-mono text-[12px]" style={{ marginTop: 6 }}>
         Pick one from the sidebar, or create a new table.
       </p>
-      <button type="button" className="btn btn-primary" style={{ marginTop: 18 }} onClick={onCreate}>
-        <IconPlus />
-        New table
-      </button>
+      <div
+        className="vm-action-group"
+        role="group"
+        aria-label="Create table"
+        style={{ marginTop: 18 }}
+      >
+        <button type="button" className="vm-action vm-action--start" onClick={onCreate}>
+          <IconPlus />
+          <span>New table</span>
+        </button>
+      </div>
     </div>
   );
 }
