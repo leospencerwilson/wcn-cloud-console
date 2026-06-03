@@ -8,8 +8,6 @@ export const dynamic = "force-dynamic";
 export default async function DashboardHealthPage() {
   const session = await requireCustomerAdmin();
   const slug = session.appUser.customer_slug!;
-  const rootDomain = process.env.ROOT_DOMAIN ?? "western-communication.com";
-  const apex = `${slug}.${rootDomain}`;
 
   return (
     <div className="space-y-8">
@@ -19,7 +17,7 @@ export default async function DashboardHealthPage() {
         subtitle="Live status and uptime for your environment."
       />
 
-      <HealthPanel apex={apex} slug={slug} />
+      <HealthPanel slug={slug} />
 
       <div>
         <h3 className="type-h3" style={{ marginBottom: 14 }}>

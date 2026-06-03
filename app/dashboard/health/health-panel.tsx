@@ -69,13 +69,10 @@ function latencyTone(ms: number | null): "ok" | "warn" | "crit" {
 }
 
 export default function HealthPanel({
-  apex,
   slug,
 }: {
-  apex: string;
   slug: string;
 }) {
-  const healthz = `https://${apex}/healthz`;
   const [probe, setProbe] = useState<Probe>(INITIAL);
   const [samples, setSamples] = useState<{ id: number; ms: number | null }[]>([]);
   const lastChecked = useRef<string | null>(null);
@@ -133,27 +130,6 @@ export default function HealthPanel({
         <div style={{ fontSize: 19, fontWeight: 500, letterSpacing: "-0.01em" }}>
           {t.label}
         </div>
-        {probe.status != null && (
-          <span className={t.pill} style={{ marginLeft: 4 }}>
-            HTTP {probe.status}
-          </span>
-        )}
-        <div style={{ flex: 1 }} />
-        <a
-          href={healthz}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="type-mono"
-          style={{
-            fontSize: 12.5,
-            color: "var(--brand)",
-            textDecoration: "none",
-            borderBottom:
-              "1px dashed color-mix(in oklch, var(--brand) 40%, transparent)",
-          }}
-        >
-          {healthz.replace(/^https?:\/\//, "")}
-        </a>
       </div>
 
       {/* Dramatic latency panel — fills the room beneath the status strip */}
