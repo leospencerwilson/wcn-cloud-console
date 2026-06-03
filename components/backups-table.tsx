@@ -105,20 +105,20 @@ export default function BackupsTable({
           style={{ borderColor: "var(--color-hairline)" }}
         >
           <span className="type-eyebrow">§ VM BACKUPS</span>
-          <div className="flex items-center gap-2">
-            <button type="button" className="btn btn-ghost btn-sm" onClick={fetchRows}>
+          <div className="vm-action-group" role="group" aria-label="Backup actions">
+            <button type="button" className="vm-action vm-action--view" onClick={fetchRows}>
               <IconRefresh />
-              {loading ? "Refreshing…" : "Refresh"}
+              <span>{loading ? "Refreshing…" : "Refresh"}</span>
             </button>
             {canTrigger && (
               <button
                 type="button"
-                className="btn btn-primary btn-sm"
+                className="vm-action vm-action--restart"
                 onClick={onTrigger}
                 disabled={triggering}
               >
                 <IconPlay />
-                {triggering ? "Queuing…" : "Run backup now"}
+                <span>{triggering ? "Queuing…" : "Run backup now"}</span>
               </button>
             )}
           </div>
@@ -182,28 +182,30 @@ export default function BackupsTable({
                     </td>
                     {showActions && (
                       <td className="px-6 py-3 text-right whitespace-nowrap">
-                        {canDownload && (
-                          <button
-                            type="button"
-                            className="btn btn-ghost btn-sm"
-                            onClick={() => setDownloadTarget(b)}
-                            disabled={!ready}
-                          >
-                            <IconDownload />
-                            Download
-                          </button>
-                        )}
-                        {canRestore && (
-                          <button
-                            type="button"
-                            className="btn btn-ghost btn-sm ml-2"
-                            onClick={() => setRestoreTarget(b)}
-                            disabled={!ready}
-                          >
-                            <IconRefresh />
-                            Restore
-                          </button>
-                        )}
+                        <div className="vm-action-group" role="group" aria-label="Backup row actions">
+                          {canDownload && (
+                            <button
+                              type="button"
+                              className="vm-action vm-action--view"
+                              onClick={() => setDownloadTarget(b)}
+                              disabled={!ready}
+                            >
+                              <IconDownload />
+                              <span>Download</span>
+                            </button>
+                          )}
+                          {canRestore && (
+                            <button
+                              type="button"
+                              className="vm-action vm-action--restart"
+                              onClick={() => setRestoreTarget(b)}
+                              disabled={!ready}
+                            >
+                              <IconRefresh />
+                              <span>Restore</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     )}
                   </tr>
@@ -247,10 +249,12 @@ function ModalShell({
       <div className="modal-panel modal-panel--lg" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header justify-between">
           <span className="type-eyebrow">§ {title}</span>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
-            <IconX />
-            Close
-          </button>
+          <div className="vm-action-group" role="group" aria-label="Close">
+            <button type="button" className="vm-action vm-action--view" onClick={onClose}>
+              <IconX />
+              <span>Close</span>
+            </button>
+          </div>
         </div>
         <div className="px-6 py-5">{children}</div>
       </div>
@@ -344,19 +348,21 @@ function DownloadModal({
             {error}
           </p>
         )}
-        <div className="flex justify-end gap-2">
-          <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
-            <IconX />
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="btn btn-primary btn-sm"
-            disabled={busy || passphrase.length < 8}
-          >
-            <IconDownload />
-            {busy ? "Preparing…" : "Download"}
-          </button>
+        <div className="flex justify-end">
+          <div className="vm-action-group" role="group" aria-label="Download actions">
+            <button type="button" className="vm-action vm-action--stop" onClick={onClose}>
+              <IconX />
+              <span>Cancel</span>
+            </button>
+            <button
+              type="submit"
+              className="vm-action vm-action--start"
+              disabled={busy || passphrase.length < 8}
+            >
+              <IconDownload />
+              <span>{busy ? "Preparing…" : "Download"}</span>
+            </button>
+          </div>
         </div>
       </form>
     </ModalShell>
@@ -478,19 +484,21 @@ function RestoreModal({
               {error}
             </p>
           )}
-          <div className="flex justify-end gap-2">
-            <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
-              <IconX />
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary btn-sm"
-              disabled={busy || confirm !== slug}
-            >
-              <IconRefresh />
-              {busy ? "Starting…" : "Restore"}
-            </button>
+          <div className="flex justify-end">
+            <div className="vm-action-group" role="group" aria-label="Restore actions">
+              <button type="button" className="vm-action vm-action--stop" onClick={onClose}>
+                <IconX />
+                <span>Cancel</span>
+              </button>
+              <button
+                type="submit"
+                className="vm-action vm-action--restart"
+                disabled={busy || confirm !== slug}
+              >
+                <IconRefresh />
+                <span>{busy ? "Starting…" : "Restore"}</span>
+              </button>
+            </div>
           </div>
         </form>
       )}

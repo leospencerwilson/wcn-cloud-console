@@ -73,21 +73,24 @@ function exportToEnv(rows: { key: string; value: string }[]): string {
     .join("\n");
 }
 
-const KIND_OPTIONS: { value: Kind; label: string; hint: string }[] = [
+const KIND_OPTIONS: { value: Kind; label: string; hint: string; icon: string }[] = [
   {
     value: "runtime",
-    label: "runtime",
+    label: "Runtime",
     hint: "Available to the running container",
+    icon: "▶",
   },
   {
     value: "build",
-    label: "build-time",
+    label: "Build",
     hint: "Set during build only — useful for NEXT_PUBLIC_* vars baked into the bundle",
+    icon: "⚒",
   },
   {
     value: "preview",
-    label: "preview",
+    label: "Preview",
     hint: "Used only in preview deployments, not production",
+    icon: "👁",
   },
 ];
 
@@ -322,14 +325,16 @@ export default function EnvEditor({
             >
               No environment variables yet.
             </p>
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              onClick={addRow}
-            >
-              <IconPlus />
-              Add first variable
-            </button>
+            <div className="vm-action-group inline-flex" role="group" aria-label="Env actions">
+              <button
+                type="button"
+                className="vm-action vm-action--start"
+                onClick={addRow}
+              >
+                <IconPlus />
+                <span>Add first variable</span>
+              </button>
+            </div>
           </div>
         ) : (
           <table className="w-full" style={{ fontSize: 13 }}>
@@ -418,24 +423,24 @@ export default function EnvEditor({
                 .join(", ")}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="vm-action-group" role="group" aria-label="Pending changes">
             <button
               type="button"
-              className="btn btn-ghost btn-sm"
+              className="vm-action vm-action--view"
               onClick={discard}
               disabled={saving}
             >
               <IconRefresh />
-              Discard
+              <span>Discard</span>
             </button>
             <button
               type="button"
-              className="btn btn-primary btn-sm"
+              className="vm-action vm-action--start"
               onClick={onSave}
               disabled={saving}
             >
               <IconSave />
-              {saving ? "Saving…" : "Save changes"}
+              <span>{saving ? "Saving…" : "Save changes"}</span>
             </button>
           </div>
         </div>
@@ -505,31 +510,45 @@ function EnvRow({
               fontSize: 12.5,
             }}
           />
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={onToggleReveal}
-            title={row._revealed ? "Hide" : "Reveal for 30s"}
-          >
-            {row._revealed ? <IconEyeOff /> : <IconEye />}
-            {row._revealed ? `Hide · ${remaining}s` : "Show"}
-          </button>
+          <div className="vm-action-group" role="group" aria-label="Reveal">
+            <button
+              type="button"
+              className="vm-action vm-action--view"
+              onClick={onToggleReveal}
+              title={row._revealed ? "Hide" : "Reveal for 30s"}
+              style={{ padding: "5px 10px", fontSize: 11 }}
+            >
+              {row._revealed ? <IconEyeOff /> : <IconEye />}
+              <span>{row._revealed ? `Hide · ${remaining}s` : "Show"}</span>
+            </button>
+          </div>
         </div>
       </td>
       <td style={{ padding: "10px 16px", verticalAlign: "top" }}>
-        <div className="ios-segment" style={{ padding: 2 }}>
-          {KIND_OPTIONS.map((opt) => (
-            <button
-              type="button"
-              key={opt.value}
-              title={opt.hint}
-              className={`ios-segment-item${row.kind === opt.value ? " is-active" : ""}`}
-              onClick={() => onChange({ kind: opt.value })}
-              style={{ padding: "5px 8px", fontSize: 11 }}
-            >
-              {opt.label}
-            </button>
-          ))}
+        <div className="vm-action-group" role="group" aria-label="Variable type" style={{ whiteSpace: "nowrap" }}>
+          {KIND_OPTIONS.map((opt) => {
+            const active = row.kind === opt.value;
+            const tone = opt.value === "runtime" ? "vm-action--start"
+              : opt.value === "build" ? "vm-action--view"
+              : "vm-action--restart";
+            return (
+              <button
+                type="button"
+                key={opt.value}
+                title={opt.hint}
+                className={`vm-action ${active ? tone : ""}`}
+                onClick={() => onChange({ kind: opt.value })}
+                style={{
+                  padding: "5px 10px",
+                  fontSize: 11,
+                  opacity: active ? 1 : 0.55,
+                }}
+              >
+                <span aria-hidden style={{ marginRight: 4 }}>{opt.icon}</span>
+                <span>{opt.label}</span>
+              </button>
+            );
+          })}
         </div>
       </td>
       <td
@@ -539,15 +558,18 @@ function EnvRow({
           textAlign: "right",
         }}
       >
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          onClick={onRemove}
-          title="Remove"
-          aria-label="Remove"
-        >
-          <IconTrash />
-        </button>
+        <div className="vm-action-group" role="group" aria-label="Row actions">
+          <button
+            type="button"
+            className="vm-action vm-action--stop"
+            onClick={onRemove}
+            title="Remove"
+            aria-label="Remove"
+            style={{ padding: "5px 10px" }}
+          >
+            <IconTrash />
+          </button>
+        </div>
       </td>
     </tr>
   );
@@ -750,24 +772,26 @@ function ImportDialog({
           )}
         </div>
         <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={onClose}
-            disabled={busy}
-          >
-            <IconX />
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={submit}
-            disabled={busy}
-          >
-            <IconUpload />
-            {busy ? "Importing…" : "Import and replace"}
-          </button>
+          <div className="vm-action-group" role="group" aria-label="Import actions">
+            <button
+              type="button"
+              className="vm-action vm-action--view"
+              onClick={onClose}
+              disabled={busy}
+            >
+              <IconX />
+              <span>Cancel</span>
+            </button>
+            <button
+              type="button"
+              className="vm-action vm-action--start"
+              onClick={submit}
+              disabled={busy}
+            >
+              <IconUpload />
+              <span>{busy ? "Importing…" : "Import and replace"}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

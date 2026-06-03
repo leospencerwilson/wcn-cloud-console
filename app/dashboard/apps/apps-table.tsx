@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { IconX, IconTrash } from "@/components/ui/icons";
+import { IconX, IconTrash, IconExternal } from "@/components/ui/icons";
 import { statusPill } from "@/lib/utils";
 import type { App } from "@/lib/provisioner/types";
 
@@ -128,32 +128,26 @@ export default function AppsTable({
                     : "—"}
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button
-                    type="button"
-                    className="row-delete-btn"
-                    onClick={() => openDelete(a)}
-                    aria-label={`Delete ${a.name}`}
-                    title="Delete app"
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.75"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden
+                  <div className="vm-action-group" role="group" aria-label={`Actions for ${a.name}`}>
+                    <Link
+                      href={`/dashboard/apps/${a.id}`}
+                      className="vm-action vm-action--view"
+                      title="View app"
                     >
-                      <path d="M4 7h16" />
-                      <path d="M10 11v6" />
-                      <path d="M14 11v6" />
-                      <path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
-                      <path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" />
-                    </svg>
-                    <span>Delete</span>
-                  </button>
+                      <IconExternal />
+                      <span>View</span>
+                    </Link>
+                    <button
+                      type="button"
+                      className="vm-action vm-action--stop"
+                      onClick={() => openDelete(a)}
+                      aria-label={`Delete ${a.name}`}
+                      title="Delete app"
+                    >
+                      <IconTrash />
+                      <span>Delete</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

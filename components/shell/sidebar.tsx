@@ -222,7 +222,6 @@ const CUSTOMER_SECTIONS: NavSection[] = [
       { label: "Environment Variables", href: "/dashboard/environment", icon: I.env },
       { label: "Domains", href: "/dashboard/domains", icon: I.domains },
       { label: "Supabase", href: "/dashboard/supabase", icon: I.supabase },
-      { label: "Database", href: "/dashboard/database", icon: I.database },
     ],
   },
   {

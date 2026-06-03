@@ -324,19 +324,21 @@ function InviteModal({
               >
                 {inviteLink(issued.invite_token)}
               </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={copyLink}
-                >
-                  <IconCopy />
-                  {copied ? "Copied!" : "Copy link"}
-                </button>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
-                  <IconCheck />
-                  Done
-                </button>
+              <div className="flex justify-end">
+                <div className="vm-action-group" role="group" aria-label="Invite actions">
+                  <button
+                    type="button"
+                    className="vm-action vm-action--view"
+                    onClick={copyLink}
+                  >
+                    <IconCopy />
+                    <span>{copied ? "Copied!" : "Copy link"}</span>
+                  </button>
+                  <button type="button" className="vm-action vm-action--start" onClick={onClose}>
+                    <IconCheck />
+                    <span>Done</span>
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -391,19 +393,21 @@ function InviteModal({
                   {error}
                 </p>
               )}
-              <div className="flex justify-end gap-2">
-                <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
-                  <IconX />
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-sm"
-                  disabled={busy || !email}
-                >
-                  <IconUserPlus />
-                  {busy ? "Creating…" : "Create invite"}
-                </button>
+              <div className="flex justify-end">
+                <div className="vm-action-group" role="group" aria-label="Invite actions">
+                  <button type="button" className="vm-action vm-action--stop" onClick={onClose}>
+                    <IconX />
+                    <span>Cancel</span>
+                  </button>
+                  <button
+                    type="submit"
+                    className="vm-action vm-action--start"
+                    disabled={busy || !email}
+                  >
+                    <IconUserPlus />
+                    <span>{busy ? "Creating…" : "Create invite"}</span>
+                  </button>
+                </div>
               </div>
             </form>
           )}

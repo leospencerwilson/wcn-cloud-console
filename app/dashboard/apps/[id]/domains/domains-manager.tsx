@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { domainPill } from "@/lib/domain-status";
-import { IconRefresh, IconPlus, IconTrash } from "@/components/ui/icons";
+import { IconRefresh, IconPlus, IconTrash, IconExternal } from "@/components/ui/icons";
 import type { AppDomain } from "@/lib/provisioner/types";
 
 const HOSTNAME_RE =
@@ -191,10 +191,12 @@ export default function DomainsManager({
             once propagation completes.
           </p>
         </div>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={refreshAll}>
-          <IconRefresh />
-          Refresh
-        </button>
+        <div className="vm-action-group" role="group" aria-label="Domain refresh">
+          <button type="button" className="vm-action vm-action--view" onClick={refreshAll}>
+            <IconRefresh />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {loadError && (
@@ -280,15 +282,26 @@ export default function DomainsManager({
                       </span>
                     )}
                   </div>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => onRemove(d.hostname)}
-                    style={{ color: "var(--color-danger, #b03020)" }}
-                  >
-                    <IconTrash />
-                    Remove
-                  </button>
+                  <div className="vm-action-group" role="group" aria-label={`Actions for ${d.hostname}`}>
+                    <a
+                      href={`https://${d.hostname}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="vm-action vm-action--view"
+                      title="Open in new tab"
+                    >
+                      <IconExternal />
+                      <span>View</span>
+                    </a>
+                    <button
+                      type="button"
+                      className="vm-action vm-action--stop"
+                      onClick={() => onRemove(d.hostname)}
+                    >
+                      <IconTrash />
+                      <span>Remove</span>
+                    </button>
+                  </div>
                 </div>
 
                 {d.status !== "active" && (

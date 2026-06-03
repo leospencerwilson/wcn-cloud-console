@@ -329,15 +329,17 @@ function CreateModal({
               >
                 ⚠ Store this token securely — it will not be shown again.
               </p>
-              <div className="flex justify-end gap-2">
-                <button type="button" className="btn btn-primary btn-sm" onClick={copy}>
-                  <IconCopy />
-                  {copied ? "Copied!" : "Copy token"}
-                </button>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
-                  <IconCheck />
-                  Done
-                </button>
+              <div className="flex justify-end">
+                <div className="vm-action-group" role="group" aria-label="Token actions">
+                  <button type="button" className="vm-action vm-action--view" onClick={copy}>
+                    <IconCopy />
+                    <span>{copied ? "Copied!" : "Copy token"}</span>
+                  </button>
+                  <button type="button" className="vm-action vm-action--start" onClick={onClose}>
+                    <IconCheck />
+                    <span>Done</span>
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -416,19 +418,21 @@ function CreateModal({
                 </p>
               )}
 
-              <div className="flex justify-end gap-2">
-                <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
-                  <IconX />
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-sm"
-                  disabled={busy || !name.trim() || scopes.size === 0}
-                >
-                  <IconKey />
-                  {busy ? "Creating…" : "Create token"}
-                </button>
+              <div className="flex justify-end">
+                <div className="vm-action-group" role="group" aria-label="Token actions">
+                  <button type="button" className="vm-action vm-action--stop" onClick={onClose}>
+                    <IconX />
+                    <span>Cancel</span>
+                  </button>
+                  <button
+                    type="submit"
+                    className="vm-action vm-action--start"
+                    disabled={busy || !name.trim() || scopes.size === 0}
+                  >
+                    <IconKey />
+                    <span>{busy ? "Creating…" : "Create token"}</span>
+                  </button>
+                </div>
               </div>
             </form>
           )}

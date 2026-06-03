@@ -347,14 +347,16 @@ export default function BackupPolicyForm({ slug }: { slug: string }) {
                 {okMsg}
               </span>
             )}
-            <button
-              type="submit"
-              className="btn btn-primary btn-sm"
-              disabled={saving}
-            >
-              <IconSave />
-              {saving ? "Saving…" : "Save changes"}
-            </button>
+            <div className="vm-action-group" role="group" aria-label="Policy actions">
+              <button
+                type="submit"
+                className="vm-action vm-action--start"
+                disabled={saving}
+              >
+                <IconSave />
+                <span>{saving ? "Saving…" : "Save changes"}</span>
+              </button>
+            </div>
           </div>
         </div>
       </form>

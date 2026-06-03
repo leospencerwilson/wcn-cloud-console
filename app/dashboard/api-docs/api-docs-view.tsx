@@ -391,12 +391,6 @@ function EndpointBlock({ section, endpoint }: { section: Section; endpoint: Endp
           </table>
         </div>
       )}
-      {endpoint.stub && (
-        <p className="api-doc-stub-note">
-          Reference stub — expanded examples and field-level documentation
-          coming in a follow-up.
-        </p>
-      )}
     </article>
   );
 }

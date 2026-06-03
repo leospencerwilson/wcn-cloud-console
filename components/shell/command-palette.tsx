@@ -23,14 +23,40 @@ const ADMIN_CMDS: Cmd[] = [
 ];
 
 const CUSTOMER_CMDS: Cmd[] = [
-  { id: "c-ov", label: "Overview", group: "Customer", href: "/dashboard" },
-  { id: "c-apps", label: "Apps", group: "Customer", href: "/dashboard/apps" },
-  { id: "c-sb", label: "Supabase", group: "Customer", href: "/dashboard/supabase" },
-  { id: "c-hl", label: "Health", group: "Customer", href: "/dashboard/health" },
-  { id: "c-tm", label: "Team", group: "Customer", href: "/dashboard/team" },
-  { id: "c-tk", label: "API tokens", group: "Customer", href: "/dashboard/api-tokens" },
-  { id: "c-ad", label: "API docs", group: "Customer", href: "/dashboard/api-docs" },
-  { id: "c-au", label: "Audit", group: "Customer", href: "/dashboard/audit" },
+  // ── Navigate ────────────────────────────────────────────────────
+  { id: "nav-ov", label: "Overview", group: "Navigate", href: "/dashboard", hint: "g o" },
+  { id: "nav-apps", label: "Deployed apps", group: "Navigate", href: "/dashboard/apps", hint: "g a" },
+  { id: "nav-env", label: "Environment variables", group: "Navigate", href: "/dashboard/environment" },
+  { id: "nav-dom", label: "Custom domains", group: "Navigate", href: "/dashboard/domains" },
+  { id: "nav-sb", label: "Supabase", group: "Navigate", href: "/dashboard/supabase" },
+  { id: "nav-sb-tables", label: "Supabase → Tables", group: "Navigate", href: "/dashboard/supabase" },
+  { id: "nav-sb-sql", label: "Supabase → SQL editor", group: "Navigate", href: "/dashboard/supabase/sql" },
+  { id: "nav-sb-auth", label: "Supabase → Auth", group: "Navigate", href: "/dashboard/supabase/auth" },
+  { id: "nav-sb-storage", label: "Supabase → Storage", group: "Navigate", href: "/dashboard/supabase/storage" },
+  { id: "nav-sb-policies", label: "Supabase → Policies", group: "Navigate", href: "/dashboard/supabase/policies" },
+  { id: "nav-sb-realtime", label: "Supabase → Realtime", group: "Navigate", href: "/dashboard/supabase/realtime" },
+  { id: "nav-sb-functions", label: "Supabase → Functions", group: "Navigate", href: "/dashboard/supabase/functions" },
+  { id: "nav-sb-conn", label: "Supabase → Connection", group: "Navigate", href: "/dashboard/supabase/connection" },
+  { id: "nav-hl", label: "Health", group: "Navigate", href: "/dashboard/health" },
+  { id: "nav-bk", label: "Backups", group: "Navigate", href: "/dashboard/backups" },
+  { id: "nav-tm", label: "Team", group: "Navigate", href: "/dashboard/team" },
+  { id: "nav-tk", label: "API tokens", group: "Navigate", href: "/dashboard/api-tokens" },
+  { id: "nav-ad", label: "API docs", group: "Navigate", href: "/dashboard/api-docs" },
+  { id: "nav-au", label: "Audit log", group: "Navigate", href: "/dashboard/audit" },
+  { id: "nav-set", label: "Settings", group: "Navigate", href: "/dashboard/settings" },
+
+  // ── Actions ─────────────────────────────────────────────────────
+  { id: "act-new-app", label: "Create new app", group: "Actions", href: "/dashboard/apps/new", hint: "+" },
+  { id: "act-new-table", label: "Create new table", group: "Actions", href: "/dashboard/supabase" },
+  { id: "act-new-bucket", label: "Create new storage bucket", group: "Actions", href: "/dashboard/supabase/storage" },
+  { id: "act-new-policy", label: "Create new RLS policy", group: "Actions", href: "/dashboard/supabase/policies" },
+  { id: "act-new-fn", label: "Deploy new edge function", group: "Actions", href: "/dashboard/supabase/functions" },
+  { id: "act-invite-user", label: "Invite team member", group: "Actions", href: "/dashboard/team" },
+  { id: "act-new-token", label: "Create new API token", group: "Actions", href: "/dashboard/api-tokens" },
+  { id: "act-add-domain", label: "Add custom domain", group: "Actions", href: "/dashboard/domains" },
+  { id: "act-connect-gh", label: "Connect GitHub", group: "Actions", href: "/dashboard/settings" },
+  { id: "act-run-backup", label: "Run backup now", group: "Actions", href: "/dashboard/backups" },
+  { id: "act-open-studio", label: "Open Supabase Studio", group: "Actions", href: "/dashboard/supabase" },
 ];
 
 export default function CommandPalette({
@@ -148,7 +174,7 @@ export default function CommandPalette({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Jump to…"
+            placeholder="Search pages, actions, or resources…"
             style={{
               background: "transparent",
               border: 0,

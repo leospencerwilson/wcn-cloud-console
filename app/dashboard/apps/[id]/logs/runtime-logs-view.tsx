@@ -57,14 +57,16 @@ export default function RuntimeLogsView({
               ))}
             </select>
           </label>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={() => setStreamKey((k) => k + 1)}
-          >
-            <IconRefresh />
-            Reconnect
-          </button>
+          <div className="vm-action-group" role="group" aria-label="Log actions">
+            <button
+              type="button"
+              className="vm-action vm-action--view"
+              onClick={() => setStreamKey((k) => k + 1)}
+            >
+              <IconRefresh />
+              <span>Reconnect</span>
+            </button>
+          </div>
         </div>
       </div>
       <div className="px-2 py-2">
