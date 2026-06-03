@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { IconPlus, IconX, IconRefresh, IconExternal } from "@/components/ui/icons";
+import { IconPlus, IconX, IconRefresh, IconExternal, IconArrowRight } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { App, AppCreateInput } from "@/lib/provisioner/types";
@@ -183,15 +183,8 @@ export default function NewAppForm({ slug }: { slug: string }) {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-baseline justify-between">
+      <div>
         <h2 className="type-h2">§ NEW APPLICATION</h2>
-        <Link
-          href="/dashboard/apps"
-          className="type-mono text-[12px]"
-          style={{ color: "var(--color-muted)" }}
-        >
-          ← Back to apps
-        </Link>
       </div>
 
       <Card>
@@ -228,20 +221,24 @@ export default function NewAppForm({ slug }: { slug: string }) {
           {sourceType !== "dockerimage" && (
             <>
               {/* Mode switcher: GitHub picker ↔ free-form URL */}
-              <div className="flex items-center gap-2 type-mono text-[12px]">
+              <div className="vm-action-group" role="group" aria-label="Source picker">
                 <button
                   type="button"
-                  className={`btn btn-sm ${repoMode === "github" ? "btn-primary" : "btn-ghost"}`}
+                  className={`vm-action ${repoMode === "github" ? "vm-action--start" : ""}`}
                   onClick={() => setRepoMode("github")}
+                  style={{ opacity: repoMode === "github" ? 1 : 0.6 }}
                 >
-                  Choose from GitHub
+                  <IconExternal />
+                  <span>Choose from GitHub</span>
                 </button>
                 <button
                   type="button"
-                  className={`btn btn-sm ${repoMode === "url" ? "btn-primary" : "btn-ghost"}`}
+                  className={`vm-action ${repoMode === "url" ? "vm-action--view" : ""}`}
                   onClick={() => setRepoMode("url")}
+                  style={{ opacity: repoMode === "url" ? 1 : 0.6 }}
                 >
-                  Paste URL
+                  <IconArrowRight />
+                  <span>Paste URL</span>
                 </button>
               </div>
 
@@ -265,13 +262,15 @@ export default function NewAppForm({ slug }: { slug: string }) {
                       <p className="type-mono text-[12.5px]" style={{ color: "var(--text-2)" }}>
                         No GitHub account connected yet. Connect to pick from your private repos.
                       </p>
-                      <a
-                        href={`/api/integrations/github/start?slug=${encodeURIComponent(slug)}`}
-                        className="btn btn-primary btn-sm"
-                      >
-                        <IconExternal />
-                        Connect GitHub
-                      </a>
+                      <div className="vm-action-group inline-flex" role="group" aria-label="GitHub">
+                        <a
+                          href={`/api/integrations/github/start?slug=${encodeURIComponent(slug)}`}
+                          className="vm-action vm-action--start"
+                        >
+                          <IconExternal />
+                          <span>Connect GitHub</span>
+                        </a>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -279,15 +278,17 @@ export default function NewAppForm({ slug }: { slug: string }) {
                         <p className="type-mono text-[11.5px]" style={{ color: "var(--text-3)" }}>
                           Connected as <code>@{ghStatus.github_login}</code>
                         </p>
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-sm"
-                          onClick={() => { setGhRepos(null); loadRepos(); }}
-                          disabled={ghReposLoading}
-                        >
-                          <IconRefresh />
-                          {ghReposLoading ? "Loading…" : "Refresh"}
-                        </button>
+                        <div className="vm-action-group" role="group" aria-label="Refresh repos">
+                          <button
+                            type="button"
+                            className="vm-action vm-action--view"
+                            onClick={() => { setGhRepos(null); loadRepos(); }}
+                            disabled={ghReposLoading}
+                          >
+                            <IconRefresh />
+                            <span>{ghReposLoading ? "Loading…" : "Refresh"}</span>
+                          </button>
+                        </div>
                       </div>
                       {ghReposError && (
                         <p className="type-mono text-[12px]" style={{ color: "var(--color-danger, #b03020)" }}>
@@ -392,19 +393,21 @@ export default function NewAppForm({ slug }: { slug: string }) {
             </p>
           )}
 
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="btn btn-primary"
-            >
-              <IconPlus />
-              {submitting ? "Creating…" : "Create application"}
-            </button>
-            <Link href="/dashboard/apps" className="btn btn-ghost">
-              <IconX />
-              Cancel
-            </Link>
+          <div className="pt-2">
+            <div className="vm-action-group" role="group" aria-label="New app actions">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="vm-action vm-action--start"
+              >
+                <IconPlus />
+                <span>{submitting ? "Creating…" : "Create application"}</span>
+              </button>
+              <Link href="/dashboard/apps" className="vm-action vm-action--stop">
+                <IconX />
+                <span>Cancel</span>
+              </Link>
+            </div>
           </div>
         </form>
       </Card>

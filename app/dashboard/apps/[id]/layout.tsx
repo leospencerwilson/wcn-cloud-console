@@ -92,22 +92,46 @@ export default async function DashboardAppLayout({
         return (
           <Card>
             <div className="px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
-              <div className="space-y-1 min-w-0">
-                <p className="type-eyebrow" style={{ color: "var(--text-3)" }}>§ STANDARD URL</p>
-                <a
-                  href={standardUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="type-mono"
-                  style={{
-                    color: "var(--accent)",
-                    fontSize: 14,
-                    textDecoration: "none",
-                    wordBreak: "break-all",
-                  }}
-                >
-                  {standardUrl}
-                </a>
+              <div className="space-y-2 min-w-0">
+                <div>
+                  <p className="type-eyebrow" style={{ color: "var(--text-3)" }}>§ STANDARD URL</p>
+                  <a
+                    href={standardUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="type-mono"
+                    style={{
+                      color: "var(--accent)",
+                      fontSize: 14,
+                      textDecoration: "none",
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    {standardUrl}
+                  </a>
+                </div>
+                {app.source_repo && (
+                  <div>
+                    <p className="type-eyebrow" style={{ color: "var(--text-3)" }}>§ GIT REPOSITORY</p>
+                    <a
+                      href={app.source_repo.replace(/\.git$/, "").replace(/^git@github\.com:/, "https://github.com/")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="type-mono"
+                      style={{
+                        color: "var(--text-2)",
+                        fontSize: 13,
+                        textDecoration: "none",
+                        wordBreak: "break-all",
+                      }}
+                    >
+                      {app.source_repo}
+                      {app.source_branch && (
+                        <span style={{ color: "var(--text-4)" }}> ({app.source_branch})</span>
+                      )}
+                    </a>
+                  </div>
+                )}
               </div>
               <div className="vm-action-group" role="group" aria-label="Open">
                 <a
