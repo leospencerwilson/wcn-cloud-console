@@ -19,10 +19,19 @@ interface GithubUserResponse {
   login: string;
 }
 
+// Behind Caddy, req.url reflects the inner docker host
+// (http://localhost:3000/...). new URL(path, req.url) carried that into
+// the redirect, which is why Connect GitHub was sending users to
+// localhost after consent. Build redirect URLs from ROOT_DOMAIN.
+function publicUrl(path: string): string {
+  const rootDomain = process.env.ROOT_DOMAIN ?? "western-communication.com";
+  return `https://console.${rootDomain}${path}`;
+}
+
 export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(publicUrl("/login"));
   }
 
   const code = req.nextUrl.searchParams.get("code") || "";
@@ -39,7 +48,7 @@ export async function GET(req: NextRequest) {
 
   function back(qs: string): Response {
     const target = slug ? `/dashboard/settings?${qs}` : `/dashboard?${qs}`;
-    return NextResponse.redirect(new URL(target, req.url));
+    return NextResponse.redirect(publicUrl(target));
   }
 
   if (ghError) return back(`gh_error=${encodeURIComponent(ghError)}`);

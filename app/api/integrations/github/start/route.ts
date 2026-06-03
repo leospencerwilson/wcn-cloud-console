@@ -13,7 +13,8 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    const rootDomain = process.env.ROOT_DOMAIN ?? "western-communication.com";
+    return NextResponse.redirect(`https://console.${rootDomain}/login`);
   }
 
   // Only a customer_admin or a wcn_admin acting on behalf of a customer can
