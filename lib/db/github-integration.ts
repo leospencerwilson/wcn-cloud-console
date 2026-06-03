@@ -61,7 +61,7 @@ export interface GithubIntegrationWithToken extends GithubIntegrationRow {
 export async function getIntegration(
   customerSlug: string,
 ): Promise<GithubIntegrationRow | null> {
-  const r = await query<GithubIntegrationRow>(
+  const rows = await query<GithubIntegrationRow>(
     `SELECT id, customer_slug, github_user_id, github_login, scopes,
             connected_at, last_used_at, connected_by_email
        FROM github_integrations
@@ -69,13 +69,13 @@ export async function getIntegration(
       LIMIT 1`,
     [customerSlug],
   );
-  return r.rows[0] ?? null;
+  return rows[0] ?? null;
 }
 
 export async function getIntegrationWithToken(
   customerSlug: string,
 ): Promise<GithubIntegrationWithToken | null> {
-  const r = await query<GithubIntegrationRow & { encrypted_token: Buffer }>(
+  const rows = await query<GithubIntegrationRow & { encrypted_token: Buffer }>(
     `SELECT id, customer_slug, github_user_id, github_login, scopes,
             connected_at, last_used_at, connected_by_email, encrypted_token
        FROM github_integrations
@@ -83,7 +83,7 @@ export async function getIntegrationWithToken(
       LIMIT 1`,
     [customerSlug],
   );
-  const row = r.rows[0];
+  const row = rows[0];
   if (!row) return null;
   const { encrypted_token, ...rest } = row;
   return { ...rest, access_token: decryptToken(encrypted_token) };
