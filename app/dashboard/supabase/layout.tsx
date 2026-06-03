@@ -70,6 +70,7 @@ export default async function DashboardSupabaseLayout({
           { label: "Functions", href: "/dashboard/supabase/functions" },
           { label: "Policies", href: "/dashboard/supabase/policies" },
           { label: "Connection", href: "/dashboard/supabase/connection" },
+          { label: "Migrate", href: "/dashboard/supabase/migrate" },
         ]}
       />
       <div>{children}</div>
