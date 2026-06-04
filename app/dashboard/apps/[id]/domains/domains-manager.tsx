@@ -284,6 +284,23 @@ export default function DomainsManager({
                         </span>
                       );
                     })()}
+                    {d.auto_configured && (
+                      <span
+                        className="type-mono text-[10.5px]"
+                        title={`We auto-created the CNAME at ${d.auto_configured.display_name ?? d.auto_configured.provider} in zone ${d.auto_configured.zone}. We'll also clean it up when this domain is removed.`}
+                        style={{
+                          padding: "2px 8px",
+                          borderRadius: 3,
+                          background:
+                            "color-mix(in oklch, var(--ok) 18%, transparent)",
+                          color: "var(--ok)",
+                          border:
+                            "1px solid color-mix(in oklch, var(--ok) 40%, var(--line))",
+                        }}
+                      >
+                        auto via {d.auto_configured.provider}
+                      </span>
+                    )}
                     {d.activated_at && (
                       <span className="type-mono text-[11px]" style={{ color: "var(--color-muted)" }}>
                         active since {new Date(d.activated_at).toLocaleString()}
@@ -314,11 +331,38 @@ export default function DomainsManager({
 
                 {d.status !== "active" && (
                   <div className="space-y-2">
-                    <p className="type-mono text-[11px]" style={{ color: "var(--color-muted)" }}>
-                      {d.instructions ||
-                        `Add a CNAME record: ${d.hostname} → ${d.cname_target}`}
-                    </p>
-                    <CopyableCname value={d.cname_target} />
+                    {d.auto_configured ? (
+                      <p
+                        className="type-mono text-[11px]"
+                        style={{ color: "var(--ok)" }}
+                      >
+                        ✓ CNAME created automatically at{" "}
+                        <strong>{d.auto_configured.display_name ?? d.auto_configured.provider}</strong>
+                        {" "}in zone <code>{d.auto_configured.zone}</code>. Waiting for SSL
+                        provisioning — this typically takes 30s–2min.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="type-mono text-[11px]" style={{ color: "var(--color-muted)" }}>
+                          {d.instructions ||
+                            `Add a CNAME record: ${d.hostname} → ${d.cname_target}`}
+                        </p>
+                        <CopyableCname value={d.cname_target} />
+                        <p
+                          className="type-mono text-[11px]"
+                          style={{ color: "var(--text-4)", marginTop: 6 }}
+                        >
+                          Tip: connect your DNS provider under{" "}
+                          <a
+                            href="/dashboard/domains/dns-providers"
+                            style={{ color: "var(--brand)" }}
+                          >
+                            Domains → DNS providers
+                          </a>{" "}
+                          and we'll add this record for you next time.
+                        </p>
+                      </>
+                    )}
                   </div>
                 )}
 

@@ -50,6 +50,16 @@ export type AppDomain = {
   instructions?: string;
   verification_errors?: string[];
   activated_at: string | null;
+  // Present when the domain's CNAME was auto-created at the customer's
+  // connected DNS provider. Set on the add() response AND on subsequent
+  // list rows so the UI can hide manual-config instructions and show a
+  // "auto via {provider}" pill.
+  auto_configured?: {
+    provider: "cloudflare" | "route53" | "google" | "vercel" | "digitalocean";
+    zone: string;
+    record_id: string;
+    display_name?: string;
+  } | null;
 };
 
 export type RedirectRule = {
