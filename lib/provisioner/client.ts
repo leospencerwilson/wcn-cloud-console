@@ -40,6 +40,16 @@ export interface ProvisionInput {
   domain?: string;
   brandColour?: string;
   resume?: boolean;
+  // Optional VM resources (blank → provisioner defaults from the tier).
+  cores?: number;
+  memoryMb?: number;
+  diskGb?: number;
+}
+
+export interface HealthComponent {
+  component: string;
+  status: "ok" | "fail" | string;
+  detail?: string;
 }
 
 export async function startProvision(input: ProvisionInput): Promise<JobRef> {
@@ -98,4 +108,26 @@ export async function cancelJob(jobId: string): Promise<Response> {
     headers: authHeaders(),
     cache: "no-store",
   });
+}
+
+// Re-run a failed/cancelled provision. mode="resume" continues from where it
+// left off; mode="fresh" destroys the partial VM and reprovisions from blank.
+export async function retryJob(jobId: string, mode: "resume" | "fresh" = "resume"): Promise<Response> {
+  return fetch(`${baseUrl()}/jobs/${jobId}/retry?mode=${mode}`, {
+    method: "POST",
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+}
+
+// Per-component tri-state health for a customer VM (DNS, tunnel, VM net, …).
+export async function getCustomerHealth(
+  slug: string,
+): Promise<{ components: HealthComponent[]; checked_at?: string; error?: string }> {
+  const res = await fetch(`${baseUrl()}/vms/${slug}/health`, {
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`provisioner ${res.status}`);
+  return (await res.json()) as { components: HealthComponent[]; checked_at?: string; error?: string };
 }

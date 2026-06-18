@@ -16,6 +16,18 @@ const schema = z.object({
   contactEmail: z.string().email(),
 });
 
+// Optional VM resources. Blank → provisioner defaults from the tier. Disk
+// floors at the 60 GB template (grow-only). RAM entered in GB → converted to MB.
+const numOrUndef = (v: FormDataEntryValue | null): number | undefined => {
+  const s = typeof v === "string" ? v.trim() : "";
+  return s === "" ? undefined : Number(s);
+};
+const resourceSchema = z.object({
+  cores: z.number().int().min(1).max(32).optional(),
+  ramGb: z.number().int().min(1).max(64).optional(),
+  diskGb: z.number().int().min(60).max(2000).optional(),
+});
+
 export type CreateCustomerState = { error?: string } | undefined;
 
 export async function createCustomerAction(
@@ -32,6 +44,17 @@ export async function createCustomerAction(
   if (!parsed.success) {
     return {
       error: `Invalid input: ${parsed.error.issues.map((i) => i.message).join(", ")}`,
+    };
+  }
+
+  const resParsed = resourceSchema.safeParse({
+    cores: numOrUndef(formData.get("cores")),
+    ramGb: numOrUndef(formData.get("ram_gb")),
+    diskGb: numOrUndef(formData.get("disk_gb")),
+  });
+  if (!resParsed.success) {
+    return {
+      error: `Invalid resources: ${resParsed.error.issues.map((i) => i.message).join(", ")}`,
     };
   }
 
@@ -83,6 +106,9 @@ export async function createCustomerAction(
       name: customer.name,
       email: customer.contact_email,
       resume: true,
+      cores: resParsed.data.cores,
+      memoryMb: resParsed.data.ramGb != null ? resParsed.data.ramGb * 1024 : undefined,
+      diskGb: resParsed.data.diskGb,
     });
     jobId = job.jobId;
     await setLastJobId(customer.slug, job.jobId);

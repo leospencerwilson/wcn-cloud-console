@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
-type Status = "connecting" | "queued" | "running" | "succeeded" | "failed" | "lost";
+type Status = "connecting" | "queued" | "running" | "succeeded" | "failed" | "cancelled" | "lost";
 
 const statusLabel: Record<Status, string> = {
   connecting: "Connecting…",
@@ -11,12 +11,14 @@ const statusLabel: Record<Status, string> = {
   running: "Running",
   succeeded: "Succeeded",
   failed: "Failed",
+  cancelled: "Cancelled",
   lost: "Stream lost",
 };
 
 function statusColor(s: Status): string {
   if (s === "succeeded") return "var(--color-accent)";
   if (s === "failed") return "#c0392b";
+  if (s === "cancelled") return "#8a8f98";
   if (s === "lost") return "#d4a017";
   if (s === "running") return "var(--color-ink)";
   return "var(--color-muted)";
@@ -29,28 +31,45 @@ type PhaseState = "pending" | "running" | "done" | "failed";
 interface Phase {
   key: string;
   label: string;
-  match: RegExp;
 }
 
+// Keys match the WCN_STEP markers emitted by common.sh / provision-customer.sh.
 const PHASES: Phase[] = [
-  { key: "vm-create", label: "vm-create", match: /\[(?:1|2|5)\/10\]|vm-create|Cloning template|Allocating VMID/i },
-  { key: "cloud-init", label: "cloud-init", match: /\[(?:6|7)\/10\]|cloud-init|Configuring VM/i },
-  { key: "dns", label: "dns", match: /\[4\/10\]|\bDNS\b/i },
-  { key: "tunnel", label: "tunnel", match: /\[(?:3|8)\/10\]|Cloudflare Tunnel|tunnel cred/i },
-  { key: "coolify-install", label: "coolify-install", match: /\[10\/10\]|Coolify service account|coolify-install/i },
-  { key: "supabase-up", label: "supabase-up", match: /\[9\/10\]|Health check|supabase/i },
+  { key: "customer", label: "Customer record" },
+  { key: "alloc", label: "VMID + IP" },
+  { key: "tunnel", label: "Cloudflare tunnel" },
+  { key: "dns", label: "DNS records" },
+  { key: "clone", label: "Clone VM" },
+  { key: "configure", label: "Configure (cores/RAM/disk)" },
+  { key: "start", label: "Start + ready" },
+  { key: "firstboot", label: "Firstboot" },
+  { key: "healthcheck", label: "Health check" },
+  { key: "coolify", label: "Coolify bootstrap" },
+  { key: "metrics", label: "Metrics" },
+  { key: "finalize", label: "Finalise" },
 ];
+const PHASE_INDEX: Record<string, number> = Object.fromEntries(PHASES.map((p, i) => [p.key, i]));
 
-function detectPhase(line: string): string | null {
-  for (const p of PHASES) {
-    if (p.match.test(line)) return p.key;
-  }
-  const marker = /(?:^|\s)(?:==>|===)\s*([a-z0-9-]+)|\[phase:([a-z0-9-]+)\]/i.exec(line);
-  if (marker) {
-    const k = (marker[1] || marker[2] || "").toLowerCase();
-    if (PHASES.find((p) => p.key === k)) return k;
+const STEP_RE = /^WCN_STEP (\S+) (running|done|failed)\b/;
+
+// The provisioner prints `WCN_STEP <key> <state>` on stdout at each boundary —
+// a deterministic signal, replacing the old prose-regex guessing.
+function detectStep(line: string): { key: string; state: "running" | "done" | "failed" } | null {
+  const m = STEP_RE.exec(line);
+  if (m && PHASE_INDEX[m[1]] !== undefined) {
+    return { key: m[1], state: m[2] as "running" | "done" | "failed" };
   }
   return null;
+}
+
+// Colour a log line by its common.sh severity prefix (Phase B / ask 3).
+function lineColor(line: string): string | undefined {
+  if (line.startsWith("[ OK ]")) return "#46c46a"; // green
+  if (line.startsWith("[WARN]")) return "#e0b341"; // amber
+  if (line.startsWith("[ERR ]")) return "#ff6b6b"; // red
+  if (line.startsWith("[INFO]")) return "#7fb0ff"; // blue
+  if (line.startsWith("✅")) return "#46c46a";
+  return undefined;
 }
 
 function formatElapsed(ms: number): string {
@@ -87,6 +106,7 @@ export function JobLog({ jobId }: JobLogProps) {
   const paneRef = useRef<HTMLPreElement | null>(null);
   const autoScroll = useRef(true);
   const esRef = useRef<EventSource | null>(null);
+  const currentPhaseRef = useRef<string | null>(null);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const attemptsRef = useRef(0);
   const lineRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -94,28 +114,31 @@ export function JobLog({ jobId }: JobLogProps) {
 
   function pushLine(raw: string) {
     const cleaned = raw.replace(ANSI_RE, "");
-    setLines((prev) => [...prev, cleaned]);
-    setStartedAt((prev) => prev ?? Date.now());
-
-    const phaseKey = detectPhase(cleaned);
-    if (phaseKey) {
-      setCurrentPhase(phaseKey);
+    const step = detectStep(cleaned);
+    if (step) {
+      // Marker line drives the checklist; keep it out of the human log body.
+      currentPhaseRef.current = step.key;
+      setCurrentPhase(step.key);
       setPhaseStates((prev) => {
         const next = { ...prev };
-        let seen = false;
-        for (const p of PHASES) {
-          if (p.key === phaseKey) {
-            next[p.key] = "running";
-            seen = true;
-          } else if (!seen) {
-            if (next[p.key] === "pending" || next[p.key] === "running") {
-              next[p.key] = "done";
-            }
+        const idx = PHASE_INDEX[step.key];
+        if (step.state === "running") {
+          next[step.key] = "running";
+          for (let i = 0; i < idx; i++) {
+            const k = PHASES[i].key;
+            if (next[k] === "pending" || next[k] === "running") next[k] = "done";
           }
+        } else if (step.state === "done") {
+          next[step.key] = "done";
+        } else {
+          next[step.key] = "failed";
         }
         return next;
       });
+      return;
     }
+    setLines((prev) => [...prev, cleaned]);
+    setStartedAt((prev) => prev ?? Date.now());
   }
 
   function openStream(isReconnect: boolean) {
@@ -157,14 +180,13 @@ export function JobLog({ jobId }: JobLogProps) {
           setStatus(parsed.status);
           setPhaseStates((prev) => {
             const next = { ...prev };
-            if (currentPhase) {
-              next[currentPhase] = parsed.status === "failed" ? "failed" : "done";
+            const cur = currentPhaseRef.current; // ref, not the stale closure value
+            if (parsed.status === "succeeded") {
+              for (const p of PHASES) if (next[p.key] !== "failed") next[p.key] = "done";
             } else {
-              for (const p of PHASES) {
-                if (next[p.key] === "running") {
-                  next[p.key] = parsed.status === "failed" ? "failed" : "done";
-                }
-              }
+              // failed / cancelled — mark the in-flight phase failed.
+              if (cur && next[cur] === "running") next[cur] = "failed";
+              else for (const p of PHASES) if (next[p.key] === "running") next[p.key] = "failed";
             }
             return next;
           });
@@ -205,29 +227,31 @@ export function JobLog({ jobId }: JobLogProps) {
           if (!cancelled && text) {
             const parts = text.replace(ANSI_RE, "").split(/\r?\n/);
             if (parts.length && parts[parts.length - 1] === "") parts.pop();
-            setLines(parts);
-            setStartedAt(Date.now() - 1000);
-            let phase: string | null = null;
+            // Rebuild phase state + visible log from the persisted markers so a
+            // reload reconstructs the checklist instead of resetting it.
+            const visible: string[] = [];
+            const states: Record<string, PhaseState> = Object.fromEntries(
+              PHASES.map((p) => [p.key, "pending" as PhaseState]),
+            );
+            let last: string | null = null;
             for (const ln of parts) {
-              const p = detectPhase(ln);
-              if (p) phase = p;
+              const step = detectStep(ln);
+              if (step) {
+                last = step.key;
+                const idx = PHASE_INDEX[step.key];
+                if (step.state === "running") {
+                  states[step.key] = "running";
+                  for (let i = 0; i < idx; i++) if (states[PHASES[i].key] === "pending") states[PHASES[i].key] = "done";
+                } else if (step.state === "done") states[step.key] = "done";
+                else states[step.key] = "failed";
+              } else {
+                visible.push(ln);
+              }
             }
-            if (phase) {
-              setCurrentPhase(phase);
-              setPhaseStates((prev) => {
-                const next = { ...prev };
-                let seen = false;
-                for (const p of PHASES) {
-                  if (p.key === phase) {
-                    next[p.key] = "running";
-                    seen = true;
-                  } else if (!seen) {
-                    next[p.key] = "done";
-                  }
-                }
-                return next;
-              });
-            }
+            setLines(visible);
+            setStartedAt(Date.now() - 1000);
+            setPhaseStates(states);
+            if (last) { setCurrentPhase(last); currentPhaseRef.current = last; }
           }
         }
       } catch {
@@ -303,10 +327,23 @@ export function JobLog({ jobId }: JobLogProps) {
     } catch {}
   }
 
-  async function onRetry() {
+  async function onRetry(mode: "resume" | "fresh") {
+    if (
+      mode === "fresh" &&
+      !window.confirm(
+        "Start over? This DESTROYS the current VM and reprovisions from scratch (a final backup is taken first).",
+      )
+    )
+      return;
     try {
-      const r = await fetch(`/api/provision/${jobId}/retry`, { method: "POST" });
-      if (!r.ok) window.alert(`Retry failed: ${r.status}`);
+      const r = await fetch(`/api/provision/${jobId}/retry?mode=${mode}`, { method: "POST" });
+      if (!r.ok) {
+        window.alert(`Retry failed: ${r.status}`);
+        return;
+      }
+      const data = (await r.json()) as { jobId?: string };
+      // Navigate to the new job (swap the last path segment).
+      if (data.jobId) window.location.href = window.location.pathname.replace(/[^/]+$/, data.jobId);
     } catch (e) {
       window.alert(`Retry failed: ${e instanceof Error ? e.message : String(e)}`);
     }
@@ -374,6 +411,7 @@ export function JobLog({ jobId }: JobLogProps) {
         }}
         style={{
           opacity: visible ? 1 : 0.18,
+          color: lineColor(line),
           background: isActiveMatch ? "rgba(255,255,160,0.08)" : "transparent",
         }}
       >
@@ -470,11 +508,19 @@ export function JobLog({ jobId }: JobLogProps) {
             </Link>
             <button
               type="button"
-              onClick={onRetry}
+              onClick={() => onRetry("resume")}
               className="type-eyebrow px-3 py-1.5 hover:opacity-60 transition-opacity"
               style={{ border: "1px solid var(--color-ink)", color: "var(--color-ink)" }}
             >
-              Retry job
+              Resume
+            </button>
+            <button
+              type="button"
+              onClick={() => onRetry("fresh")}
+              className="type-eyebrow px-3 py-1.5 hover:opacity-60 transition-opacity"
+              style={{ border: "1px solid #c0392b", color: "#c0392b" }}
+            >
+              Start over
             </button>
           </div>
         </div>

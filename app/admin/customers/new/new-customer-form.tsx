@@ -282,6 +282,25 @@ export default function NewCustomerForm() {
         />
       </div>
 
+      <div>
+        <Label>Resources <span style={{ color: "var(--color-muted)", fontWeight: 400 }}>(optional)</span></Label>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <Input id="cores" name="cores" type="number" min={1} max={32} placeholder="vCPU" aria-label="vCPU cores" />
+          </div>
+          <div>
+            <Input id="ram_gb" name="ram_gb" type="number" min={1} max={64} placeholder="RAM (GB)" aria-label="RAM in GB" />
+          </div>
+          <div>
+            <Input id="disk_gb" name="disk_gb" type="number" min={60} max={2000} placeholder="Disk (GB)" aria-label="Disk in GB" />
+          </div>
+        </div>
+        <p className="text-[12px] mt-3 leading-[1.5]" style={{ color: "var(--color-muted)" }}>
+          Leave blank to use the tier default — site 2 vCPU / 4 GB / 60 GB · site-db 4 / 8 / 80 · pro 8 / 16 / 160.
+          Disk is grow-only (min 60 GB).
+        </p>
+      </div>
+
       <div className="pt-4">
         <SubmitButton />
       </div>
