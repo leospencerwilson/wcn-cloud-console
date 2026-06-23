@@ -30,7 +30,7 @@ export default function VoipSummary() {
     load();
     const id = setInterval(() => {
       if (document.visibilityState === "visible") load();
-    }, 10000);
+    }, 1000);
     return () => {
       alive = false;
       clearInterval(id);
