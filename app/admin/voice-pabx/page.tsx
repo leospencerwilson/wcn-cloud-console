@@ -1,7 +1,7 @@
 import { requireWcnAdmin } from "@/lib/auth/session";
 import { PageHeader } from "@/components/page-header";
 import MetricsDashboard from "@/components/metrics-dashboard";
-import AlertsDashboard from "@/components/alerts-dashboard";
+import VoipSummary from "@/components/voip-summary";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +19,9 @@ export default async function VoicePabxMonitoringPage() {
         eyebrow="Voice & PABX"
         title="Monitoring & Alerting"
         subtitle="Live health of the VoIP platform — SBC, edge and core nodes."
-        actions={<span className="type-meta">node_exporter via Prometheus + Alertmanager</span>}
+        actions={<span className="type-meta">FreeSWITCH + Kazoo + node_exporter via Prometheus</span>}
       />
+      <VoipSummary />
       {HOSTS.map((h) => (
         <div key={h.key}>
           <div className="mb-3.5 flex items-baseline justify-between gap-6 flex-wrap">
@@ -34,10 +35,6 @@ export default async function VoicePabxMonitoringPage() {
           />
         </div>
       ))}
-      <div>
-        <h3 className="type-h3" style={{ marginBottom: 14 }}>Active alerts</h3>
-        <AlertsDashboard />
-      </div>
     </div>
   );
 }

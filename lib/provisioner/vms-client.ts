@@ -210,6 +210,10 @@ export const provisionerVms = {
     call<MetricsResponse>(
       `/vms/${slug}/metrics?window=${window}&series=${encodeURIComponent(series)}`,
     ),
+  voipSummary: () =>
+    call<{ active_calls: number | null; registrations: number | null; companies: number | null }>(
+      `/voip/summary`,
+    ),
   snapshots: {
     list: (slug: string) => call<VmSnapshot[]>(`/vms/${slug}/snapshots`),
     create: (slug: string, input: VmSnapshotInput, actor: string) =>
