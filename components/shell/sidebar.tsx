@@ -42,6 +42,11 @@ function Svg({ children }: { children: ReactNode }) {
 }
 
 const I = {
+  voice: (
+    <Svg>
+      <path d="M6 3h3l1.6 5-2.6 1.5a12 12 0 0 0 6 6l1.5-2.6 5 1.6v3a2 2 0 0 1-2 2A18 18 0 0 1 4 5a2 2 0 0 1 2-2z" />
+    </Svg>
+  ),
   overview: (
     <Svg>
       <rect x="3" y="3" width="7" height="9" rx="1.5" />
@@ -196,6 +201,12 @@ const ADMIN_SECTIONS: NavSection[] = [
       { label: "Customers", href: "/admin/customers", icon: I.customers },
       { label: "Tiers", href: "/admin/tiers", icon: I.tiers },
       { label: "Capacity", href: "/admin/capacity", icon: I.capacity },
+    ],
+  },
+  {
+    heading: "Voice & PABX",
+    items: [
+      { label: "Monitoring & Alerting", href: "/admin/voice-pabx", icon: I.voice },
     ],
   },
   {
