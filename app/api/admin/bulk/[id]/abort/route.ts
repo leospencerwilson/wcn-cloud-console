@@ -25,15 +25,6 @@ export async function POST(
       { status: 403 },
     );
   }
-  if (session.impersonating) {
-    return NextResponse.json(
-      {
-        error: "Mutations are disabled while impersonating.",
-        code: "impersonate_read_only",
-      },
-      { status: 403 },
-    );
-  }
   const { id } = await params;
   const jobId = Number(id);
   if (!Number.isInteger(jobId) || jobId <= 0) {

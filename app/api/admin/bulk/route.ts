@@ -25,16 +25,6 @@ async function guard() {
         { status: 403 },
       ),
     };
-  if (session.impersonating)
-    return {
-      err: NextResponse.json(
-        {
-          error: "Mutations are disabled while impersonating.",
-          code: "impersonate_read_only",
-        },
-        { status: 403 },
-      ),
-    };
   return { session };
 }
 

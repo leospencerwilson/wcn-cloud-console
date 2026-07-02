@@ -109,15 +109,6 @@ export function withCustomerAuth<P extends { slug: string }>(
           { status: 403 },
         );
       }
-      if (session.impersonating && !SAFE_METHODS.has(req.method)) {
-        return NextResponse.json(
-          {
-            error: "Mutations are disabled while impersonating.",
-            code: "impersonate_read_only",
-          },
-          { status: 403 },
-        );
-      }
       return await invokeHandler(handler, req, {
         params: resolved,
         slug,

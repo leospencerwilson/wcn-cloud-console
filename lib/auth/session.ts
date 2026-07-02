@@ -3,7 +3,6 @@ import type { User } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAppUser, type AppUser } from "@/lib/db/users";
 import {
-  ImpersonateReadOnlyError,
   readImpersonate,
   type ImpersonateClaims,
 } from "./impersonate";
@@ -66,10 +65,10 @@ export async function requireCustomerAdmin(): Promise<Session> {
   return session;
 }
 
-export function requireMutationAllowed(session: Session): void {
-  if (session.impersonating) {
-    throw new ImpersonateReadOnlyError();
-  }
+// Impersonation is read-write; mutations are always allowed. Kept as a no-op
+// so existing/future call sites remain valid without reintroducing a gate.
+export function requireMutationAllowed(_session: Session): void {
+  return;
 }
 
 // Resolve the team role for the active session+customer. Returns null if

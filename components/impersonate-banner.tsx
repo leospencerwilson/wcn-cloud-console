@@ -60,7 +60,7 @@ export default function ImpersonateBanner({
             Viewing as <strong>{customerName}</strong>
             <span style={{ color: "var(--text-3)" }}>
               {" "}
-              · started {ageLabel(startedAt)} · Read-only
+              · started {ageLabel(startedAt)}
             </span>
             {note && (
               <span style={{ color: "var(--text-3)" }}> · note: {note}</span>

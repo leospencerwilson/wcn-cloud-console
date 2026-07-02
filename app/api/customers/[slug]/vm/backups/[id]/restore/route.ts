@@ -19,15 +19,6 @@ export async function POST(
   if (session.appUser.role !== "wcn_admin") {
     return NextResponse.json({ error: "Forbidden", code: "not_admin" }, { status: 403 });
   }
-  if (session.impersonating) {
-    return NextResponse.json(
-      {
-        error: "Mutations are disabled while impersonating.",
-        code: "impersonate_read_only",
-      },
-      { status: 403 },
-    );
-  }
   const { slug, id } = await params;
   const backupId = Number(id);
   if (!Number.isInteger(backupId) || backupId <= 0) {

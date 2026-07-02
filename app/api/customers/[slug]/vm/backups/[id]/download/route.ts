@@ -24,15 +24,6 @@ export async function POST(
   if (!allowed) {
     return NextResponse.json({ error: "Forbidden", code: "no_membership" }, { status: 403 });
   }
-  if (session.impersonating) {
-    return NextResponse.json(
-      {
-        error: "Mutations are disabled while impersonating.",
-        code: "impersonate_read_only",
-      },
-      { status: 403 },
-    );
-  }
   const backupId = Number(id);
   if (!Number.isInteger(backupId) || backupId <= 0) {
     return NextResponse.json(
