@@ -13,7 +13,7 @@ export default async function AcceptInvitePage({
   const session = await getSession();
   if (!session) {
     const ret = encodeURIComponent(`/team/accept?token=${token ?? ""}`);
-    redirect(`/login?return_to=${ret}`);
+    redirect(`/login?next=${ret}`);
   }
   if (!token) {
     return (
